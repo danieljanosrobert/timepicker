@@ -2,13 +2,14 @@
   <v-app-bar app :inverted-scroll=invertedScrollProp>
     <v-toolbar-title class="headline text-uppercase">
       <router-link to="/">
-        <span>Vuetify</span>
-        <span class="font-weight-light">MATERIAL DESIGN</span>
+        <span>Pick</span>
+        <span class="font-weight-light">a</span>
+        <span>Time</span>
       </router-link>
     </v-toolbar-title>
     <v-spacer></v-spacer>
     <router-link to="about">
-      <span class="mr-2">Új bejegyzés</span>
+      <span class="mr-2">MENU_1</span>
     </router-link>
   </v-app-bar>
 </template>
