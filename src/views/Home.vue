@@ -1,17 +1,19 @@
 <template>
-  <v-container fluid class="full-height pa-0">
+  <v-container fluid class="pa-0">
     <HomeParallax/>
-    TEXT FOR HOMEPAGE BECAUSE WITHOUT IT THERE IS NO MENU
+    <HomeSimple/>
   </v-container>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 import HomeParallax from '@/components/HomeParallax.vue';
+import HomeSimple from '@/components/HomeSimple.vue';
 
 export default Vue.extend({
   components: {
     HomeParallax,
+    HomeSimple,
   },
 });
 </script>
