@@ -16,6 +16,31 @@ body, html {
   width: 100%!important;
 }
 
+.noselect {
+  -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+.hoverable {
+  -webkit-transition: opacity .2s ease-in-out;
+     -moz-transition: opacity .2s ease-in-out;
+      -ms-transition: opacity .2s ease-in-out;
+       -o-transition: opacity .2s ease-in-out;
+          transition: opacity .2s ease-in-out;
+}
+
+.display {
+  opacity: 1;
+}
+
+.hide {
+  opacity: 0;
+}
+
 /*BASICS*/
 
 /*TEXTS*/
@@ -53,6 +78,48 @@ body, html {
 }
 
 /*TEXTS*/
+
+/*ANIMATION-CSS*/
+
+.jumping {
+  animation-name: jump;
+  animation-duration: 1.5s;
+  animation-timing-function: ease;
+  animation-delay: 0s;
+  animation-direction: normal;
+}
+
+/*ANIMATION-CSS*/
+
+/*ANIMATIONS*/
+
+@keyframes jump {
+  0%{
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+  20%{
+    -webkit-transform: translateY(-20px);
+    transform: translateY(-20px);
+  }
+  30%{
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+  40%{
+    -webkit-transform: translateY(-10px);
+    transform: translateY(-10px);
+  }
+  50%{
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+  100%{
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+/*ANIMATIONS*/
 
 /*COMPONENTS*/
 
