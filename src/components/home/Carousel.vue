@@ -26,13 +26,12 @@
     data: () => ({
       gray: '#EDEAE5',
       details: [
-          'Időpontfoglalás otthonról',
-          'Egyszerű kereséssel',
-          'Helymeghatározással',
-          'Azonnal',
+          'Gif az oldal használatáról#1 - keresés',
+          'Gif az oldal használatáról#2 - elérhetőségek vagy hírek böngészése',
+          'Gif az oldal használatáról#3 - foglalás',
       ],
     }),
-    name: 'HomeSimple',
+    name: 'Carousel',
   };
 </script>
 
