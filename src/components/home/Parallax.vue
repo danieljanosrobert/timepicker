@@ -1,5 +1,5 @@
 <template>
-  <v-container :style="setToFullScreen" fluid class="pa-0 noselect">
+  <v-container :style="setToFullScreen" fluid class="pa-0">
     <v-parallax class="full-height" src="@/assets/images/doctor.jpg" dark>
       <v-row align="center" justify="center"><h1 class="text-yellow" style="font-size: 150px">Logo helye</h1></v-row>
       <v-row align="center" justify="center">
@@ -33,7 +33,7 @@
 
 <script type="ts">
   export default {
-    name: 'HomeParallax',
+    name: 'Parallax',
     data: () => ({
       hover: false,
     }),

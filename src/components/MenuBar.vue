@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app :inverted-scroll=invertedScrollProp>
+  <v-app-bar class="brown lighten-5" app :inverted-scroll=invertedScrollProp>
     <v-toolbar-title class="headline text-uppercase">
       <router-link to="/">
         <span>Pick</span>
