@@ -4,8 +4,8 @@
       <v-card flat tile
               class="brown darken-4 white--text text-center">
         <v-card-text>
-          <v-btn v-for="icon in icons"
-                 :key="icon"
+          <v-btn v-for="(icon, idx) in icons"
+                 :key="idx"
                  class="mx-4 white--text" icon>
             <v-icon size="24px">{{ icon }}</v-icon>
           </v-btn>
@@ -14,8 +14,8 @@
         <v-card-text class="white--text pt-0">
           <v-row>
             <v-col cols="3"
-                   v-for="(data) in details"
-                   :key="data">
+                   v-for="(data, idx) in details"
+                   :key="idx">
               {{data}}
             </v-col>
             <v-col cols="8" offset="2" class="pt-6">

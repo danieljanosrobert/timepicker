@@ -1,22 +1,22 @@
 <template>
   <v-container fluid class="pa-12 bg-color-light-brown">
     <v-row no-gutters class="text-center">
-      <v-col :xl="8" :offset-xl="2"
-             :md="10" :offset-md="1"
-             :sm="12" :offset-sm="0">
+      <v-col xl="8" offset-xl="2"
+             md="10" offset-md="1"
+             sm="12" offset-sm="0">
         <v-row no-gutters class="text-center">
-          <v-col :md="6" :sm="12" :lg="4"
+          <v-col md="6" sm="12" lg="4"
                  class="py-6"
-                 v-for="(feature) in features"
-                 :key="feature">
+                 v-for="(feature, idx) in features"
+                 :key="idx">
             <v-row no-gutters>
-              <v-col :cols="12" class="pb-6">
+              <v-col cols="12" class="pb-6">
                 <v-icon x-large>{{feature.icon}}</v-icon>
               </v-col>
-              <v-col :cols="12">
+              <v-col cols="12">
                 <p style="font-size: 24px">{{feature.title}}</p>
               </v-col>
-              <v-col :cols="10" :offset="1">
+              <v-col cols="10" offset="1" class="text-calus">
                 <p>{{feature.description}}</p>
               </v-col>
             </v-row>
