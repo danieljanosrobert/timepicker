@@ -1,4 +1,4 @@
-@import 'variables.scss';
+@import 'variables';
 
 /*BASICS*/
 
@@ -113,6 +113,9 @@ body, html {
   text-shadow: 1px 1px $_light-blue;
 }
 
+.text-calus{
+  font-family: $font-colus !important;
+}
 /*TEXTS*/
 
 /*ANIMATION-CSS*/

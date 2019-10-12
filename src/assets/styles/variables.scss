@@ -1,3 +1,8 @@
+@font-face {
+  font-family: Colus-Regular;
+  src: url('/assets/fonts/Colus/Colus-Regular.otf') format('opentype');
+}
+
 $_dark-blue: #026670;
 $_blue: #82b8f6;
 $_light-blue: #9FEDD7;
@@ -5,3 +10,7 @@ $_light-brown: #FEF9C7;
 $_yellow: #FCE181;
 $_gray: #EDEAE5;
 $_dark-mahogany: #2E1114;
+
+$font-colus: 'Colus-Regular';
+
+

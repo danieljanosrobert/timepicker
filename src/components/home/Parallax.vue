@@ -1,9 +1,9 @@
 <template>
-  <v-container :style="setToFullScreen" fluid class="pa-0">
+  <v-container :style="setToFullScreen" fluid class="text-calus pa-0">
     <v-parallax class="full-height" src="@/assets/images/doctor.jpg" dark>
       <v-row align="center" justify="center"><h1 class="text-yellow" style="font-size: 150px">Logo helye</h1></v-row>
       <v-row align="center" justify="center">
-        <h1 class="display-4 font-weight-thick mb-12 text-dark-blue shadow-text-light-blue ">Időpontok egyszerűen kezelve</h1>
+        <h1 style="font-size:6rem" class="text-calus font-weight-thick mb-12 text-dark-blue shadow-text-light-blue ">Időpontok egyszerűen kezelve</h1>
       </v-row>
       <v-row align="center" justify="center" class="text-dark-mahogany" style="font-size: 30px">
         <div align="center">

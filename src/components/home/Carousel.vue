@@ -1,8 +1,8 @@
 <template>
   <v-carousel hide-delimiters show-arrows-on-hover>
     <v-carousel-item
-            v-for="(detail) in details"
-            :key="detail"
+            v-for="(detail, idx) in details"
+            :key="idx"
     >
       <v-sheet
               :color=gray
