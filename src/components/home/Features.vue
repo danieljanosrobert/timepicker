@@ -16,7 +16,7 @@
               <v-col cols="12">
                 <p style="font-size: 24px">{{feature.title}}</p>
               </v-col>
-              <v-col cols="10" offset="1" class="text-calus">
+              <v-col cols="10" offset="1" class="font-alegreya">
                 <p>{{feature.description}}</p>
               </v-col>
             </v-row>

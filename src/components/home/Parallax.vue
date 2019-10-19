@@ -1,9 +1,9 @@
 <template>
-  <v-container :style="setToFullScreen" fluid class="text-calus pa-0">
+  <v-container :style="setToFullScreen" fluid class="font-alegreya pa-0">
     <v-parallax class="full-height" src="@/assets/images/doctor.jpg" dark>
       <v-row align="center" justify="center"><h1 class="text-yellow" style="font-size: 150px">Logo helye</h1></v-row>
       <v-row align="center" justify="center">
-        <h1 style="font-size:6rem" class="text-calus font-weight-thick mb-12 text-dark-blue shadow-text-light-blue ">Időpontok egyszerűen kezelve</h1>
+        <h1 style="font-size:6rem" class="font-alegreya font-weight-thick mb-12 text-dark-blue shadow-text-light-blue ">Időpontok egyszerűen kezelve</h1>
       </v-row>
       <v-row align="center" justify="center" class="text-dark-mahogany" style="font-size: 30px">
         <div align="center">
@@ -24,7 +24,9 @@
                @mouseleave="hover = false"
                align="center">
               <p class="pa-0 hoverable more-arrow-label" :class="hover ? 'display' : 'hide'">Tudjon meg többet!</p>
-            <v-icon v-on:click="scrollTo('home-simple')" size="120px" :class="{ jumping: hover }" class="pa-0 ma-0">mdi-chevron-down</v-icon>
+            <v-icon v-scroll-to="'#carousel'" size="120px"
+                    :class="{ jumping: hover }" class="pa-0 cursor-pointer ma-0">mdi-chevron-down
+            </v-icon>
           </div>
       </v-row>
     </v-parallax>
@@ -42,11 +44,6 @@
         return {
           height: `${window.innerHeight}px`,
         };
-      },
-    },
-    methods: {
-      scrollTo(refName) {
-        this.$parent.scrollTo(refName);
       },
     },
   };
