@@ -3,9 +3,10 @@
     <v-row no-gutters class="text-center">
       <v-col xl="8" offset-xl="2"
              md="10" offset-md="1"
-             sm="12" offset-sm="0">
-        <v-row no-gutters class="text-center">
-          <v-col md="6" sm="12" lg="4"
+             xs="12" offset-xs="0"
+      >
+        <v-row dense class="text-center">
+          <v-col lg="4" md="6" cols="12"
                  class="py-6"
                  v-for="(feature, idx) in features"
                  :key="idx">

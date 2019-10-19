@@ -17,7 +17,43 @@
       <v-divider></v-divider>
 
     <v-list>
-      <v-list-item v-for="item in items" :key="item.title" link :to="item.url">
+      <v-list-item v-for="item in essentials" :key="item.title" link :to="item.url">
+        <v-list-item-icon>
+          <v-icon>{{ item.icon }}</v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content>
+          <v-list-item-title>{{ item.title }}</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </v-list>
+
+    <v-divider></v-divider>
+
+    <v-list v-if="!admin">
+      <v-list-item v-for="item in userItems" :key="item.title" link :to="item.url">
+        <v-list-item-icon>
+          <v-icon>{{ item.icon }}</v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content>
+          <v-list-item-title>{{ item.title }}</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-list-item v-if="!admin" link @click.stop="admin = true">
+        <v-list-item-icon>
+          <v-icon> mdi-gavel </v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content>
+          <v-list-item-title> Adminisztrátori belépés </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </v-list>
+
+    <v-list v-else>
+      <v-list-item v-for="item in adminItems" :key="item.title" link :to="item.url">
         <v-list-item-icon>
           <v-icon>{{ item.icon }}</v-icon>
         </v-list-item-icon>
@@ -30,7 +66,7 @@
 
     <template v-slot:append>
       <div class="pa-2">
-        <v-btn dark block>Logout</v-btn>
+        <v-btn dark block @click.stop="admin = false">Logout</v-btn>
       </div>
     </template>
   </v-navigation-drawer>
@@ -41,10 +77,20 @@
     name: 'Drawer',
     data: () => ({
       drawer: false,
-      items: [
+      admin: false,
+      home: 'home',
+      essentials: [
         { title: 'Főoldal', icon: 'mdi-view-dashboard', url: '/' },
-        { title: 'Keresés', icon: 'mdi-account-box', url: 'search'},
-        { title: 'Információk', icon: 'mdi-gavel', url: 'about' },
+        { title: 'Keresés', icon: 'mdi-book-search', url: 'search'},
+      ],
+      userItems: [
+        { title: 'Belépés', icon: 'mdi-account', url: 'about' },
+      ],
+      adminItems: [
+        { title: 'Adatlap', icon: 'mdi-book-open-page-variant', url: 'about' },
+        { title: 'Beállítások', icon: 'mdi-settings', url: 'about' },
+        { title: 'Oldal Előnézete', icon: 'fa-eye', url: '' },
+        { title: 'Galléria', icon: 'mdi-image-album', url: 'about' },
       ],
     }),
     mounted() {

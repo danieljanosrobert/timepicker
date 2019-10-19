@@ -2,7 +2,7 @@
   <v-app>
     <MenuBar/>
     <Drawer/>
-    <router-view/>
+    <router-view :class="viewHasMargin ? 'pt-12' : ''"></router-view>
     <Footer/>
   </v-app>
 </template>
@@ -16,15 +16,30 @@
 
   Vue.use(VueScrollTo, { duration: 650 });
 
+  const HOME = 'home';
+
   export default Vue.extend({
     name: 'App',
     data: () => ({
-      //
+      viewHasMargin: false,
     }),
     components: {
       Drawer,
       Footer,
       MenuBar,
+    },
+    mounted() {
+      this.routerViewHasMargin();
+    },
+    watch: {
+      $route(to, from) {
+        this.routerViewHasMargin();
+      },
+    },
+    methods: {
+      routerViewHasMargin() {
+        this.viewHasMargin = this.$route.name !== HOME;
+      },
     },
   });
 </script>
