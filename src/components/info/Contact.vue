@@ -28,7 +28,7 @@
         <v-spacer></v-spacer>
 
         <v-card-title class="white--text pl-12 pt-12">
-          <div class="display-1 pl-12 pt-12">Ali Conners</div>
+          <div class="display-1 pl-12 pt-12">Ali Conners: {{$route.params.id}}</div>
         </v-card-title>
       </v-row>
     </v-img>
