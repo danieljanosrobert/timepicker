@@ -1,6 +1,47 @@
 <template>
-  <v-container style="background-color: rosybrown" class="text-center pa-0">
-    <h1 style="margin-bottom: 2000px">This is the About Page</h1>
-    <h1>This is the bottom of the About Page</h1>
+  <v-container fluid class="text-center pa-0" :style=setToFullScreen>
+    <Contact></Contact>
+    <BookingDialog></BookingDialog>
+    <v-row class="margin-with-navbar mr-0">
+      <v-col cols="12" class="pa-0 px-2">
+        <MessageBoard v-if="visibleContent==='messageBoard'" ></MessageBoard>
+        <Book v-if="visibleContent==='book'" ></Book>
+      </v-col>
+    </v-row>
+    <Sidebar></Sidebar>
   </v-container>
 </template>
+<script>
+  import Sidebar from '@/components/info/Sidebar.vue';
+  import MessageBoard from '@/components/info/MessageBoard.vue';
+  import Contact from '@/components/info/Contact.vue';
+  import Book from '@/components/info/Book.vue';
+  import BookingDialog from '@/components/info/book-on-event/BookingDialog.vue';
+
+  export default {
+    components: {BookingDialog, Book, Contact, MessageBoard, Sidebar},
+    data: () => ({
+      visibleContent: 'book',
+    }),
+    mounted() {
+      this.$root.$on('aboutEvent', (data) => {
+        if (data !== 'about') {
+          this.visibleContent = data;
+        }
+      });
+    },
+    computed: {
+      setToFullScreen() {
+        return {
+          'min-height': `${window.innerHeight}px`,
+        };
+      },
+    },
+  };
+</script>
+
+<style scoped>
+  .margin-with-navbar {
+    margin-left: 204px;
+  }
+</style>

@@ -30,7 +30,7 @@
 
     <v-divider></v-divider>
 
-    <v-list v-if="!admin">
+    <v-list v-if="!userLoggedInAsAdmin">
       <v-list-item v-for="item in userItems" :key="item.title" link :to="item.url">
         <v-list-item-icon>
           <v-icon>{{ item.icon }}</v-icon>
@@ -41,15 +41,20 @@
         </v-list-item-content>
       </v-list-item>
 
-      <v-list-item v-if="!admin" link @click.stop="admin = true">
-        <v-list-item-icon>
-          <v-icon> mdi-gavel </v-icon>
-        </v-list-item-icon>
+      <v-menu v-model="adminLoginMenu" :close-on-content-click="false" offset-x>
+        <template v-slot:activator="{ on }">
+          <v-list-item link v-on="on">
+            <v-list-item-icon>
+              <v-icon> mdi-gavel </v-icon>
+            </v-list-item-icon>
 
-        <v-list-item-content>
-          <v-list-item-title> Adminisztrátori belépés </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
+            <v-list-item-content>
+              <v-list-item-title> Admin belépés </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+        <AdminLoginMenu></AdminLoginMenu>
+      </v-menu>
     </v-list>
 
     <v-list v-else>
@@ -64,39 +69,62 @@
       </v-list-item>
     </v-list>
 
-    <template v-slot:append>
+    <template v-if="isLoggedIn" v-slot:append>
       <div class="pa-2">
-        <v-btn dark block @click.stop="admin = false">Logout</v-btn>
+        <v-btn dark block @click.stop="logout">Logout</v-btn>
       </div>
     </template>
   </v-navigation-drawer>
 </template>
 
 <script>
+  import AdminLoginMenu from '@/components/menu/AdminLoginMenu.vue';
+  import { mapGetters } from 'vuex';
+
   export default {
     name: 'Drawer',
+    components: {AdminLoginMenu},
     data: () => ({
+      adminLoginMenu: false,
       drawer: false,
-      admin: false,
+      userLoggedIn: false,
       home: 'home',
       essentials: [
         { title: 'Főoldal', icon: 'mdi-view-dashboard', url: '/' },
-        { title: 'Keresés', icon: 'mdi-book-search', url: 'search'},
+        { title: 'Keresés', icon: 'mdi-book-search', url: '/search'},
       ],
       userItems: [
-        { title: 'Belépés', icon: 'mdi-account', url: 'about' },
+        { title: 'Belépés', icon: 'mdi-account', url: '/about' },
       ],
       adminItems: [
-        { title: 'Adatlap', icon: 'mdi-book-open-page-variant', url: 'about' },
-        { title: 'Beállítások', icon: 'mdi-settings', url: 'about' },
+        { title: 'Adatlap', icon: 'mdi-book-open-page-variant', url: '/about' },
+        { title: 'Beállítások', icon: 'mdi-settings', url: '/about' },
         { title: 'Oldal Előnézete', icon: 'fa-eye', url: '' },
-        { title: 'Galléria', icon: 'mdi-image-album', url: 'about' },
+        { title: 'Galléria', icon: 'mdi-image-album', url: '/about' },
       ],
     }),
+    computed: {
+      ...mapGetters({
+        userLoggedInAsAdmin: 'isAdminLoggedIn',
+      }),
+      isLoggedIn() {
+        return this.userLoggedIn || this.userLoggedInAsAdmin;
+      },
+    },
     mounted() {
       this.$root.$on('openDrawer', (data) => {
         this.drawer = data;
       });
+      this.$root.$on('adminLoggedIn', () => {
+        this.adminLoginMenu = false;
+      });
+    },
+    methods: {
+      logout() {
+        if (this.userLoggedInAsAdmin) {
+          this.$store.dispatch('adminLogout');
+        }
+      },
     },
   };
 </script>

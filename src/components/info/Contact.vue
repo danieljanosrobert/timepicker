@@ -1,111 +1,103 @@
 <template>
-  <v-card
-          max-width="375"
-          class="mx-auto"
-  >
-    <v-img
-            src="https://cdn.vuetifyjs.com/images/lists/ali.png"
-            height="300px"
-            dark
-    >
-      <v-row class="fill-height">
-        <v-card-title>
-          <v-btn dark icon>
-            <v-icon>mdi-chevron-left</v-icon>
-          </v-btn>
+  <v-dialog v-model="dialog" max-width="400">
+    <v-card>
+      <v-img src="https://cdn.vuetifyjs.com/images/lists/ali.png" width="400px" height="300px" dark>
 
-          <v-spacer></v-spacer>
+        <v-row dense class="float-right fill-height">
+          <v-col cols="12" class="text-right pa-2">
+            <v-btn dark icon>
+              <v-icon>mdi-pencil</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="12" class="text-right align-self-end">
+            <v-card-title class="white--text contact-name">
+              <div class="display-1">{{$store.state.aboutPage}}</div>
+            </v-card-title>
+          </v-col>
+        </v-row>
+      </v-img>
 
-          <v-btn dark icon class="mr-4">
-            <v-icon>mdi-pencil</v-icon>
-          </v-btn>
+      <v-list two-line>
+        <v-list-item @click="">
+          <v-list-item-icon>
+            <v-icon color="indigo">mdi-phone</v-icon>
+          </v-list-item-icon>
 
-          <v-btn dark icon>
-            <v-icon>mdi-dots-vertical</v-icon>
-          </v-btn>
-        </v-card-title>
+          <v-list-item-content>
+            <v-list-item-title>(650) 555-1234</v-list-item-title>
+            <v-list-item-subtitle>Mobile</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
 
-        <v-spacer></v-spacer>
+        <v-list-item @click="">
+          <v-list-item-action></v-list-item-action>
 
-        <v-card-title class="white--text pl-12 pt-12">
-          <div class="display-1 pl-12 pt-12">Ali Conners: {{$route.params.id}}</div>
-        </v-card-title>
-      </v-row>
-    </v-img>
+          <v-list-item-content>
+            <v-list-item-title>(323) 555-6789</v-list-item-title>
+            <v-list-item-subtitle>Work</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
 
-    <v-list two-line>
-      <v-list-item @click="">
-        <v-list-item-icon>
-          <v-icon color="indigo">mdi-phone</v-icon>
-        </v-list-item-icon>
+        <v-divider inset></v-divider>
 
-        <v-list-item-content>
-          <v-list-item-title>(650) 555-1234</v-list-item-title>
-          <v-list-item-subtitle>Mobile</v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item @click="">
+          <v-list-item-icon>
+            <v-icon color="indigo">mdi-email</v-icon>
+          </v-list-item-icon>
 
-        <v-list-item-icon>
-          <v-icon>mdi-message-text</v-icon>
-        </v-list-item-icon>
-      </v-list-item>
+          <v-list-item-content>
+            <v-list-item-title>aliconnors@example.com</v-list-item-title>
+            <v-list-item-subtitle>Personal</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
 
-      <v-list-item @click="">
-        <v-list-item-action></v-list-item-action>
+        <v-list-item @click="">
+          <v-list-item-action></v-list-item-action>
 
-        <v-list-item-content>
-          <v-list-item-title>(323) 555-6789</v-list-item-title>
-          <v-list-item-subtitle>Work</v-list-item-subtitle>
-        </v-list-item-content>
+          <v-list-item-content>
+            <v-list-item-title>ali_connors@example.com</v-list-item-title>
+            <v-list-item-subtitle>Work</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
 
-        <v-list-item-icon>
-          <v-icon>mdi-message-text</v-icon>
-        </v-list-item-icon>
-      </v-list-item>
+        <v-divider inset></v-divider>
 
-      <v-divider inset></v-divider>
+        <v-list-item @click="">
+          <v-list-item-icon>
+            <v-icon color="indigo">mdi-map-marker</v-icon>
+          </v-list-item-icon>
 
-      <v-list-item @click="">
-        <v-list-item-icon>
-          <v-icon color="indigo">mdi-email</v-icon>
-        </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>1400 Main Street</v-list-item-title>
+            <v-list-item-subtitle>Orlando, FL 79938</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
 
-        <v-list-item-content>
-          <v-list-item-title>aliconnors@example.com</v-list-item-title>
-          <v-list-item-subtitle>Personal</v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
+      <v-divider></v-divider>
 
-      <v-list-item @click="">
-        <v-list-item-action></v-list-item-action>
-
-        <v-list-item-content>
-          <v-list-item-title>ali_connors@example.com</v-list-item-title>
-          <v-list-item-subtitle>Work</v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-
-      <v-divider inset></v-divider>
-
-      <v-list-item @click="">
-        <v-list-item-icon>
-          <v-icon color="indigo">mdi-map-marker</v-icon>
-        </v-list-item-icon>
-
-        <v-list-item-content>
-          <v-list-item-title>1400 Main Street</v-list-item-title>
-          <v-list-item-subtitle>Orlando, FL 79938</v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-    </v-list>
-  </v-card>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
   export default {
     name: 'Contact',
+    data: () =>  ({
+      dialog: false,
+    }),
+    mounted() {
+      this.$root.$on('aboutEvent', (data) => {
+        if (data === 'about') {
+          this.dialog = true;
+        }
+      });
+    },
   };
 </script>
 
 <style scoped>
-
+  .contact-name {
+    display: block;
+  }
 </style>
