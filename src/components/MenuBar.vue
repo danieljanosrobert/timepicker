@@ -13,11 +13,6 @@
           </router-link>
         </v-toolbar-title>
       </v-col>
-      <v-col cols="2" class="text-right align-self-center">
-        <router-link class="link-disable-decoration" to="about">
-          <span class="mr-2">LOGIN?</span>
-        </router-link>
-      </v-col>
     </v-row>
   </v-app-bar>
 </template>

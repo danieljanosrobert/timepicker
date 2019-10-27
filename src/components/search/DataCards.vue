@@ -14,13 +14,13 @@
             </v-img>
 
             <v-card-actions>
-              <v-btn text :to="{ name: 'book', params: { id: item.id }}" color="brown darken-2">
-                Foglalás
+              <v-btn text @click.stop="openAboutPage(item.title)" color="brown darken-2">
+                Tovább
               </v-btn>
 
               <v-spacer></v-spacer>
 
-              <v-btn icon>
+              <!--<v-btn icon>
                 <v-icon>mdi-heart</v-icon>
               </v-btn>
 
@@ -30,7 +30,7 @@
 
               <v-btn icon>
                 <v-icon>mdi-share-variant</v-icon>
-              </v-btn>
+              </v-btn>-->
 
               <v-spacer></v-spacer>
 
@@ -87,6 +87,12 @@
               'You\'re going to do his laundry? I\'ve got to find a way to escape.' },
       ],
     }),
+    methods: {
+      openAboutPage(param) {
+        this.$store.dispatch('openAboutPage', param);
+        this.$router.push('/about');
+      },
+    },
     computed: {
       keywords() {
         if (!this.search) {

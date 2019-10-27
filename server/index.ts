@@ -1,4 +1,5 @@
-const express = require('express');
+/*
+import express from 'express';
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
@@ -20,3 +21,4 @@ let port = process.env.PORT || 8081;
 if (app.listen(port)) {
   console.log("app up at port: " + port)
 }
+*/

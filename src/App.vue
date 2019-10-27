@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app class="brown darken-4">
     <MenuBar/>
     <Drawer/>
     <router-view :class="viewHasMargin ? 'pt-12' : ''"></router-view>

@@ -3,7 +3,6 @@ import Router from 'vue-router';
 import Home from './views/Home.vue';
 import About from './views/About.vue';
 import Search from './views/Search.vue';
-import Contact from './components/info/Contact.vue';
 
 Vue.use(Router);
 
@@ -25,15 +24,6 @@ export default new Router({
       path: '/search',
       name: 'search',
       component: Search,
-    },
-    {
-      path: '/book/:id',
-      name: 'book',
-      component: Contact,
-    },
-    {
-      path: '*',
-      redirect: '*',
     },
   ],
   scrollBehavior(to, from, savedPosition) {
