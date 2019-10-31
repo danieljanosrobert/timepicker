@@ -3,19 +3,29 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import * as userController from './controllers/user';
+import {log} from './logger/loggingMiddleware';
+import passport from 'passport';
+import passport_config from './passport-config';
 
 const router = express.Router();
 const app = express();
+
+mongoose.set('useCreateIndex', true);
+app.use(passport.initialize());
+passport_config(passport);
 app.use(cors());
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+app.use(log);
 
-const url =
-    'mongodb+srv://user:nXyW33882ppCYgWr@cluster0-9qyy7.azure.mongodb.net/timepicker?retryWrites=true&w=majority';
+const dbUrl = process.env.DB_URL || 'localhost';
+const port = process.env.PORT || 8081;
 
-mongoose.connect(url, {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(dbUrl, {useNewUrlParser: true, useUnifiedTopology: true});
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function() {
+db.once('open', () => {
+
   router.post('/login', userController.credentialValidator, userController.postLogin);
   router.post('/register', userController.registerValidator, userController.postRegister);
 
@@ -31,7 +41,6 @@ db.once('open', function() {
 
   app.use('/api', router);
 
-  const port = process.env.PORT || 8081;
   if (app.listen(port)) {
 // tslint:disable-next-line
     console.log(`Listening on port ${port}`);
