@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt-nodejs';
+import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 
 export type UserDocument = mongoose.Document & {
@@ -14,16 +14,11 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', function save(next) {
   const user = this as UserDocument;
   if (!user.isModified('password')) { return next(); }
-  bcrypt.genSalt(10, (err, salt) => {
-    if (err) { return next(err); }
-    // tslint:disable-next-line
-    bcrypt.hash(user.password, salt, () => {}, (bcyptError: any, hash: any) => {
+  bcrypt.hash(user.password, 10, (bcyptError: any, hash: any) => {
       if (bcyptError) { return next(bcyptError); }
       user.password = hash;
       next();
-    });
   });
 });
 
-
-export const User = mongoose.model<UserDocument>('User', userSchema, 'User');
+export const User = mongoose.model<UserDocument>('User', userSchema);
