@@ -41,7 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var bcrypt_1 = __importDefault(require("bcrypt"));
 var express_validator_1 = require("express-validator");
-var Users_1 = require("../models/Users");
+var AdminUsers_1 = require("../models/AdminUsers");
 var http2_1 = require("http2");
 var authorization_1 = require("../utils/authorization");
 /**
@@ -56,11 +56,13 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
             console.log(validationErrorResult.mapped());
             return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).json('Validation error')];
         }
-        user = new Users_1.User({
+        user = new AdminUsers_1.AdminUser({
             email: req.body.email,
             password: req.body.password,
+            name: req.body.name,
+            servicename: req.body.servicename,
         });
-        Users_1.User.findOne({ email: user.email }, function (err, existingUser) {
+        AdminUsers_1.AdminUser.findOne({ email: user.email }, function (err, existingUser) {
             if (err) {
                 return next(err);
             }
@@ -71,7 +73,7 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
                 if (saveError) {
                     return next(saveError);
                 }
-                authorization_1.jwtSignUser(res, { email: user.email }, http2_1.constants.HTTP_STATUS_CREATED);
+                authorization_1.jwtSignUser(res, { email: user.email });
             });
         });
         return [2 /*return*/];
@@ -89,11 +91,11 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
             console.log(validationErrorResult.mapped());
             return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).json('Validation error')];
         }
-        user = new Users_1.User({
+        user = new AdminUsers_1.AdminUser({
             email: req.body.email,
             password: req.body.password,
         });
-        Users_1.User.findOne({ email: user.email })
+        AdminUsers_1.AdminUser.findOne({ email: user.email })
             .then(function (dbUser) {
             if (!dbUser) {
                 return res.sendStatus(http2_1.constants.HTTP_STATUS_BAD_REQUEST);
@@ -108,12 +110,6 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
                 }
             });
         });
-        return [2 /*return*/];
-    });
-}); };
-exports.getBookings = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        res.json('Authenticated');
         return [2 /*return*/];
     });
 }); };

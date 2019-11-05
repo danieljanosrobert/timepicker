@@ -8,7 +8,6 @@
             <span style="font-size: 26px" class="font-alegreya font-italic">Time</span>
           </router-link>
         </v-list-item-title>
-
         <v-btn class="text-right" icon @click.stop="drawer = !drawer">
           <v-icon size="40px">mdi-chevron-left</v-icon>
         </v-btn>
@@ -58,15 +57,41 @@
     </v-list>
 
     <v-list v-else>
-      <v-list-item v-for="item in adminItems" :key="item.title" link :to="item.url">
-        <v-list-item-icon>
-          <v-icon>{{ item.icon }}</v-icon>
-        </v-list-item-icon>
+      <template v-for="item in adminItems">
 
-        <v-list-item-content>
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
+        <v-list-group v-if="item.subItems">
+          <template v-slot:activator>
+            <v-list-item-icon>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>{{ item.title }}</v-list-item-title>
+            </v-list-item-content>
+          </template>
+          <v-list-item class="pl-12" v-for="subItem in item.subItems" :key="subItem.title" link :to="subItem.url">
+            <v-list-item-icon>
+              <v-icon> {{subItem.icon}} </v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title> {{subItem.title}} </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list-group>
+
+        <v-list-item v-else :key="item.title" link :to="item.url">
+          <v-list-item-icon>
+            <v-icon>{{ item.icon }}</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+      </template>
+
     </v-list>
 
     <template v-if="isLoggedIn" v-slot:append>
@@ -79,12 +104,22 @@
 
 <script>
   import AdminLoginMenu from '@/components/menu/AdminLoginMenu.vue';
-  import { mapGetters } from 'vuex';
+  import { mapState } from 'vuex';
 
   export default {
     name: 'Drawer',
     components: {AdminLoginMenu},
     data: () => ({
+      admins: [
+        ['Management', 'people_outline'],
+        ['Settings', 'settings'],
+      ],
+      cruds: [
+        ['Create', 'add'],
+        ['Read', 'insert_drive_file'],
+        ['Update', 'update'],
+        ['Delete', 'delete'],
+      ],
       adminLoginMenu: false,
       drawer: false,
       userLoggedIn: false,
@@ -98,14 +133,20 @@
       ],
       adminItems: [
         { title: 'Adatlap', icon: 'mdi-book-open-page-variant', url: '/about' },
-        { title: 'Beállítások', icon: 'mdi-settings', url: '/about' },
+        { title: 'Beállítások', icon: 'mdi-settings', url: '', subItems: [
+            { title: 'Szolgáltatás', icon: 'mdi-book', url: '/admin/settings' },
+            { title: 'Foglalás', icon: 'mdi-clock-start', url: '/admin/settings' },
+            { title: 'Üzenőfal', icon: 'mdi-email', url: '/admin/settings' },
+            { title: 'Elérhetőségek', icon: 'mdi-account-supervisor-circle', url: '/admin/settings' },
+          ],
+        },
         { title: 'Oldal Előnézete', icon: 'fa-eye', url: '' },
         { title: 'Galléria', icon: 'mdi-image-album', url: '/about' },
       ],
     }),
     computed: {
-      ...mapGetters({
-        userLoggedInAsAdmin: 'isAdminLoggedIn',
+      ...mapState({
+        userLoggedInAsAdmin: 'loggedInAsAdmin',
       }),
       isLoggedIn() {
         return this.userLoggedIn || this.userLoggedInAsAdmin;
@@ -124,6 +165,7 @@
         if (this.userLoggedInAsAdmin) {
           this.$store.dispatch('adminLogout');
         }
+        this.$store.dispatch('eraseBearerToken');
       },
     },
   };

@@ -1,9 +1,10 @@
 <template>
   <v-app class="brown darken-4">
-    <MenuBar/>
-    <Drawer/>
+    <Snackbar/>
+    <MenuBar v-if="!isLandingPage"></MenuBar>
+    <Drawer v-if="!isLandingPage"></Drawer>
     <router-view :class="viewHasMargin ? 'pt-12' : ''"></router-view>
-    <Footer/>
+    <Footer v-if="!isLandingPage"></Footer>
   </v-app>
 </template>
 
@@ -11,34 +12,44 @@
   import Drawer from './components/Drawer.vue';
   import Footer from './components/Footer.vue';
   import MenuBar from './components/MenuBar.vue';
+  import Snackbar from './components/Snackbar.vue';
   import Vue from 'vue';
   import VueScrollTo from 'vue-scrollto';
+  import * as _ from 'lodash';
 
-  Vue.use(VueScrollTo, { duration: 650 });
+  Vue.use(VueScrollTo, { duration: 950 });
 
   const HOME = 'home';
+  const LANDING_PAGES = ['register'];
 
   export default Vue.extend({
     name: 'App',
     data: () => ({
       viewHasMargin: false,
+      isLandingPage: false,
     }),
     components: {
       Drawer,
       Footer,
       MenuBar,
+      Snackbar,
     },
     mounted() {
       this.routerViewHasMargin();
+      this.routerViewIsLandingPage();
     },
     watch: {
       $route(to, from) {
         this.routerViewHasMargin();
+        this.routerViewIsLandingPage();
       },
     },
     methods: {
       routerViewHasMargin() {
         this.viewHasMargin = this.$route.name !== HOME;
+      },
+      routerViewIsLandingPage() {
+        this.isLandingPage = _.includes(LANDING_PAGES, this.$route.name);
       },
     },
   });

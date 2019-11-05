@@ -7,7 +7,7 @@
     "prebuild": "cd client && npm run build",
     "start": "node index.js",
     "compile": "tsc && node -r dotenv/config app.js",
-    "test": "nodemon -e \"ts env json\" dotenv_config_path=process.env --exec \"npm run compile\""
+    "test": "nodemon -e \"ts env json\" dotenv_config_path=process.env --exec \"npm run compile\" || exit 1"
   },
   "author": "Daniel János Róbert",
   "license": "MIT",
