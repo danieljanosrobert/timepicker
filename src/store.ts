@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import VuexPersist from 'vuex-persist';
+import * as _ from 'lodash';
 
 Vue.use(Vuex);
 
@@ -14,30 +15,82 @@ export default new Vuex.Store({
   state: {
     aboutPage: '',
     loggedInAsAdmin: false,
+    bearerToken: '',
+    serviceName: '',
+    userName: '',
+    snackbarVisible: false,
+    snackbarText: '',
+    snackbarColor: '',
   },
   mutations: {
-    refreshAboutPage(state: any, value: string) {
+    _refreshAboutPage(state: any, value: string) {
       state.aboutPage = value;
     },
-    logInAsAdmin(state: any) {
+    _logInAsAdmin(state: any) {
       state.loggedInAsAdmin = true;
     },
-    logOutAsAdmin(state: any) {
+    _logOutAsAdmin(state: any) {
       state.loggedInAsAdmin = false;
+    },
+    _refreshBearerToken(state: any, value: string) {
+      state.bearerToken = value;
+    },
+    _eraseBearerToken(state: any) {
+      state.bearerToken = '';
+    },
+    _setServiceName(state: any, value: string) {
+      state.serviceName = value;
+    },
+    _setUserName(state: any, value: string) {
+      state.userName = value;
+    },
+    _openSnackbar(state: any) {
+      state.snackbarVisible = true;
+    },
+    _closeSnackbar(state: any) {
+      state.snackbarVisible = false;
+    },
+    _setSnackbarText(state: any, value: string) {
+      state.snackbarText = value;
+    },
+    _setSnackbarColor(state: any, value: string) {
+      state.snackbarColor = value;
     },
   },
   actions: {
     openAboutPage({commit}: any, value: string) {
-      commit('refreshAboutPage', value);
+      commit('_refreshAboutPage', value);
     },
     adminLogin({commit}: any) {
-      commit('logInAsAdmin');
+      commit('_logInAsAdmin');
     },
     adminLogout({commit}: any) {
-      commit('logOutAsAdmin');
+      commit('_logOutAsAdmin');
+      commit('_setUserName', '');
+      commit('_setServiceName', '');
+    },
+    refreshBearerToken({commit}: any, value: string) {
+      commit('_refreshBearerToken', value);
+    },
+    eraseBearerToken({commit}: any) {
+      commit('_eraseBearerToken');
+    },
+    setServiceName({commit}: any, value: string) {
+      commit('_setServiceName', value);
+    },
+    setUserName({commit}: any, value: string) {
+      commit('_setUserName', value);
+    },
+    openSnackbar({commit}: any, options: any) {
+      commit('_openSnackbar');
+      commit('_setSnackbarText', options.message);
+      commit('_setSnackbarColor', options.type);
+    },
+    closeSnackbar({commit}: any) {
+      commit('_closeSnackbar');
     },
   },
   getters: {
-    isAdminLoggedIn: (state) =>  state.loggedInAsAdmin,
+    serviceName: (state) => _.isEmpty(state.serviceName) ? state.userName : state.serviceName,
   },
 });

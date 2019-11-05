@@ -3,9 +3,11 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import * as userController from './controllers/user';
-import {log} from './logger/loggingMiddleware';
+import * as validator from './utils/validators';
+import { middleware } from './utils/middleware';
 import passport from 'passport';
 import passport_config from './passport-config';
+import * as adminUserController from './controllers/adminUser';
 
 const router = express.Router();
 const app = express();
@@ -16,7 +18,7 @@ passport_config(passport);
 app.use(cors());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-app.use(log);
+app.use(middleware.log);
 
 const dbUrl = process.env.DB_URL || 'localhost';
 const port = process.env.PORT || 8081;
@@ -26,18 +28,12 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
 
-  router.post('/login', userController.credentialValidator, userController.postLogin);
-  router.post('/register', userController.registerValidator, userController.postRegister);
+  router.get('/books', middleware.isAuthenticated, userController.getBookings);
+  router.post('/login', validator.credentialValidator, userController.postLogin);
+  router.post('/register', validator.registerValidator, userController.postRegister);
 
-  router.get('/hello', (req: express.Request, res: express.Response) => {
-    res.send('Csoró');
-  });
-
-  router.post('/post', (req, res) => {
-    db.collection('posts').insertOne(req.body, (cucc: any) => {
-      res.sendStatus(201);
-    });
-  });
+  router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
+  router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
 
   app.use('/api', router);
 

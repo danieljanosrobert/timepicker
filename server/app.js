@@ -15,9 +15,11 @@ var cors_1 = __importDefault(require("cors"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var mongoose_1 = __importDefault(require("mongoose"));
 var userController = __importStar(require("./controllers/user"));
-var loggingMiddleware_1 = require("./logger/loggingMiddleware");
+var validator = __importStar(require("./utils/validators"));
+var middleware_1 = require("./utils/middleware");
 var passport_1 = __importDefault(require("passport"));
 var passport_config_1 = __importDefault(require("./passport-config"));
+var adminUserController = __importStar(require("./controllers/adminUser"));
 var router = express_1.default.Router();
 var app = express_1.default();
 mongoose_1.default.set('useCreateIndex', true);
@@ -26,23 +28,18 @@ passport_config_1.default(passport_1.default);
 app.use(cors_1.default());
 app.use(body_parser_1.default.urlencoded({ extended: false }));
 app.use(body_parser_1.default.json());
-app.use(loggingMiddleware_1.log);
+app.use(middleware_1.middleware.log);
 var dbUrl = process.env.DB_URL || 'localhost';
 var port = process.env.PORT || 8081;
 mongoose_1.default.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 var db = mongoose_1.default.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
-    router.post('/login', userController.credentialValidator, userController.postLogin);
-    router.post('/register', userController.registerValidator, userController.postRegister);
-    router.get('/hello', function (req, res) {
-        res.send('Csoró');
-    });
-    router.post('/post', function (req, res) {
-        db.collection('posts').insertOne(req.body, function (cucc) {
-            res.sendStatus(201);
-        });
-    });
+    router.get('/books', middleware_1.middleware.isAuthenticated, userController.getBookings);
+    router.post('/login', validator.credentialValidator, userController.postLogin);
+    router.post('/register', validator.registerValidator, userController.postRegister);
+    router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
+    router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
     app.use('/api', router);
     if (app.listen(port)) {
         // tslint:disable-next-line

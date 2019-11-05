@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express';
 import {validationResult} from 'express-validator';
-import {User} from '../models/Users';
+import {AdminUser} from '../models/AdminUsers';
 import {constants} from 'http2';
 import {jwtSignUser} from '../utils/authorization';
 
@@ -17,11 +17,13 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
     console.log(validationErrorResult.mapped());
     return res.status(constants.HTTP_STATUS_BAD_REQUEST).json('Validation error');
   }
-  const user = new User({
+  const user = new AdminUser({
     email: req.body.email,
     password: req.body.password,
+    name: req.body.name,
+    servicename: req.body.servicename,
   });
-  User.findOne({ email: user.email }, (err, existingUser) => {
+  AdminUser.findOne({ email: user.email }, (err, existingUser) => {
     if (err) {
       return next(err);
     }
@@ -32,7 +34,7 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
       if (saveError) {
         return next(saveError);
       }
-      jwtSignUser(res, {email: user.email}, constants.HTTP_STATUS_CREATED);
+      jwtSignUser(res, {email: user.email});
     });
   });
 };
@@ -49,11 +51,11 @@ export const postLogin = async (req: Request, res: Response) => {
     console.log(validationErrorResult.mapped());
     return res.status(constants.HTTP_STATUS_BAD_REQUEST).json('Validation error');
   }
-  const user = new User({
+  const user = new AdminUser({
     email: req.body.email,
     password: req.body.password,
   });
-  User.findOne({ email: user.email })
+  AdminUser.findOne({ email: user.email })
       .then( (dbUser) => {
         if (!dbUser) {
           return res.sendStatus(constants.HTTP_STATUS_BAD_REQUEST);
@@ -67,8 +69,4 @@ export const postLogin = async (req: Request, res: Response) => {
             }
           });
       });
-};
-
-export const getBookings = async (req: Request, res: Response) => {
-  res.json('Authenticated');
 };

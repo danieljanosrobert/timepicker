@@ -1,11 +1,14 @@
 <template>
-    <v-card>
+    <v-card :style="setToFullScreen">
 
       <v-col offset="0" cols="12" offset-md="8" md="4" class="pb-6">
       <v-text-field v-model="search" append-icon="fa-search" label="Keresés" single-line hide-details></v-text-field>
       </v-col>
 
       <v-row class="pa-4 ma-0">
+        <v-col class="text-center" cols="12" v-if="!searching[0]">
+          Nem létezik ilyen szolgáltatás.
+        </v-col>
         <v-col v-for="(item, i) in searching" :key="i" cols="12" md="4">
           <v-card>
             <v-img :src="item.src" class="white--text align-end" gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
@@ -59,6 +62,7 @@
     name: 'DataCards',
     data: () => ({
       search: '',
+      isThereSearchingResult: false,
       items: [
         { id: 1, title: 'Pre-fab homes', src: 'https://cdn.vuetifyjs.com/images/cards/house.jpg', show: false,
         description: 'I\'m a thing. But, like most politicians, he promised more than he could deliver. ' +
@@ -94,6 +98,11 @@
       },
     },
     computed: {
+      setToFullScreen() {
+        return {
+          'min-height': `${window.innerHeight}px`,
+        };
+      },
       keywords() {
         if (!this.search) {
           return [];

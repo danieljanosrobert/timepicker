@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="text-center pa-0" :style=setToFullScreen>
+  <v-container fluid class="text-center pa-0" :style="setToFullScreen">
     <Contact></Contact>
     <BookingDialog></BookingDialog>
     <v-row class="margin-with-navbar mr-0">
@@ -21,7 +21,7 @@
   export default {
     components: {BookingDialog, Book, Contact, MessageBoard, Sidebar},
     data: () => ({
-      visibleContent: 'book',
+      visibleContent: 'messageBoard',
     }),
     mounted() {
       this.$root.$on('aboutEvent', (data) => {
@@ -42,6 +42,11 @@
 
 <style scoped>
   .margin-with-navbar {
-    margin-left: 204px;
+    margin-left: 4px !important;
+  }
+  @media (min-width: 960px) {
+    .margin-with-navbar {
+      margin-left: 204px !important;
+    }
   }
 </style>

@@ -1,6 +1,39 @@
-<template>
+<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <v-row class="pa-0">
-    <v-navigation-drawer dark fixed width="200" class="brown darken-1" style="top: 48px; z-index: 0" permanent>
+
+    <v-col :class="$vuetify.breakpoint.mdAndUp ? 'hide-and-change-position' : 'display'" id="mobile-menu" cols="1">
+      <v-menu v-model="mobileMenu">
+        <template v-slot:activator="{ on }">
+          <v-btn large icon v-on="on" color="white">
+            <v-icon color="white" size="24">mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
+        <v-list class="pa-0">
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title id="title" class="text-center">
+                {{$store.state.aboutPage}}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-divider></v-divider>
+
+          <v-list-item class="text-left" v-for="(item, i) in items" :key="i" link @click.stop="aboutEvent(item.event)">
+            <v-list-item-icon>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>{{ item.text }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </v-col>
+
+    <v-navigation-drawer dark width="200" fixed class="brown darken-1" style="top: 48px; z-index: 0" permanent
+                         :class="$vuetify.breakpoint.mdAndUp ? 'display' : 'hide-and-change-position'">
       <v-list class="pa-0">
         <v-list-item>
           <v-list-item-content>
@@ -12,7 +45,7 @@
 
         <v-divider></v-divider>
 
-        <v-list-item v-for="(item, i) in items" :key="i" link @click.stop="aboutEvent(item.event)">
+        <v-list-item class="text-left" v-for="(item, i) in items" :key="i" link @click.stop="aboutEvent(item.event)">
           <v-list-item-icon>
             <v-icon>{{ item.icon }}</v-icon>
           </v-list-item-icon>
@@ -48,9 +81,11 @@
           event: 'book',
         },
       ],
+      mobileMenu: false,
     }),
     methods: {
       aboutEvent(event) {
+        this.mobileMenu = false;
         this.$root.$emit('aboutEvent', event);
       },
     },
@@ -60,5 +95,17 @@
 <style scoped>
   #title {
     white-space: normal;
+  }
+
+  #mobile-menu {
+    position: fixed;
+    right: 0;
+    top: -11px;
+    z-index: 10;
+  }
+
+  .hide-and-change-position {
+    position: relative !important;
+    display: none;
   }
 </style>

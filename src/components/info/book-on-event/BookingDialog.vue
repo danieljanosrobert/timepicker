@@ -6,7 +6,7 @@
           <v-btn icon dark @click="dialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title>Időpontfoglalás ({{$store.state.aboutPage}}: {{event.start}})</v-toolbar-title>
+          <v-toolbar-title>{{event.start}}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn dark text @click="dialog = false">Foglalás</v-btn>
