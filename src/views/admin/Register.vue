@@ -58,6 +58,7 @@
             servicename: this.servicename,
           });
           this.$store.dispatch('refreshBearerToken', response.data.token);
+          this.$store.dispatch('updateUserEmail', this.email);
           this.$store.dispatch('setServiceName', this.servicename);
           this.$store.dispatch('setUserName', this.name);
           this.$store.dispatch('openSnackbar', {

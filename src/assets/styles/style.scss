@@ -64,6 +64,15 @@ body, html {
   overflow: hidden;
 }
 
+.description-from-db {
+  word-wrap: break-word;
+  white-space: pre-line;
+}
+
+.description-from-db:first-line {
+  line-height: 0;
+}
+
 /*BASICS*/
 
 /*COLORS*/

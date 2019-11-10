@@ -8,7 +8,7 @@ var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var secret = process.env.SECRET || 'secret';
 function jwtSignUser(res, payload, status) {
     if (status === void 0) { status = http2_1.constants.HTTP_STATUS_OK; }
-    jsonwebtoken_1.default.sign(payload, secret, { expiresIn: 600 }, function (err, token) {
+    jsonwebtoken_1.default.sign(payload, secret, { expiresIn: 6000 }, function (err, token) {
         if (err) {
             res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({ error: 'Error signing token', raw: err });
         }

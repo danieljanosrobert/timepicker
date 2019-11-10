@@ -8,6 +8,12 @@ import { middleware } from './utils/middleware';
 import passport from 'passport';
 import passport_config from './passport-config';
 import * as adminUserController from './controllers/adminUser';
+import * as serviceController from './controllers/service';
+import multer from 'multer';
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
 
 const router = express.Router();
 const app = express();
@@ -23,7 +29,7 @@ app.use(middleware.log);
 const dbUrl = process.env.DB_URL || 'localhost';
 const port = process.env.PORT || 8081;
 
-mongoose.connect(dbUrl, {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(dbUrl, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false});
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
@@ -34,6 +40,9 @@ db.once('open', () => {
 
   router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
   router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
+
+  router.post('/settings/service', upload.single('image'), serviceController.postSaveService);
+  router.post('/settings/get-service', middleware.isAuthenticated, serviceController.getServiceSettings);
 
   app.use('/api', router);
 

@@ -38,6 +38,7 @@
           password: this.password,
         });
         this.$store.dispatch('refreshBearerToken', response.data.token);
+        this.$store.dispatch('updateUserEmail', this.email);
         this.$store.dispatch('adminLogin');
         this.$root.$emit('adminLoggedIn');
       },
