@@ -20,6 +20,11 @@ var middleware_1 = require("./utils/middleware");
 var passport_1 = __importDefault(require("passport"));
 var passport_config_1 = __importDefault(require("./passport-config"));
 var adminUserController = __importStar(require("./controllers/adminUser"));
+var serviceController = __importStar(require("./controllers/service"));
+var multer_1 = __importDefault(require("multer"));
+var upload = multer_1.default({
+    storage: multer_1.default.memoryStorage(),
+});
 var router = express_1.default.Router();
 var app = express_1.default();
 mongoose_1.default.set('useCreateIndex', true);
@@ -31,7 +36,7 @@ app.use(body_parser_1.default.json());
 app.use(middleware_1.middleware.log);
 var dbUrl = process.env.DB_URL || 'localhost';
 var port = process.env.PORT || 8081;
-mongoose_1.default.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose_1.default.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 var db = mongoose_1.default.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
@@ -40,6 +45,8 @@ db.once('open', function () {
     router.post('/register', validator.registerValidator, userController.postRegister);
     router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
     router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
+    router.post('/settings/service', upload.single('image'), serviceController.postSaveService);
+    router.post('/settings/get-service', middleware_1.middleware.isAuthenticated, serviceController.getServiceSettings);
     app.use('/api', router);
     if (app.listen(port)) {
         // tslint:disable-next-line

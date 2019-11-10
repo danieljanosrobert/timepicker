@@ -4,7 +4,7 @@ import Home from './views/Home.vue';
 import About from './views/About.vue';
 import Search from './views/Search.vue';
 import Register from './views/admin/Register.vue';
-import Settings from './views/admin/Settings.vue';
+import Service from './views/admin/settings/SearchingResultSettings.vue';
 
 Vue.use(Router);
 
@@ -33,9 +33,9 @@ export default new Router({
       component: Register,
     },
     {
-      path: '/admin/settings',
-      name: 'settings',
-      component: Settings,
+      path: '/settings/service',
+      name: 'service',
+      component: Service,
     },
   ],
   scrollBehavior(to, from, savedPosition) {

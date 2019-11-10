@@ -7,7 +7,7 @@ Vue.use(Vuex);
 
 const vuexPersist = new VuexPersist({
   key: 'timepicker',
-  storage: window.sessionStorage,
+  storage: window.localStorage,
 });
 
 export default new Vuex.Store({
@@ -16,6 +16,7 @@ export default new Vuex.Store({
     aboutPage: '',
     loggedInAsAdmin: false,
     bearerToken: '',
+    loggedInUserEmail: '',
     serviceName: '',
     userName: '',
     snackbarVisible: false,
@@ -35,8 +36,8 @@ export default new Vuex.Store({
     _refreshBearerToken(state: any, value: string) {
       state.bearerToken = value;
     },
-    _eraseBearerToken(state: any) {
-      state.bearerToken = '';
+    _updateUserEmail(state: any, value: string) {
+      state.loggedInUserEmail = value;
     },
     _setServiceName(state: any, value: string) {
       state.serviceName = value;
@@ -72,8 +73,12 @@ export default new Vuex.Store({
     refreshBearerToken({commit}: any, value: string) {
       commit('_refreshBearerToken', value);
     },
-    eraseBearerToken({commit}: any) {
-      commit('_eraseBearerToken');
+    logout({commit}: any) {
+      commit('_refreshBearerToken', '');
+      commit('_updateUserEmail', '');
+    },
+    updateUserEmail({commit}: any, value: string) {
+      commit('_updateUserEmail', value);
     },
     setServiceName({commit}: any, value: string) {
       commit('_setServiceName', value);
