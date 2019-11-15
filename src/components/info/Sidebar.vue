@@ -72,7 +72,7 @@
         },
         {
           icon: 'mdi-account-supervisor-circle',
-          text: 'Adatlap',
+          text: 'Elérhetőségek',
           event: 'about',
         },
         {

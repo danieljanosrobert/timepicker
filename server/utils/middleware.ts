@@ -2,7 +2,8 @@ import {constants} from 'http2';
 import * as _ from 'lodash';
 import jwt from 'jsonwebtoken';
 
-const adminSecret = process.env.ADMIN_SECRET || 'secret';
+const adminSecret = process.env.ADMIN_SECRET || 'adminsecretkey';
+const secret = process.env.SECRET || 'secret';
 
 class Middleware {
 
@@ -16,11 +17,11 @@ class Middleware {
     next();
   }
 
-  public static isAuthenticated(req: any, res: any, next: any): void {
+  public static isAuthenticatedAsAdmin(req: any, res: any, next: any, admin = false): void {
     const header = req.headers.authorization;
     if (!_.isEmpty(header)) {
       const token = header.split(' ')[1];
-      jwt.verify(token, adminSecret, (err: any, authData: any) => {
+      jwt.verify(token, admin ? adminSecret : secret, (err: any, authData: any) => {
         if (err) {
           res.sendStatus(constants.HTTP_STATUS_UNAUTHORIZED);
         } else {

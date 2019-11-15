@@ -10,7 +10,7 @@ export type ServiceDocument = mongoose.Document & {
 };
 
 const serviceSchema = new mongoose.Schema({
-  user_email: { type: String, unique: true },
+  user_email: { type: String, required: true, unique: true },
   name: String,
   description: String,
   image: String,

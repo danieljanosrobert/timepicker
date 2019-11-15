@@ -30,7 +30,8 @@
                     v-model="serviceHidden"
                     label="Ne jelenjen meg a keresési eredményekben"
             ></v-checkbox>
-            <v-divider></v-divider>
+
+            <v-divider class="pb-2"></v-divider>
             <v-text-field id="password" label="Mentéshez szükséges jelszó" v-model="password" name="password"
                           type="password"></v-text-field>
 
@@ -89,7 +90,7 @@
 <script>
   import settingsService from '@/service/settingsService';
 
-  const DEFAULT_IMAGE_URL = 'https://cdn.vuetifyjs.com/images/cards/house.jpg';
+  const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/timepicker/image/upload/v1573508434/services/default_service_j961rq.jpg';
 
   export default {
     name: 'SearchingResultSettings',
@@ -125,7 +126,6 @@
         await settingsService.getServiceSettings({
           user_email: this.$store.state.loggedInUserEmail,
         }).then( (service) => {
-          console.log(service.data.image_url);
           this.name = service.data.name;
           this.description = service.data.description;
           this.serviceHidden = service.data.hidden;

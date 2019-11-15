@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import {validationResult} from 'express-validator';
 import {AdminUser} from '../models/AdminUsers';
 import {constants} from 'http2';
-import {jwtSignUser} from '../utils/authorization';
+import {ADMIN, jwtSignUser} from '../utils/authorization';
 
 /**
  * POST /register
@@ -34,7 +34,7 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
       if (saveError) {
         return next(saveError);
       }
-      jwtSignUser(res, {email: user.email});
+      jwtSignUser(res, {email: user.email}, undefined, ADMIN);
     });
   });
 };
@@ -63,7 +63,7 @@ export const postLogin = async (req: Request, res: Response) => {
         bcrypt.compare(user.password, dbUser.password)
           .then((isMatch) => {
             if (isMatch) {
-              jwtSignUser(res, {email: user.email});
+              jwtSignUser(res, {email: user.email}, undefined, ADMIN);
             } else {
                 res.sendStatus(constants.HTTP_STATUS_BAD_REQUEST);
             }

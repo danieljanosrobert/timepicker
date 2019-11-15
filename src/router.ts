@@ -1,14 +1,17 @@
 import Vue from 'vue';
 import Router from 'vue-router';
+import store from '@/store';
+import adminAuth from '@/middleware/adminAuth';
 import Home from './views/Home.vue';
 import About from './views/About.vue';
 import Search from './views/Search.vue';
 import Register from './views/admin/Register.vue';
 import Service from './views/admin/settings/SearchingResultSettings.vue';
+import Contact from './views/admin/settings/Contact.vue';
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
@@ -36,13 +39,37 @@ export default new Router({
       path: '/settings/service',
       name: 'service',
       component: Service,
+      meta: {
+        middleware: [ adminAuth ],
+      },
+    },
+    {
+      path: '/settings/contact',
+      name: 'contact',
+      component: Contact,
+      meta: {
+        middleware: [ adminAuth ],
+      },
     },
   ],
-  scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition;
-    } else {
-      return { x: 0, y: 0 };
-    }
-  },
 });
+
+router.beforeEach((to, from, next) => {
+  if (!to.meta.middleware) {
+    return next();
+  }
+  const middleware = to.meta.middleware;
+
+  const context = {
+    to,
+    from,
+    next,
+    store,
+  };
+
+
+  return middleware[0]({ ...context });
+
+});
+
+export default router;
