@@ -137,7 +137,7 @@
             { title: 'Szolgáltatás', icon: 'mdi-book', url: '/settings/service' },
             { title: 'Foglalás', icon: 'mdi-clock-start', url: '/admin/settings' },
             { title: 'Üzenőfal', icon: 'mdi-email', url: '/admin/settings' },
-            { title: 'Elérhetőségek', icon: 'mdi-account-supervisor-circle', url: '/admin/settings' },
+            { title: 'Elérhetőségek', icon: 'mdi-account-supervisor-circle', url: '/settings/contact' },
           ],
         },
         { title: 'Oldal Előnézete', icon: 'fa-eye', url: '' },

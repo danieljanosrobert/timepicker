@@ -5,10 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var http2_1 = require("http2");
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+exports.ADMIN = true;
+var adminSecret = process.env.ADMIN_SECRET || 'adminsecretkey';
 var secret = process.env.SECRET || 'secret';
-function jwtSignUser(res, payload, status) {
+function jwtSignUser(res, payload, status, admin) {
     if (status === void 0) { status = http2_1.constants.HTTP_STATUS_OK; }
-    jsonwebtoken_1.default.sign(payload, secret, { expiresIn: 6000 }, function (err, token) {
+    if (admin === void 0) { admin = false; }
+    jsonwebtoken_1.default.sign(payload, admin ? adminSecret : secret, { expiresIn: 600 }, function (err, token) {
+        console.log('asd');
         if (err) {
             res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({ error: 'Error signing token', raw: err });
         }

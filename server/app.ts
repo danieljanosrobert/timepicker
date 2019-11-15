@@ -9,6 +9,7 @@ import passport from 'passport';
 import passport_config from './passport-config';
 import * as adminUserController from './controllers/adminUser';
 import * as serviceController from './controllers/service';
+import * as contactController from './controllers/contact';
 import multer from 'multer';
 
 const upload = multer({
@@ -34,15 +35,19 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
 
-  router.get('/books', middleware.isAuthenticated, userController.getBookings);
   router.post('/login', validator.credentialValidator, userController.postLogin);
   router.post('/register', validator.registerValidator, userController.postRegister);
 
   router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
   router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
 
-  router.post('/settings/service', upload.single('image'), serviceController.postSaveService);
-  router.post('/settings/get-service', middleware.isAuthenticated, serviceController.getServiceSettings);
+  router.post('/settings/service', middleware.isAuthenticatedAsAdmin, upload.single('image'),
+      serviceController.postSaveService);
+  router.post('/settings/get-service', middleware.isAuthenticatedAsAdmin, serviceController.postGetServiceSettings);
+
+  router.post('/settings/contact', middleware.isAuthenticatedAsAdmin, upload.single('image'),
+      contactController.postSaveContact);
+  // router.post('/settings/get-contact', middleware.isAuthenticatedAsAdmin, contactController.postGetContactSettings);
 
   app.use('/api', router);
 
