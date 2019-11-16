@@ -1,4 +1,4 @@
-<template>
+<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <v-card>
     <v-col cols="12" class="pa-0">
       <v-card class="pa-0 brown lighten-4">
@@ -131,6 +131,7 @@ name: 'SetBreakTimes',
   },
   methods: {
     async fetchBreakSettings() {
+      this.password = '';
       await settingsService.getBreakSettings({
           user_email: this.$store.state.loggedInUserEmail,
         }).then( (breaks) => {
@@ -143,6 +144,7 @@ name: 'SetBreakTimes',
         password: this.password,
         breaks: JSON.stringify(this.breaks),
       });
+      this.fetchBreakSettings();
     },
     addBreak() {
       this.breaks.push({date: '', startTime: '', duration: '', always: false});

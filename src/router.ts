@@ -9,6 +9,7 @@ import Register from './views/admin/Register.vue';
 import Service from './views/admin/settings/SearchingResultSettings.vue';
 import Contact from './views/admin/settings/ContactSettings.vue';
 import Book from './views/admin/settings/BookSettings.vue';
+import MessageBoard from './views/admin/settings/MessageBoard.vue';
 
 Vue.use(Router);
 
@@ -60,6 +61,14 @@ const router = new Router({
         middleware: [ adminAuth ],
       },
     },
+    {
+      path: '/settings/message-board',
+      name: 'message-board',
+      component: MessageBoard,
+      meta: {
+        middleware: [ adminAuth ],
+      },
+    },
   ],
 });
 
@@ -72,6 +81,7 @@ router.beforeEach((to, from, next) => {
   const context = {
     to,
     from,
+    router,
     next,
     store,
   };

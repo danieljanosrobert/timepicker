@@ -240,6 +240,8 @@
     },
     methods: {
       async fetchContactSettings() {
+        this.password = '';
+        this.imageUrl = DEFAULT_IMAGE_URL;
         await settingsService.getContactSettings({
           user_email: this.$store.state.loggedInUserEmail,
         }).then( (contact) => {
@@ -285,6 +287,7 @@
         }
 
         await settingsService.saveContact(formData);
+        this.fetchContactSettings();
       },
     },
   };

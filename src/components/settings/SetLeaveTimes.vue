@@ -1,4 +1,4 @@
-<template>
+<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <v-card>
     <v-col cols="12" class="pa-0">
       <v-card class="pa-0 brown lighten-4">
@@ -86,6 +86,7 @@ name: 'SetLeaveTimes',
   },
   methods: {
     async fetchLeaveSettings() {
+      this.password = '';
       await settingsService.getLeaveSettings({
           user_email: this.$store.state.loggedInUserEmail,
         }).then( (leaves) => {
@@ -98,6 +99,7 @@ name: 'SetLeaveTimes',
         password: this.password,
         leaves: JSON.stringify(this.leaves),
       });
+      this.fetchLeaveSettings();
     },
     addLeave() {
       this.leaves.push( {leaveInterval: [], label: ''} );

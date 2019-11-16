@@ -39,6 +39,7 @@ db.once('open', () => {
   router.post('/login', validator.credentialValidator, userController.postLogin);
   router.post('/register', validator.registerValidator, userController.postRegister);
 
+  router.post('/admin/auth', middleware.isAuthenticatedAsAdmin, adminUserController.auth);
   router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
   router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
 

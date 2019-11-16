@@ -11,7 +11,7 @@ var secret = process.env.SECRET || 'secret';
 function jwtSignUser(res, payload, status, admin) {
     if (status === void 0) { status = http2_1.constants.HTTP_STATUS_OK; }
     if (admin === void 0) { admin = false; }
-    jsonwebtoken_1.default.sign(payload, admin ? adminSecret : secret, { expiresIn: 600 }, function (err, token) {
+    jsonwebtoken_1.default.sign(payload, admin ? adminSecret : secret, { expiresIn: '100h' }, function (err, token) {
         if (err) {
             res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({ error: 'Error signing token', raw: err });
         }
