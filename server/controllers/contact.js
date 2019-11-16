@@ -39,32 +39,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var image_1 = require("../utils/image");
-var http2_1 = require("http2");
-var Services_1 = require("../models/Services");
 var AdminUsers_1 = require("../models/AdminUsers");
+var http2_1 = require("http2");
 var bcrypt_1 = __importDefault(require("bcrypt"));
-exports.postGetServiceSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+var Contacts_1 = require("../models/Contacts");
+var image_1 = require("../utils/image");
+exports.postGetContactSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        Services_1.Service.findOne({ user_email: req.body.user_email })
-            .then(function (dbService) {
-            if (!dbService) {
+        Contacts_1.Contact.findOne({ user_email: req.body.user_email })
+            .then(function (dbContact) {
+            if (!dbContact) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
-                    error: 'Service not found',
+                    error: 'Contact not found',
                 });
             }
             var result = {
-                name: dbService.name,
-                image_url: dbService.image,
-                description: dbService.description,
-                hidden: dbService.hidden,
+                name: dbContact.name,
+                image_url: dbContact.image,
+                phoneNumbers: dbContact.phoneNumbers,
+                emails: dbContact.emails,
+                addresses: dbContact.addresses,
             };
             return res.status(http2_1.constants.HTTP_STATUS_OK).json(result);
         });
         return [2 /*return*/];
     });
 }); };
-exports.postSaveService = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
             .then(function (dbUser) {
@@ -75,7 +76,7 @@ exports.postSaveService = function (req, res, next) { return __awaiter(void 0, v
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)
                 .then(function (isMatch) { return __awaiter(void 0, void 0, void 0, function () {
-                var image, imageId_1, deleteImage, service, serviceAsObject;
+                var image, imageId_1, deleteImage, contact, contactAsObject;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -88,36 +89,37 @@ exports.postSaveService = function (req, res, next) { return __awaiter(void 0, v
                             image = _a.sent();
                             _a.label = 2;
                         case 2:
-                            service = new Services_1.Service({
+                            contact = new Contacts_1.Contact({
                                 user_email: req.body.user_email,
                                 name: req.body.name,
-                                description: req.body.description,
+                                phoneNumbers: JSON.parse(req.body.phoneNumbers),
+                                emails: JSON.parse(req.body.emails),
+                                addresses: JSON.parse(req.body.addresses),
                                 image: image && image.url ? image.url : null,
                                 image_id: image && image.public_id ? image.public_id : null,
-                                hidden: req.body.hidden,
                             });
-                            serviceAsObject = service.toObject();
-                            delete serviceAsObject._id;
+                            contactAsObject = contact.toObject();
+                            delete contactAsObject._id;
                             if (!req.file && !deleteImage) {
-                                delete serviceAsObject.image;
-                                delete serviceAsObject.image_id;
+                                delete contactAsObject.image;
+                                delete contactAsObject.image_id;
                             }
                             else {
-                                Services_1.Service.findOne({ user_email: service.user_email })
+                                Contacts_1.Contact.findOne({ user_email: contact.user_email })
                                     .then(function (dbService) {
                                     if (dbService) {
                                         imageId_1 = dbService.image_id;
                                     }
                                 });
                             }
-                            Services_1.Service.findOneAndUpdate({ user_email: service.user_email }, serviceAsObject, { upsert: true }, function (updateError, no) {
+                            Contacts_1.Contact.findOneAndUpdate({ user_email: contact.user_email }, contactAsObject, { upsert: true }, function (updateError, no) {
                                 if (updateError) {
                                     if (imageId_1) {
                                         image_1.destroyImage(imageId_1);
                                     }
                                     console.log(updateError);
                                     return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                                        error: 'Error occured during updating service.',
+                                        error: 'Error occured during updating contact.',
                                     });
                                 }
                                 if (imageId_1) {
@@ -144,7 +146,7 @@ function tryUploadImage(req, res, next) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, image_1.uploadImage('services', req, res, next)];
+                    return [4 /*yield*/, image_1.uploadImage('contacts', req, res, next)];
                 case 1: return [2 /*return*/, _a.sent()];
                 case 2:
                     err_1 = _a.sent();

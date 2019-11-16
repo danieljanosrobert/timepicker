@@ -4,7 +4,7 @@
       <v-toolbar-title>Adminisztrátori belépés</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
-      <v-form class="pa-2 text-center">
+      <v-form class="pa-2 text-center" @submit.prevent="adminLogin" id="login-form">
         <v-text-field label="E-mail" name="login" prepend-icon="mdi-account" v-model="email" type="text">
         </v-text-field>
 
@@ -17,7 +17,7 @@
     </v-card-text>
     <v-card-actions class="pa-0 pr-2 pb-2">
       <v-spacer></v-spacer>
-      <v-btn color="brown lighten-3" @click="adminLogin">Belépés</v-btn>
+      <v-btn type="submit" color="brown lighten-3" form="login-form">Belépés</v-btn>
     </v-card-actions>
   </v-card>
 </template>

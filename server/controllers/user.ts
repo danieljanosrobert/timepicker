@@ -68,7 +68,3 @@ export const postLogin = async (req: Request, res: Response) => {
           });
       });
 };
-
-export const getBookings = async (req: Request, res: Response) => {
-  res.json('Authenticated');
-};

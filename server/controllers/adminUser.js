@@ -73,7 +73,7 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
                 if (saveError) {
                     return next(saveError);
                 }
-                authorization_1.jwtSignUser(res, { email: user.email });
+                authorization_1.jwtSignUser(res, { email: user.email }, undefined, authorization_1.ADMIN);
             });
         });
         return [2 /*return*/];
@@ -103,7 +103,7 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
             bcrypt_1.default.compare(user.password, dbUser.password)
                 .then(function (isMatch) {
                 if (isMatch) {
-                    authorization_1.jwtSignUser(res, { email: user.email });
+                    authorization_1.jwtSignUser(res, { email: user.email }, undefined, authorization_1.ADMIN);
                 }
                 else {
                     res.sendStatus(http2_1.constants.HTTP_STATUS_BAD_REQUEST);
