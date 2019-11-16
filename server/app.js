@@ -22,6 +22,7 @@ var passport_config_1 = __importDefault(require("./passport-config"));
 var adminUserController = __importStar(require("./controllers/adminUser"));
 var serviceController = __importStar(require("./controllers/service"));
 var contactController = __importStar(require("./controllers/contact"));
+var bookController = __importStar(require("./controllers/book"));
 var multer_1 = __importDefault(require("multer"));
 var upload = multer_1.default({
     storage: multer_1.default.memoryStorage(),
@@ -48,7 +49,13 @@ db.once('open', function () {
     router.post('/settings/service', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), serviceController.postSaveService);
     router.post('/settings/get-service', middleware_1.middleware.isAuthenticatedAsAdmin, serviceController.postGetServiceSettings);
     router.post('/settings/contact', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), contactController.postSaveContact);
-    // router.post('/settings/get-contact', middleware.isAuthenticatedAsAdmin, contactController.postGetContactSettings);
+    router.post('/settings/get-contact', middleware_1.middleware.isAuthenticatedAsAdmin, contactController.postGetContactSettings);
+    router.post('/settings/book', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postSaveBookTime);
+    router.post('/settings/get-book', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postGetBookTimeSettings);
+    router.post('/settings/breaks', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postSaveBreaks);
+    router.post('/settings/get-break', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postGetBreakSettings);
+    router.post('/settings/leaves', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postSaveLeaves);
+    router.post('/settings/get-leave', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postGetLeaveSettings);
     app.use('/api', router);
     if (app.listen(port)) {
         // tslint:disable-next-line

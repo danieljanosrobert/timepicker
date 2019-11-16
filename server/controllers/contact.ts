@@ -1,13 +1,30 @@
-import {NextFunction, Response} from 'express';
+import {NextFunction, Request, Response} from 'express';
 import {AdminUser} from '../models/AdminUsers';
 import {constants} from "http2";
 import bcrypt from 'bcrypt';
 import {Contact} from '../models/Contacts';
 import {destroyImage, uploadImage} from '../utils/image';
 
+export const postGetContactSettings = async (req: any, res: Response, next: NextFunction) => {  
+  Contact.findOne({ user_email: req.body.user_email})
+    .then( (dbContact) => {
+    if (!dbContact) {
+      return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
+        error: 'Contact not found',
+      });
+    }
+    const result = {
+      name: dbContact.name,
+      image_url: dbContact.image,
+      phoneNumbers: dbContact.phoneNumbers,
+      emails: dbContact.emails,
+      addresses: dbContact.addresses,
+    };
+    return res.status(constants.HTTP_STATUS_OK).json(result);
+  });
+};
+
 export const postSaveContact = async (req: any, res: Response, next: NextFunction) => {
-  console.log(JSON.stringify(req.body));
-  console.log(JSON.stringify(req.body.phoneNumbers[0]));
   AdminUser.findOne({ email: req.body.user_email })
       .then( (dbUser) => {
         if (!dbUser) {
@@ -23,13 +40,12 @@ export const postSaveContact = async (req: any, res: Response, next: NextFunctio
                 if (req.file) {
                   image = await tryUploadImage(req, res, next);
                 }
-
                 const contact = new Contact({
                   user_email: req.body.user_email,
                   name: req.body.name,
-                  phoneNumbers: req.body.phoneNumbers,
-                  emails: req.body.emails,
-                  addresses: req.body.addresses,
+                  phoneNumbers: JSON.parse(req.body.phoneNumbers),
+                  emails: JSON.parse(req.body.emails),
+                  addresses: JSON.parse(req.body.addresses),
                   image: image && image.url ? image.url : null,
                   image_id: image && image.public_id ? image.public_id : null,
                 });
@@ -73,7 +89,7 @@ export const postSaveContact = async (req: any, res: Response, next: NextFunctio
 
 async function tryUploadImage(req: any, res: any, next: any) {
   try {
-    return await uploadImage('services', req, res, next);
+    return await uploadImage('contacts', req, res, next);
   } catch (err) {
     res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
       error: 'An error occured during the upload.',

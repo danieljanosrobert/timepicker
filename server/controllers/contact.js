@@ -44,10 +44,29 @@ var http2_1 = require("http2");
 var bcrypt_1 = __importDefault(require("bcrypt"));
 var Contacts_1 = require("../models/Contacts");
 var image_1 = require("../utils/image");
+exports.postGetContactSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        Contacts_1.Contact.findOne({ user_email: req.body.user_email })
+            .then(function (dbContact) {
+            if (!dbContact) {
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                    error: 'Contact not found',
+                });
+            }
+            var result = {
+                name: dbContact.name,
+                image_url: dbContact.image,
+                phoneNumbers: dbContact.phoneNumbers,
+                emails: dbContact.emails,
+                addresses: dbContact.addresses,
+            };
+            return res.status(http2_1.constants.HTTP_STATUS_OK).json(result);
+        });
+        return [2 /*return*/];
+    });
+}); };
 exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        console.log(JSON.stringify(req.body));
-        console.log(JSON.stringify(req.body.phoneNumbers[0]));
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
             .then(function (dbUser) {
             if (!dbUser) {
@@ -73,9 +92,9 @@ exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, v
                             contact = new Contacts_1.Contact({
                                 user_email: req.body.user_email,
                                 name: req.body.name,
-                                phoneNumbers: req.body.phoneNumbers,
-                                emails: req.body.emails,
-                                addresses: req.body.addresses,
+                                phoneNumbers: JSON.parse(req.body.phoneNumbers),
+                                emails: JSON.parse(req.body.emails),
+                                addresses: JSON.parse(req.body.addresses),
                                 image: image && image.url ? image.url : null,
                                 image_id: image && image.public_id ? image.public_id : null,
                             });
@@ -127,7 +146,7 @@ function tryUploadImage(req, res, next) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, image_1.uploadImage('services', req, res, next)];
+                    return [4 /*yield*/, image_1.uploadImage('contacts', req, res, next)];
                 case 1: return [2 /*return*/, _a.sent()];
                 case 2:
                     err_1 = _a.sent();
