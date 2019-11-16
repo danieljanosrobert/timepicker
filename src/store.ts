@@ -97,5 +97,6 @@ export default new Vuex.Store({
   },
   getters: {
     serviceName: (state) => _.isEmpty(state.serviceName) ? state.userName : state.serviceName,
+    auth: (state) => state.loggedInAsAdmin,
   },
 });

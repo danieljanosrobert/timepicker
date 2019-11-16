@@ -111,9 +111,3 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
         return [2 /*return*/];
     });
 }); };
-exports.getBookings = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        res.json('Authenticated');
-        return [2 /*return*/];
-    });
-}); };

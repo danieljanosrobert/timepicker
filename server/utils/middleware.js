@@ -13,7 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var http2_1 = require("http2");
 var _ = __importStar(require("lodash"));
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-var adminSecret = process.env.ADMIN_SECRET || 'secret';
+var adminSecret = process.env.ADMIN_SECRET || 'adminsecretkey';
+var secret = process.env.SECRET || 'secret';
 var Middleware = /** @class */ (function () {
     function Middleware() {
     }
@@ -34,11 +35,12 @@ var Middleware = /** @class */ (function () {
         }
         next();
     };
-    Middleware.isAuthenticated = function (req, res, next) {
+    Middleware.isAuthenticatedAsAdmin = function (req, res, next, admin) {
+        if (admin === void 0) { admin = false; }
         var header = req.headers.authorization;
         if (!_.isEmpty(header)) {
             var token = header.split(' ')[1];
-            jsonwebtoken_1.default.verify(token, adminSecret, function (err, authData) {
+            jsonwebtoken_1.default.verify(token, admin ? adminSecret : secret, function (err, authData) {
                 if (err) {
                     res.sendStatus(http2_1.constants.HTTP_STATUS_UNAUTHORIZED);
                 }

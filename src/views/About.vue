@@ -1,6 +1,8 @@
 <template>
   <v-container fluid class="text-center pa-0" :style="setToFullScreen">
-    <Contact></Contact>
+    <v-dialog v-model="dialog" max-width="400">
+      <Contact></Contact>
+    </v-dialog>
     <BookingDialog></BookingDialog>
     <v-row class="margin-with-navbar mr-0">
       <v-col cols="12" class="pa-0 px-2">
@@ -22,11 +24,14 @@
     components: {BookingDialog, Book, Contact, MessageBoard, Sidebar},
     data: () => ({
       visibleContent: 'messageBoard',
+      dialog: false,
     }),
     mounted() {
       this.$root.$on('aboutEvent', (data) => {
         if (data !== 'about') {
           this.visibleContent = data;
+        } else {
+          this.dialog = true;
         }
       });
     },

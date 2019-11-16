@@ -4,12 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = __importDefault(require("mongoose"));
-var serviceSchema = new mongoose_1.default.Schema({
+var bookTimeSchema = new mongoose_1.default.Schema({
     user_email: { type: String, required: true, unique: true },
-    name: String,
-    description: String,
-    image: String,
-    image_id: String,
-    hidden: Boolean,
+    lastMonth: String,
+    startTime: String,
+    endTime: String,
+    bookDuration: Number,
+    selectedWeekdays: [String],
 });
-exports.Service = mongoose_1.default.model('Service', serviceSchema);
+exports.BookTime = mongoose_1.default.model('BookTime', bookTimeSchema);
