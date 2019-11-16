@@ -7,7 +7,8 @@ import About from './views/About.vue';
 import Search from './views/Search.vue';
 import Register from './views/admin/Register.vue';
 import Service from './views/admin/settings/SearchingResultSettings.vue';
-import Contact from './views/admin/settings/Contact.vue';
+import Contact from './views/admin/settings/ContactSettings.vue';
+import Book from './views/admin/settings/BookSettings.vue';
 
 Vue.use(Router);
 
@@ -47,6 +48,14 @@ const router = new Router({
       path: '/settings/contact',
       name: 'contact',
       component: Contact,
+      meta: {
+        middleware: [ adminAuth ],
+      },
+    },
+    {
+      path: '/settings/book',
+      name: 'book',
+      component: Book,
       meta: {
         middleware: [ adminAuth ],
       },

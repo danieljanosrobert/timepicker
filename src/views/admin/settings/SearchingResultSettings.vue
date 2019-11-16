@@ -134,7 +134,7 @@
           }
         });
       },
-      save() {
+      async save() {
         const formData = new FormData();
 
         formData.append('user_email', this.$store.state.loggedInUserEmail);
@@ -147,7 +147,7 @@
           formData.append('image', this.image, this.image.name);
         }
 
-        settingsService.saveService(formData);
+        await settingsService.saveService(formData);
       },
     },
   };

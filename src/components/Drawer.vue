@@ -59,7 +59,7 @@
     <v-list v-else>
       <template v-for="item in adminItems">
 
-        <v-list-group v-if="item.subItems">
+        <v-list-group v-if="item.subItems" :key="item.title">
           <template v-slot:activator>
             <v-list-item-icon>
               <v-icon>{{ item.icon }}</v-icon>
@@ -135,7 +135,7 @@
         { title: 'Adatlap', icon: 'mdi-book-open-page-variant', url: '/about' },
         { title: 'Beállítások', icon: 'mdi-settings', url: '', subItems: [
             { title: 'Szolgáltatás', icon: 'mdi-book', url: '/settings/service' },
-            { title: 'Foglalás', icon: 'mdi-clock-start', url: '/admin/settings' },
+            { title: 'Foglalás', icon: 'mdi-clock-start', url: '/settings/book' },
             { title: 'Üzenőfal', icon: 'mdi-email', url: '/admin/settings' },
             { title: 'Elérhetőségek', icon: 'mdi-account-supervisor-circle', url: '/settings/contact' },
           ],

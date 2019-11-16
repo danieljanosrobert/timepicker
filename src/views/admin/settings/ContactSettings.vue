@@ -39,14 +39,15 @@
                     <v-col cols="5" class="py-0">
                       <v-text-field label="Megjegyzés (Munkahelyi, mobil, ...)" v-model="item.comment"></v-text-field>
                     </v-col>
-                    <v-col cols="2" class="text-right ma-auto">
+                    <v-col cols="6" sm="2" class="text-right ma-auto">
                       <v-btn block small outlined color="error" @click.stop="deletePhoneNumber(i)">Törlés</v-btn>
                     </v-col>
                   </v-row>
+                  <v-divider></v-divider>
                 </v-col>
               </v-row>
 
-              <v-col cols="12" class="py-0">
+              <v-col cols="12" class="pb-0">
                 <v-btn text @click.stop="addPhoneNumber()">+ Telefonszám hozzáadása</v-btn>
               </v-col>
             </v-row>
@@ -66,14 +67,15 @@
                     <v-col cols="5" class="py-0">
                       <v-text-field label="Megjegyzés (Munkahelyi, otthoni, ...)" v-model="item.comment"></v-text-field>
                     </v-col>
-                    <v-col cols="2" class="text-right ma-auto">
+                    <v-col cols="6" sm="2" class="text-right ma-auto">
                       <v-btn block small outlined color="error" @click.stop="deleteEmail(i)">Törlés</v-btn>
                     </v-col>
                   </v-row>
+                  <v-divider></v-divider>
                 </v-col>
               </v-row>
 
-              <v-col cols="12" class="py-0">
+              <v-col cols="12" class="pb-0">
                 <v-btn text @click.stop="addEmail()">+ E-mail hozzáadása</v-btn>
               </v-col>
             </v-row>
@@ -96,14 +98,15 @@
                     <v-col cols="4" class="py-0">
                       <v-text-field label="Utca, házszám" v-model="item.streetAndNumber"></v-text-field>
                     </v-col>
-                    <v-col cols="2" class="text-right ma-auto">
+                    <v-col cols="6" sm="2" class="text-right ma-auto">
                       <v-btn block small outlined color="error" @click.stop="deleteAddress(i)">Törlés</v-btn>
                     </v-col>
                   </v-row>
+                  <v-divider></v-divider>
                 </v-col>
               </v-row>
 
-              <v-col cols="12" class="py-0">
+              <v-col cols="12" class="pb-0">
                 <v-btn text @click.stop="addAddress()">+ Cím hozzáadása</v-btn>
               </v-col>
             </v-row>
@@ -142,7 +145,7 @@
 
               <v-list two-line>
                 <template v-if="phoneNumbers[0]">
-                  <v-list-item v-for="(item, i) in phoneNumbers" :key="item.number">
+                  <v-list-item v-for="(item, i) in phoneNumbers" :key="`${i}${item.number}`">
                     <v-list-item-icon v-if="i === 0">
                       <v-icon color="indigo">mdi-phone</v-icon>
                     </v-list-item-icon>
@@ -159,7 +162,7 @@
                 <v-divider inset></v-divider>
 
                 <template v-if="emails[0]">
-                  <v-list-item v-for="(item, i) in emails" :key="item.email">
+                  <v-list-item v-for="(item, i) in emails" :key="`${i}${i}${item.email}`">
                     <v-list-item-icon v-if="i === 0">
                       <v-icon color="indigo">mdi-email</v-icon>
                     </v-list-item-icon>
@@ -176,7 +179,7 @@
                 <v-divider inset></v-divider>
 
                 <template v-if="addresses[0]">
-                  <v-list-item v-for="(item, i) in addresses" :key="item.streetAndNumber">
+                  <v-list-item v-for="(item, i) in addresses" :key="`${i}${i}${i}${item.streetAndNumber}`">
                     <v-list-item-icon v-if="i === 0">
                       <v-icon color="indigo">mdi-map-marker</v-icon>
                     </v-list-item-icon>
@@ -214,19 +217,9 @@
       password: null,
       deleteImage: false,
       imageUrl: DEFAULT_IMAGE_URL,
-      phoneNumbers: [{
-          number: '123456', comment: 'random',
-        }, {
-          number: '789101', comment: 'modnar',
-        }],
-      emails: [{
-          email: 'e@mail.cim', comment: 'asd',
-        }, {
-          email: 'e@mail.com', comment: 'dsa',
-        }],
-      addresses: [{
-          stateNumber: '5741', city: 'Kétegyháza', streetAndNumber: 'Szent Imre utca 73.',
-        }],
+      phoneNumbers: [],
+      emails: [],
+      addresses: [],
     }),
     watch: {
       image(img) {
@@ -247,16 +240,17 @@
     },
     methods: {
       async fetchContactSettings() {
-        /*await settingsService.getContactSettings({
+        await settingsService.getContactSettings({
           user_email: this.$store.state.loggedInUserEmail,
-        }).then( (service) => {
-          this.name = service.data.name;
-          this.description = service.data.description;
-          this.serviceHidden = service.data.hidden;
-          if (service.data.image_url) {
-            this.imageUrl = service.data.image_url;
+        }).then( (contact) => {
+          this.name = contact.data.name;
+          this.phoneNumbers = contact.data.phoneNumbers;
+          this.emails = contact.data.emails;
+          this.addresses = contact.data.addresses;
+          if (contact.data.image_url) {
+            this.imageUrl = contact.data.image_url;
           }
-        });*/
+        });
       },
       addPhoneNumber() {
         this.phoneNumbers.push({number: '', comment: ''});
@@ -276,21 +270,21 @@
       deleteAddress(index) {
         this.addresses.splice(index, 1);
       },
-      save() {
+      async save() {
         const formData = new FormData();
 
         formData.append('user_email', this.$store.state.loggedInUserEmail);
         formData.append('name', this.name);
-        formData.append('phoneNumbers', this.phoneNumbers);
-        formData.append('emails', this.emails);
-        formData.append('addresses', this.addresses);
+        formData.append('phoneNumbers', JSON.stringify(this.phoneNumbers));
+        formData.append('emails', JSON.stringify(this.emails));
+        formData.append('addresses', JSON.stringify(this.addresses));
         formData.append('password', this.password);
         formData.append('deleteImage', this.deleteImage);
         if (this.image) {
           formData.append('image', this.image, this.image.name);
         }
 
-        settingsService.saveContact(formData);
+        await settingsService.saveContact(formData);
       },
     },
   };

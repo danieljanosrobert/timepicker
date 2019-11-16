@@ -10,6 +10,7 @@ import passport_config from './passport-config';
 import * as adminUserController from './controllers/adminUser';
 import * as serviceController from './controllers/service';
 import * as contactController from './controllers/contact';
+import * as bookController from './controllers/book';
 import multer from 'multer';
 
 const upload = multer({
@@ -47,7 +48,14 @@ db.once('open', () => {
 
   router.post('/settings/contact', middleware.isAuthenticatedAsAdmin, upload.single('image'),
       contactController.postSaveContact);
-  // router.post('/settings/get-contact', middleware.isAuthenticatedAsAdmin, contactController.postGetContactSettings);
+  router.post('/settings/get-contact', middleware.isAuthenticatedAsAdmin, contactController.postGetContactSettings);
+
+  router.post('/settings/book', middleware.isAuthenticatedAsAdmin, bookController.postSaveBookTime);
+  router.post('/settings/get-book', middleware.isAuthenticatedAsAdmin, bookController.postGetBookTimeSettings);
+  router.post('/settings/breaks', middleware.isAuthenticatedAsAdmin, bookController.postSaveBreaks);
+  router.post('/settings/get-break', middleware.isAuthenticatedAsAdmin, bookController.postGetBreakSettings);
+  router.post('/settings/leaves', middleware.isAuthenticatedAsAdmin, bookController.postSaveLeaves);
+  router.post('/settings/get-leave', middleware.isAuthenticatedAsAdmin, bookController.postGetLeaveSettings);
 
   app.use('/api', router);
 
