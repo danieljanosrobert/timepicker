@@ -8,7 +8,7 @@
           </v-card>
         </v-col>
 
-        <v-col v-for="(item, i) in items" :key="i" cols="12">
+        <v-col v-for="(item, i) in messages" :key="i" cols="12">
           <v-card class="pb-2 ">
             <v-card-title v-text="item.title"></v-card-title>
             <div class="mx-4">
@@ -26,7 +26,7 @@
 <script>
   export default {
     data: () => ({
-      items: [
+      messages: [
         {
           title: 'Újra támad és terjed a tuberkulózis 2',
           sub: 'Világ',
