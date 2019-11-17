@@ -31,5 +31,11 @@ export default {
   getLeaveSettings(data: any) {
     return Api().post('settings/get-leave', data);
   },
+  saveMessages(data: any) {
+    return Api().post('settings/messages', data);
+  },
+  getMessages(data: any) {
+    return Api().post('settings/get-messages', data);
+  },
 };
 
