@@ -39,19 +39,23 @@ db.once('open', () => {
 
   router.post('/login', validator.credentialValidator, userController.postLogin);
   router.post('/register', validator.registerValidator, userController.postRegister);
+  router.post('/service/obtain-id', serviceController.postObtainServiceId);
+
+  router.get('/available-services', serviceController.getAvailableServices);
+  router.get('/serviceName/:service_id', serviceController.getServiceName);
+  router.get('/contact/:service_id', contactController.getContact);
+  router.get('/messages/:service_id', messageController.getMessages);
 
   router.post('/admin/auth', middleware.isAuthenticatedAsAdmin, adminUserController.auth);
   router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
   router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
 
   router.post('/settings/service', middleware.isAuthenticatedAsAdmin, upload.single('image'),
-      serviceController.postSaveService);
+      serviceController.postUpdateService);
   router.post('/settings/get-service', middleware.isAuthenticatedAsAdmin, serviceController.postGetServiceSettings);
-
   router.post('/settings/contact', middleware.isAuthenticatedAsAdmin, upload.single('image'),
       contactController.postSaveContact);
   router.post('/settings/get-contact', middleware.isAuthenticatedAsAdmin, contactController.postGetContactSettings);
-
   router.post('/settings/book', middleware.isAuthenticatedAsAdmin, bookController.postSaveBookTime);
   router.post('/settings/get-book', middleware.isAuthenticatedAsAdmin, bookController.postGetBookTimeSettings);
   router.post('/settings/breaks', middleware.isAuthenticatedAsAdmin, bookController.postSaveBreaks);

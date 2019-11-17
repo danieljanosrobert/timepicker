@@ -45,10 +45,15 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
     router.post('/login', validator.credentialValidator, userController.postLogin);
     router.post('/register', validator.registerValidator, userController.postRegister);
+    router.post('/service/obtain-id', serviceController.postObtainServiceId);
+    router.get('/available-services', serviceController.getAvailableServices);
+    router.get('/serviceName/:service_id', serviceController.getServiceName);
+    router.get('/contact/:service_id', contactController.getContact);
+    router.get('/messages/:service_id', messageController.getMessages);
     router.post('/admin/auth', middleware_1.middleware.isAuthenticatedAsAdmin, adminUserController.auth);
     router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
     router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
-    router.post('/settings/service', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), serviceController.postSaveService);
+    router.post('/settings/service', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), serviceController.postUpdateService);
     router.post('/settings/get-service', middleware_1.middleware.isAuthenticatedAsAdmin, serviceController.postGetServiceSettings);
     router.post('/settings/contact', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), contactController.postSaveContact);
     router.post('/settings/get-contact', middleware_1.middleware.isAuthenticatedAsAdmin, contactController.postGetContactSettings);

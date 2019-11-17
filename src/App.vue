@@ -20,6 +20,7 @@
   Vue.use(VueScrollTo, { duration: 950 });
 
   const HOME = 'home';
+  const ABOUT = 'about';
   const LANDING_PAGES = ['register'];
 
   export default Vue.extend({
@@ -40,6 +41,7 @@
     },
     watch: {
       $route(to, from) {
+        this.refreshAboutPageIfServiceChange(to, from);
         this.routerViewHasMargin();
         this.routerViewIsLandingPage();
       },
@@ -50,6 +52,11 @@
       },
       routerViewIsLandingPage() {
         this.isLandingPage = _.includes(LANDING_PAGES, this.$route.name);
+      },
+      refreshAboutPageIfServiceChange(to: any, from: any) {
+        if (to.name === ABOUT && from.name === ABOUT && from.params && to.params && from.params !== to.params) {
+          this.$root.$emit('reFetchContent');
+        }
       },
     },
   });

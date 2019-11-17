@@ -17,7 +17,7 @@ export default new Vuex.Store({
     loggedInAsAdmin: false,
     bearerToken: '',
     loggedInUserEmail: '',
-    serviceName: '',
+    ownServiceId: '',
     userName: '',
     snackbarVisible: false,
     snackbarText: '',
@@ -39,8 +39,8 @@ export default new Vuex.Store({
     _updateUserEmail(state: any, value: string) {
       state.loggedInUserEmail = value;
     },
-    _setServiceName(state: any, value: string) {
-      state.serviceName = value;
+    _setOwnServiceId(state: any, value: string) {
+      state.ownServiceId = value;
     },
     _setUserName(state: any, value: string) {
       state.userName = value;
@@ -62,13 +62,14 @@ export default new Vuex.Store({
     openAboutPage({commit}: any, value: string) {
       commit('_refreshAboutPage', value);
     },
-    adminLogin({commit}: any) {
+    adminLogin({commit}: any, value: string) {
       commit('_logInAsAdmin');
+      commit('_setOwnServiceId', value);
     },
     adminLogout({commit}: any) {
       commit('_logOutAsAdmin');
       commit('_setUserName', '');
-      commit('_setServiceName', '');
+      commit('_setOwnServiceId', '');
     },
     refreshBearerToken({commit}: any, value: string) {
       commit('_refreshBearerToken', value);
@@ -80,12 +81,6 @@ export default new Vuex.Store({
     updateUserEmail({commit}: any, value: string) {
       commit('_updateUserEmail', value);
     },
-    setServiceName({commit}: any, value: string) {
-      commit('_setServiceName', value);
-    },
-    setUserName({commit}: any, value: string) {
-      commit('_setUserName', value);
-    },
     openSnackbar({commit}: any, options: any) {
       commit('_openSnackbar');
       commit('_setSnackbarText', options.message);
@@ -96,7 +91,6 @@ export default new Vuex.Store({
     },
   },
   getters: {
-    serviceName: (state) => _.isEmpty(state.serviceName) ? state.userName : state.serviceName,
     auth: (state) => state.loggedInAsAdmin,
   },
 });

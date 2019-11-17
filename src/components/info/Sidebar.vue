@@ -12,7 +12,7 @@
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title id="title" class="text-center">
-                {{$store.state.aboutPage}}
+                {{serviceName}}
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
@@ -38,7 +38,7 @@
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title id="title">
-              {{$store.state.aboutPage}}
+              {{serviceName}}
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
@@ -61,6 +61,8 @@
 
 
 <script>
+  import serviceService from '@/service/serviceService';
+
   export default {
     name: 'Sidebar',
     data: () => ({
@@ -82,8 +84,21 @@
         },
       ],
       mobileMenu: false,
+      serviceName: '',
     }),
+    async mounted() {
+      this.$root.$on('reFetchContent', () => {
+        this.getServiceName();
+      });
+      await this.getServiceName();
+    },
     methods: {
+      async getServiceName() {
+        await serviceService.getServiceName(this.$route.params.service_id)
+            .then((serviceName) => {
+              this.serviceName = serviceName.data;
+            });
+      },
       aboutEvent(event) {
         this.mobileMenu = false;
         this.$root.$emit('aboutEvent', event);

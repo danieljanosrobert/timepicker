@@ -23,7 +23,7 @@ const router = new Router({
       component: Home,
     },
     {
-      path: '/about',
+      path: '/about/:service_id',
       name: 'about',
       component: About,
     },
