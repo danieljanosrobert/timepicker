@@ -4,7 +4,16 @@
 
         <v-col cols="12">
           <v-card class=" brown lighten-4">
-              <v-card-text class="text-center" style="font-size: 2em;"> Üzenőfal </v-card-text>
+            <v-row class="pa-0">
+              <v-col offset="1" cols="10" class="pa-0">
+                <v-card-text class="text-center" style="font-size: 2em;"> Üzenőfal </v-card-text>
+              </v-col>
+              <v-col cols="1" class="pa-0 text-right pr-8 ma-auto">
+                <v-btn v-if="$store.state.loggedInAsAdmin" icon @click.stop="$router.push('/settings/message-board')">
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+              </v-col>
+            </v-row>
           </v-card>
         </v-col>
 
