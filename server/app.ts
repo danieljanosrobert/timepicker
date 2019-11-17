@@ -11,6 +11,7 @@ import * as adminUserController from './controllers/adminUser';
 import * as serviceController from './controllers/service';
 import * as contactController from './controllers/contact';
 import * as bookController from './controllers/book';
+import * as messageController from './controllers/messages';
 import multer from 'multer';
 
 const upload = multer({
@@ -39,6 +40,7 @@ db.once('open', () => {
   router.post('/login', validator.credentialValidator, userController.postLogin);
   router.post('/register', validator.registerValidator, userController.postRegister);
 
+  router.post('/admin/auth', middleware.isAuthenticatedAsAdmin, adminUserController.auth);
   router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
   router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
 
@@ -56,6 +58,8 @@ db.once('open', () => {
   router.post('/settings/get-break', middleware.isAuthenticatedAsAdmin, bookController.postGetBreakSettings);
   router.post('/settings/leaves', middleware.isAuthenticatedAsAdmin, bookController.postSaveLeaves);
   router.post('/settings/get-leave', middleware.isAuthenticatedAsAdmin, bookController.postGetLeaveSettings);
+  router.post('/settings/messages', middleware.isAuthenticatedAsAdmin, messageController.postSaveMessages);
+  router.post('/settings/get-messages', middleware.isAuthenticatedAsAdmin, messageController.postGetMessages);
 
   app.use('/api', router);
 

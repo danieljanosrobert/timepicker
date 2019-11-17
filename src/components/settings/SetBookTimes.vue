@@ -1,4 +1,4 @@
-<template>
+<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <v-card>
     <v-col cols="12" class="pa-0">
       <v-card class="pa-0 brown lighten-4">
@@ -185,6 +185,7 @@ name: 'SetBookTimes',
   },
   methods: {
     async fetchBookSettings() {
+      this.password = '';
       await settingsService.getBookSettings({
           user_email: this.$store.state.loggedInUserEmail,
         }).then( (book) => {
@@ -205,6 +206,7 @@ name: 'SetBookTimes',
         bookDuration: this.bookDuration,
         selectedWeekdays: JSON.stringify(this.selectedWeekdays),
       });
+      this.fetchBookSettings();
     },
     remove(item) {
       const index = this.selectedWeekdays.indexOf(item);

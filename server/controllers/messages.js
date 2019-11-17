@@ -35,65 +35,52 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
+var AdminUsers_1 = require("../models/AdminUsers");
 var http2_1 = require("http2");
-var _ = __importStar(require("lodash"));
-var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-var adminSecret = process.env.ADMIN_SECRET || 'adminsecretkey';
-var secret = process.env.SECRET || 'secret';
-var Middleware = /** @class */ (function () {
-    function Middleware() {
-    }
-    Middleware.log = function (req, res, next) {
-        console.log('');
-        console.log("Recived a " + req.method + " request from " + req.ip + " for " + req.url);
-        if (!_.isEmpty(req.headers.authorization)) {
-            console.log("authorization: " + JSON.stringify(req.headers.authorization));
-        }
-        if (!_.isEmpty(req.body)) {
-            console.log("body: " + JSON.stringify(req.body));
-        }
-        if (!_.isEmpty(req.params)) {
-            console.log("params: " + JSON.stringify(req.params));
-        }
-        if (!_.isEmpty(req.query)) {
-            console.log("query: " + JSON.stringify(req.query));
-        }
-        next();
-    };
-    Middleware.isAuthenticatedAsAdmin = function (req, res, next) {
-        return __awaiter(this, void 0, void 0, function () {
-            var header, token;
-            return __generator(this, function (_a) {
-                header = req.headers.authorization;
-                if (!_.isEmpty(header)) {
-                    token = header.split(' ')[1];
-                    jsonwebtoken_1.default.verify(token, adminSecret, function (err, authData) {
-                        if (err) {
-                            res.status(http2_1.constants.HTTP_STATUS_UNAUTHORIZED).send({ error: 'auth' });
-                        }
-                        else {
-                            next();
-                        }
+var Messages_1 = require("../models/Messages");
+exports.postGetMessages = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        Messages_1.Messages.findOne({ user_email: req.body.user_email })
+            .then(function (dbMessages) {
+            if (!dbMessages) {
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                    error: 'Messages not found',
+                });
+            }
+            var result = {
+                messages: dbMessages.messages,
+            };
+            return res.status(http2_1.constants.HTTP_STATUS_OK).json(result);
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.postSaveMessages = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
+            .then(function (dbUser) {
+            if (!dbUser) {
+                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                    error: 'User does not exist'
+                });
+            }
+            var messages = new Messages_1.Messages({
+                user_email: req.body.user_email,
+                messages: JSON.parse(req.body.messages),
+            });
+            var messagesAsObject = messages.toObject();
+            delete messagesAsObject._id;
+            Messages_1.Messages.findOneAndUpdate({ user_email: messages.user_email }, messagesAsObject, { upsert: true }, function (updateError, no) {
+                if (updateError) {
+                    console.log(updateError);
+                    return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                        error: 'Error occured during updating user\'s messages.',
                     });
                 }
-                else {
-                    res.status(http2_1.constants.HTTP_STATUS_UNAUTHORIZED).send({ error: 'auth' });
-                }
-                return [2 /*return*/];
+                return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
             });
         });
-    };
-    return Middleware;
-}());
-exports.middleware = Middleware;
+        return [2 /*return*/];
+    });
+}); };

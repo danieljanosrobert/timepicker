@@ -23,6 +23,7 @@ var adminUserController = __importStar(require("./controllers/adminUser"));
 var serviceController = __importStar(require("./controllers/service"));
 var contactController = __importStar(require("./controllers/contact"));
 var bookController = __importStar(require("./controllers/book"));
+var messageController = __importStar(require("./controllers/messages"));
 var multer_1 = __importDefault(require("multer"));
 var upload = multer_1.default({
     storage: multer_1.default.memoryStorage(),
@@ -44,6 +45,7 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
     router.post('/login', validator.credentialValidator, userController.postLogin);
     router.post('/register', validator.registerValidator, userController.postRegister);
+    router.post('/admin/auth', middleware_1.middleware.isAuthenticatedAsAdmin, adminUserController.auth);
     router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
     router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
     router.post('/settings/service', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), serviceController.postSaveService);
@@ -56,6 +58,8 @@ db.once('open', function () {
     router.post('/settings/get-break', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postGetBreakSettings);
     router.post('/settings/leaves', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postSaveLeaves);
     router.post('/settings/get-leave', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postGetLeaveSettings);
+    router.post('/settings/messages', middleware_1.middleware.isAuthenticatedAsAdmin, messageController.postSaveMessages);
+    router.post('/settings/get-messages', middleware_1.middleware.isAuthenticatedAsAdmin, messageController.postGetMessages);
     app.use('/api', router);
     if (app.listen(port)) {
         // tslint:disable-next-line

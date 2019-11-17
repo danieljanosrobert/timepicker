@@ -123,6 +123,8 @@
     },
     methods: {
       async fetchServiceSettings() {
+        this.password = '';
+        this.imageUrl = DEFAULT_IMAGE_URL;
         await settingsService.getServiceSettings({
           user_email: this.$store.state.loggedInUserEmail,
         }).then( (service) => {
@@ -148,6 +150,7 @@
         }
 
         await settingsService.saveService(formData);
+        this.fetchServiceSettings();
       },
     },
   };

@@ -16,7 +16,7 @@ export const postGetBookTimeSettings = async (req: any, res: Response, next: Nex
     }
     const result = {
       lastMonth: dbBookTime.lastMonth,
-      startTime: dbBookTime.startTime,    
+      startTime: dbBookTime.startTime,
       endTime: dbBookTime.endTime,
       bookDuration: dbBookTime.bookDuration,
       selectedWeekdays: dbBookTime.selectedWeekdays,
