@@ -79,6 +79,11 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
         return [2 /*return*/];
     });
 }); };
+exports.auth = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        return [2 /*return*/, res.sendStatus(http2_1.constants.HTTP_STATUS_OK)];
+    });
+}); };
 /**
  * POST /login
  * Sign in using email and password.

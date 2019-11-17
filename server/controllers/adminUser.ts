@@ -39,6 +39,10 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
   });
 };
 
+export const auth = async (req: Request, res: Response) => {
+  return res.sendStatus(constants.HTTP_STATUS_OK);
+};
+
 /**
  * POST /login
  * Sign in using email and password.

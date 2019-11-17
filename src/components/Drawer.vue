@@ -136,7 +136,7 @@
         { title: 'Beállítások', icon: 'mdi-settings', url: '', subItems: [
             { title: 'Szolgáltatás', icon: 'mdi-book', url: '/settings/service' },
             { title: 'Foglalás', icon: 'mdi-clock-start', url: '/settings/book' },
-            { title: 'Üzenőfal', icon: 'mdi-email', url: '/admin/settings' },
+            { title: 'Üzenőfal', icon: 'mdi-email', url: '/settings/message-board' },
             { title: 'Elérhetőségek', icon: 'mdi-account-supervisor-circle', url: '/settings/contact' },
           ],
         },
