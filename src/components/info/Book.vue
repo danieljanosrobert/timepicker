@@ -8,7 +8,7 @@
                 <v-card-text class="text-center" style="font-size: 2em;"> Időpontfoglalás </v-card-text>
               </v-col>
               <v-col cols="1" class="pa-0 text-right pr-8 ma-auto">
-                <v-btn v-if="$store.state.loggedInAsAdmin" icon @click.stop="$router.push('/settings/book')">
+                <v-btn v-if="isUserServiceOwner()" icon @click.stop="$router.push('/settings/book')">
                   <v-icon>mdi-pencil</v-icon>
                 </v-btn>
               </v-col>
@@ -309,6 +309,9 @@
       this.$refs.calendar.checkChange();
     },
     methods: {
+      isUserServiceOwner() {
+        return this.$store.state.loggedInAsAdmin && this.$store.state.ownServiceId === this.$route.params.service_id;
+      },
       viewWeek({ date }) {
         this.focus = date;
         this.type = 'week';

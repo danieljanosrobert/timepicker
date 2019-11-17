@@ -11,13 +11,13 @@
         </v-col>
         <v-col v-for="(item, i) in searching" :key="i" cols="12" md="4">
           <v-card>
-            <v-img :src="item.src" class="white--text align-end" gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+            <v-img :src="getImageForService(item.image)" class="white--text align-end" gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
                     height="200px">
-              <v-card-title v-text="item.title"></v-card-title>
+              <v-card-title v-text="item.name"></v-card-title>
             </v-img>
 
             <v-card-actions>
-              <v-btn text @click.stop="openAboutPage(item.title)" color="brown darken-2">
+              <v-btn text @click.stop="openAboutPage(item.service_id)" color="brown darken-2">
                 Tovább
               </v-btn>
 
@@ -58,43 +58,39 @@
 </template>
 
 <script>
+  import serviceService from '@/service/serviceService';
+
+  const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/timepicker/image/upload/v1573508434/services/default_service_j961rq.jpg';
+  
   export default {
     name: 'DataCards',
     data: () => ({
       search: '',
       isThereSearchingResult: false,
-      items: [
-        { id: 1, title: 'Pre-fab homes', src: 'https://cdn.vuetifyjs.com/images/cards/house.jpg', show: false,
-        description: 'I\'m a thing. But, like most politicians, he promised more than he could deliver. ' +
-              'You won\'t have time for sleeping, soldier, not with all the bed making you\'ll be doing. ' +
-              'Then we\'ll go with that data file! Hey, you add a one and two zeros to that or we walk! ' +
-              'You\'re going to do his laundry? I\'ve got to find a way to escape.' },
-        { id: 2, title: 'Favorite road trips', src: 'https://cdn.vuetifyjs.com/images/cards/road.jpg', show: false,
-          description: 'I\'m a thing. But, like most politicians, he promised more than he could deliver. ' +
-              'You won\'t have time for sleeping, soldier, not with all the bed making you\'ll be doing. ' +
-              'Then we\'ll go with that data file! Hey, you add a one and two zeros to that or we walk! ' +
-              'You\'re going to do his laundry? I\'ve got to find a way to escape.' },
-        { id: 3, title: 'Best airlines', src: 'https://cdn.vuetifyjs.com/images/cards/plane.jpg', show: false,
-          description: 'I\'m a thing. But, like most politicians, he promised more than he could deliver. ' +
-              'You won\'t have time for sleeping, soldier, not with all the bed making you\'ll be doing. ' +
-              'Then we\'ll go with that data file! Hey, you add a one and two zeros to that or we walk! ' +
-              'You\'re going to do his laundry? I\'ve got to find a way to escape.' },
-        { id: 4, title: 'Kutya Cica', src: 'https://cdn.vuetifyjs.com/images/cards/road.jpg', show: false,
-          description: 'I\'m a thing. But, like most politicians, he promised more than he could deliver. ' +
-              'You won\'t have time for sleeping, soldier, not with all the bed making you\'ll be doing. ' +
-              'Then we\'ll go with that data file! Hey, you add a one and two zeros to that or we walk! ' +
-              'You\'re going to do his laundry? I\'ve got to find a way to escape.' },
-        { id: 5, title: 'Salamon Peter', src: 'https://cdn.vuetifyjs.com/images/cards/road.jpg', show: false,
-          description: 'I\'m a thing. But, like most politicians, he promised more than he could deliver. ' +
-              'You won\'t have time for sleeping, soldier, not with all the bed making you\'ll be doing. ' +
-              'Then we\'ll go with that data file! Hey, you add a one and two zeros to that or we walk! ' +
-              'You\'re going to do his laundry? I\'ve got to find a way to escape.' },
-      ],
+      services: [],
     }),
+    async mounted() {
+      this.$root.$on('reFetchContent', () => {
+        this.fetchServices();
+      });
+      await this.fetchServices();
+    },
     methods: {
-      openAboutPage(param) {
-        this.$store.dispatch('openAboutPage', param);
-        this.$router.push('/about');
+      getImageForService(url) {
+        if (url) {
+          return url;
+        }
+        return DEFAULT_IMAGE_URL;
+      },
+      openAboutPage(serviceId) {
+        this.$router.push({name: 'about', params: { service_id: serviceId }});
+      },
+      async fetchServices() {
+        await serviceService.getAvailableServices()
+            .then((services) => {
+              this.services = services.data;
+              this.services.forEach((service) => this.$set(service, 'show', false));
+            });
       },
     },
     computed: {
@@ -117,12 +113,12 @@
       },
       searching() {
         if (!this.search) {
-          return this.items;
+          return this.services;
         }
         const search = this.search.toLowerCase();
 
-        return this.items.filter( (item) => {
-          const text = item.title.toLowerCase();
+        return this.services.filter( (item) => {
+          const text = item.name.toLowerCase();
           return text.indexOf(search) > -1;
         });
       },

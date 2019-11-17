@@ -37,6 +37,7 @@
 
 <script>
   import adminUserService from '@/service/adminUserService';
+  import serviceService from '@/service/serviceService';
 
   export default {
     name: 'Register',
@@ -59,8 +60,10 @@
           });
           this.$store.dispatch('refreshBearerToken', response.data.token);
           this.$store.dispatch('updateUserEmail', this.email);
-          this.$store.dispatch('setServiceName', this.servicename);
-          this.$store.dispatch('setUserName', this.name);
+          const serviceId = await serviceService.postObtainServiceId({
+            user_email: this.email,
+          });
+          this.$store.dispatch('adminLogin', serviceId.data.service_id);
           this.$store.dispatch('openSnackbar', {
             message: 'Sikeres regisztráció',
             type: 'success',

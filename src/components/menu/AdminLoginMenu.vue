@@ -24,6 +24,7 @@
 
 <script>
   import adminUserService from '@/service/adminUserService';
+  import serviceService from '@/service/serviceService';
 
   export default {
     name: 'AdminLoginMenu',
@@ -39,7 +40,10 @@
         });
         this.$store.dispatch('refreshBearerToken', response.data.token);
         this.$store.dispatch('updateUserEmail', this.email);
-        this.$store.dispatch('adminLogin');
+        const serviceId = await serviceService.postObtainServiceId({
+          user_email: this.email,
+        });
+        this.$store.dispatch('adminLogin', serviceId.data.service_id);
         this.$root.$emit('adminLoggedIn');
       },
     },

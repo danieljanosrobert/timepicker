@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = __importDefault(require("mongoose"));
 var serviceSchema = new mongoose_1.default.Schema({
     user_email: { type: String, required: true, unique: true },
+    service_id: String,
     name: String,
     description: String,
     image: String,

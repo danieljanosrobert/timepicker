@@ -44,6 +44,40 @@ var http2_1 = require("http2");
 var bcrypt_1 = __importDefault(require("bcrypt"));
 var Contacts_1 = require("../models/Contacts");
 var image_1 = require("../utils/image");
+var js_base64_1 = require("js-base64");
+var Services_1 = require("../models/Services");
+exports.getContact = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId;
+    return __generator(this, function (_a) {
+        serviceId = js_base64_1.Base64.decode(req.params.service_id);
+        Services_1.Service.findOne({ service_id: serviceId }, 'user_email')
+            .then(function (dbService) {
+            if (!dbService) {
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                    error: 'Service not found',
+                });
+            }
+            var user_email = dbService.user_email;
+            Contacts_1.Contact.findOne({ user_email: user_email })
+                .then(function (dbContact) {
+                if (!dbContact) {
+                    return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                        error: 'Contact not found',
+                    });
+                }
+                var result = {
+                    name: dbContact.name,
+                    image_url: dbContact.image,
+                    phoneNumbers: dbContact.phoneNumbers,
+                    emails: dbContact.emails,
+                    addresses: dbContact.addresses,
+                };
+                return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
+            });
+        });
+        return [2 /*return*/];
+    });
+}); };
 exports.postGetContactSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         Contacts_1.Contact.findOne({ user_email: req.body.user_email })
@@ -65,13 +99,32 @@ exports.postGetContactSettings = function (req, res, next) { return __awaiter(vo
         return [2 /*return*/];
     });
 }); };
+exports.saveContact = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var contact;
+    return __generator(this, function (_a) {
+        contact = new Contacts_1.Contact({
+            user_email: req.body.email,
+            name: req.body.name,
+            phoneNumbers: [],
+            emails: [],
+            addresses: [],
+        });
+        contact.save(function (saveError) {
+            if (saveError) {
+                next(saveError);
+            }
+            next();
+        });
+        return [2 /*return*/];
+    });
+}); };
 exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
             .then(function (dbUser) {
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                    error: 'User does not exist'
+                    error: 'User does not exist',
                 });
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)

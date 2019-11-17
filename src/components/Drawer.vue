@@ -110,46 +110,52 @@
     name: 'Drawer',
     components: {AdminLoginMenu},
     data: () => ({
-      admins: [
-        ['Management', 'people_outline'],
-        ['Settings', 'settings'],
-      ],
-      cruds: [
-        ['Create', 'add'],
-        ['Read', 'insert_drive_file'],
-        ['Update', 'update'],
-        ['Delete', 'delete'],
-      ],
-      adminLoginMenu: false,
-      drawer: false,
-      userLoggedIn: false,
-      home: 'home',
-      essentials: [
-        { title: 'Főoldal', icon: 'mdi-view-dashboard', url: '/' },
-        { title: 'Keresés', icon: 'mdi-book-search', url: '/search'},
-      ],
-      userItems: [
-        { title: 'Belépés', icon: 'mdi-account', url: '/about' },
-      ],
-      adminItems: [
-        { title: 'Adatlap', icon: 'mdi-book-open-page-variant', url: '/about' },
-        { title: 'Beállítások', icon: 'mdi-settings', url: '', subItems: [
-            { title: 'Szolgáltatás', icon: 'mdi-book', url: '/settings/service' },
-            { title: 'Foglalás', icon: 'mdi-clock-start', url: '/settings/book' },
-            { title: 'Üzenőfal', icon: 'mdi-email', url: '/settings/message-board' },
-            { title: 'Elérhetőségek', icon: 'mdi-account-supervisor-circle', url: '/settings/contact' },
-          ],
-        },
-        { title: 'Oldal Előnézete', icon: 'fa-eye', url: '' },
-        { title: 'Galléria', icon: 'mdi-image-album', url: '/about' },
-      ],
+        admins: [
+          ['Management', 'people_outline'],
+          ['Settings', 'settings'],
+        ],
+        cruds: [
+          ['Create', 'add'],
+          ['Read', 'insert_drive_file'],
+          ['Update', 'update'],
+          ['Delete', 'delete'],
+        ],
+        adminLoginMenu: false,
+        drawer: false,
+        userLoggedIn: false,
+        home: 'home',
+        essentials: [
+          {title: 'Főoldal', icon: 'mdi-view-dashboard', url: '/'},
+          {title: 'Keresés', icon: 'mdi-book-search', url: '/search'},
+        ],
+        userItems: [
+          {title: 'Belépés', icon: 'mdi-account', url: '/about'},
+        ],
+        adminItems: [
+          {title: 'Saját oldal', icon: 'mdi-book-open-page-variant', url: ''},
+          {
+            title: 'Beállítások', icon: 'mdi-settings', url: '', subItems: [
+              {title: 'Szolgáltatás', icon: 'mdi-book', url: '/settings/service'},
+              {title: 'Foglalás', icon: 'mdi-clock-start', url: '/settings/book'},
+              {title: 'Üzenőfal', icon: 'mdi-email', url: '/settings/message-board'},
+              {title: 'Elérhetőségek', icon: 'mdi-account-supervisor-circle', url: '/settings/contact'},
+            ],
+          },
+          {title: 'Galléria', icon: 'mdi-image-album', url: '/about'},
+        ],
     }),
     computed: {
       ...mapState({
         userLoggedInAsAdmin: 'loggedInAsAdmin',
+        usersServiceId: 'ownServiceId',
       }),
       isLoggedIn() {
         return this.userLoggedIn || this.userLoggedInAsAdmin;
+      },
+    },
+    watch: {
+      usersServiceId(newValue, oldValue) {
+        this.adminItems[0].url = `/about/${newValue}`;
       },
     },
     mounted() {
@@ -166,6 +172,9 @@
           this.$store.dispatch('adminLogout');
         }
         this.$store.dispatch('logout');
+        if (this.$router.currentRoute.path !== '/') {
+          this.$router.push('/');
+        }
       },
     },
   };

@@ -57,14 +57,7 @@
             </v-img>
 
             <v-card-actions>
-              <v-btn text color="brown darken-2">
-                Tovább
-              </v-btn>
-
               <v-spacer></v-spacer>
-
-              <v-spacer></v-spacer>
-
               <v-btn icon @click="descriptionVisible = !descriptionVisible" >
                 <v-icon>{{ descriptionVisible ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
               </v-btn>

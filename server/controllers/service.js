@@ -44,6 +44,58 @@ var http2_1 = require("http2");
 var Services_1 = require("../models/Services");
 var AdminUsers_1 = require("../models/AdminUsers");
 var bcrypt_1 = __importDefault(require("bcrypt"));
+var uuid_1 = __importDefault(require("uuid"));
+var js_base64_1 = require("js-base64");
+exports.postObtainServiceId = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        Services_1.Service.findOne({ user_email: req.body.user_email })
+            .then(function (dbService) {
+            if (!dbService) {
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                    error: 'Service not found',
+                });
+            }
+            var result = {
+                service_id: js_base64_1.Base64.encode(dbService.service_id),
+            };
+            return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.getServiceName = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId;
+    return __generator(this, function (_a) {
+        serviceId = js_base64_1.Base64.decode(req.params.service_id);
+        Services_1.Service.findOne({ service_id: serviceId })
+            .then(function (dbService) {
+            if (!dbService) {
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                    error: 'Service not found',
+                });
+            }
+            return res.status(http2_1.constants.HTTP_STATUS_OK).send(dbService.name);
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.getAvailableServices = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        Services_1.Service.find({ hidden: false }, 'service_id name image description')
+            .then(function (dbServices) {
+            if (!dbServices) {
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                    error: 'Services not found',
+                });
+            }
+            dbServices.forEach(function (service) {
+                service.service_id = js_base64_1.Base64.encode(service.service_id);
+            });
+            return res.status(http2_1.constants.HTTP_STATUS_OK).send(JSON.stringify(dbServices));
+        });
+        return [2 /*return*/];
+    });
+}); };
 exports.postGetServiceSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         Services_1.Service.findOne({ user_email: req.body.user_email })
@@ -59,12 +111,31 @@ exports.postGetServiceSettings = function (req, res, next) { return __awaiter(vo
                 description: dbService.description,
                 hidden: dbService.hidden,
             };
-            return res.status(http2_1.constants.HTTP_STATUS_OK).json(result);
+            return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
         });
         return [2 /*return*/];
     });
 }); };
-exports.postSaveService = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.saveService = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var service;
+    return __generator(this, function (_a) {
+        service = new Services_1.Service({
+            user_email: req.body.email,
+            service_id: uuid_1.default.v4(),
+            name: req.body.servicename,
+            description: '',
+            hidden: true,
+        });
+        service.save(function (saveError) {
+            if (saveError) {
+                return next(saveError);
+            }
+            next();
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.postUpdateService = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
             .then(function (dbUser) {

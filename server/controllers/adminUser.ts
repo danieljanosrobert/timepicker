@@ -1,9 +1,12 @@
 import bcrypt from 'bcrypt';
-import { Request, Response, NextFunction } from 'express';
+import {Request, Response, NextFunction} from 'express';
 import {validationResult} from 'express-validator';
 import {AdminUser} from '../models/AdminUsers';
 import {constants} from 'http2';
 import {ADMIN, jwtSignUser} from '../utils/authorization';
+import * as serviceController from './service';
+import * as contactController from './contact';
+import * as messageController from './messages';
 
 /**
  * POST /register
@@ -23,7 +26,7 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
     name: req.body.name,
     servicename: req.body.servicename,
   });
-  AdminUser.findOne({ email: user.email }, (err, existingUser) => {
+  AdminUser.findOne({email: user.email}, (err, existingUser) => {
     if (err) {
       return next(err);
     }
@@ -35,6 +38,9 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
         return next(saveError);
       }
       jwtSignUser(res, {email: user.email}, undefined, ADMIN);
+      serviceController.saveService(req, res, next);
+      contactController.saveContact(req, res, next);
+      messageController.createMessage(req, res, next);
     });
   });
 };
@@ -59,18 +65,18 @@ export const postLogin = async (req: Request, res: Response) => {
     email: req.body.email,
     password: req.body.password,
   });
-  AdminUser.findOne({ email: user.email })
-      .then( (dbUser) => {
+  AdminUser.findOne({email: user.email})
+      .then((dbUser) => {
         if (!dbUser) {
           return res.sendStatus(constants.HTTP_STATUS_BAD_REQUEST);
         }
         bcrypt.compare(user.password, dbUser.password)
-          .then((isMatch) => {
-            if (isMatch) {
-              jwtSignUser(res, {email: user.email}, undefined, ADMIN);
-            } else {
+            .then((isMatch) => {
+              if (isMatch) {
+                jwtSignUser(res, {email: user.email}, undefined, ADMIN);
+              } else {
                 res.sendStatus(constants.HTTP_STATUS_BAD_REQUEST);
-            }
-          });
+              }
+            });
       });
 };
