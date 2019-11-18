@@ -51,6 +51,7 @@ var express_validator_1 = require("express-validator");
 var AdminUsers_1 = require("../models/AdminUsers");
 var http2_1 = require("http2");
 var authorization_1 = require("../utils/authorization");
+var uuid_1 = __importDefault(require("uuid"));
 var serviceController = __importStar(require("./service"));
 var contactController = __importStar(require("./contact"));
 var messageController = __importStar(require("./messages"));
@@ -64,7 +65,7 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
         validationErrorResult = express_validator_1.validationResult(req);
         if (!validationErrorResult.isEmpty()) {
             console.log(validationErrorResult.mapped());
-            return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).json('Validation error')];
+            return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send('Validation error')];
         }
         user = new AdminUsers_1.AdminUser({
             email: req.body.email,
@@ -77,16 +78,17 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
                 return next(err);
             }
             if (existingUser) {
-                return res.status(http2_1.constants.HTTP_STATUS_CONFLICT).json('Account with that email address already exists.');
+                return res.status(http2_1.constants.HTTP_STATUS_CONFLICT).send('Account with that email address already exists.');
             }
             user.save(function (saveError) {
                 if (saveError) {
                     return next(saveError);
                 }
+                var serviceId = uuid_1.default.v4();
+                serviceController.saveService(req, res, next, serviceId);
+                contactController.saveContact(req, res, next, serviceId);
+                messageController.createMessage(req, res, next, serviceId);
                 authorization_1.jwtSignUser(res, { email: user.email }, undefined, authorization_1.ADMIN);
-                serviceController.saveService(req, res, next);
-                contactController.saveContact(req, res, next);
-                messageController.createMessage(req, res, next);
             });
         });
         return [2 /*return*/];
@@ -107,7 +109,7 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
         validationErrorResult = express_validator_1.validationResult(req);
         if (!validationErrorResult.isEmpty()) {
             console.log(validationErrorResult.mapped());
-            return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).json('Validation error')];
+            return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send('Validation error')];
         }
         user = new AdminUsers_1.AdminUser({
             email: req.body.email,

@@ -15,7 +15,9 @@ function jwtSignUser(res, payload, status, admin) {
         if (err) {
             res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({ error: 'Error signing token', raw: err });
         }
-        res.status(status).json({ token: "Bearer " + token });
+        status === http2_1.constants.HTTP_STATUS_OK
+            ? res.status(status).json({ token: "Bearer " + token })
+            : res.sendStatus(status);
     });
 }
 exports.jwtSignUser = jwtSignUser;

@@ -12,6 +12,8 @@ export function jwtSignUser(res: Response, payload: any, status = constants.HTTP
     if (err) {
       res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({ error: 'Error signing token', raw: err});
     }
-    res.status(status).json({ token: `Bearer ${token}`});
+    status === constants.HTTP_STATUS_OK 
+      ? res.status(status).json({ token: `Bearer ${token}`})
+      : res.sendStatus(status) ;
   });
 }

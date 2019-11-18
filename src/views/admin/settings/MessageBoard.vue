@@ -60,7 +60,7 @@
 
 <script>
   import MessageBoardEditor from '@/components/settings/MessageBoardEditor';
-  import settingsService from '@/service/settingsService';
+  import messageService from '@/service/messageService';
 
   export default {
     name: 'MessegeBoard',
@@ -81,9 +81,8 @@
     },
     methods: {
       async fetchMessages() {
-        await settingsService.getMessages({
-          user_email: this.$store.state.loggedInUserEmail,
-        }).then( (messages) => {
+        await messageService.getMessagesSettings(this.$store.state.ownServiceId)
+        .then( (messages) => {
           this.messages = messages.data.messages;
         });
       },
@@ -109,7 +108,7 @@
         this.deleteDialogVisible = false;
       },
       async save() {
-        await settingsService.saveMessages({
+        await messageService.saveMessages({
           user_email: this.$store.state.loggedInUserEmail,
           messages: JSON.stringify(this.messages),
         });

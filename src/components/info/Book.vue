@@ -2,19 +2,19 @@
   <v-row>
 
     <v-col cols="12">
-          <v-card class=" brown lighten-4">
-            <v-row class="pa-0">
-              <v-col offset="1" cols="10" class="pa-0">
-                <v-card-text class="text-center" style="font-size: 2em;"> Időpontfoglalás </v-card-text>
-              </v-col>
-              <v-col cols="1" class="pa-0 text-right pr-8 ma-auto">
-                <v-btn v-if="isUserServiceOwner()" icon @click.stop="$router.push('/settings/book')">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-card>
-        </v-col>
+      <v-card class=" brown lighten-4">
+        <v-row class="pa-0">
+          <v-col offset="1" cols="10" class="pa-0">
+            <v-card-text class="text-center" style="font-size: 2em;"> Időpontfoglalás </v-card-text>
+          </v-col>
+          <v-col cols="1" class="pa-0 text-right pr-8 ma-auto">
+            <v-btn v-if="isUserServiceOwner()" icon @click.stop="$router.push('/settings/book')">
+              <v-icon>mdi-pencil</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card>
+    </v-col>
 
     <v-col>
 
@@ -46,9 +46,6 @@
               </v-list-item>
               <v-list-item @click="type = 'week'">
                 <v-list-item-title>Hét</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="type = 'month'">
-                <v-list-item-title>Hónap</v-list-item-title>
               </v-list-item>
             </v-list>
 
@@ -109,9 +106,8 @@
       weekdays: [1, 2, 3, 4, 5, 6, 0],
       today: '2019-01-01',
       focus: '2019-01-01',
-      type: 'month',
+      type: 'week',
       typeToLabel: {
-        month: 'Hónap',
         week: 'Hét',
         day: 'Nap',
       },
@@ -120,152 +116,9 @@
       selectedEvent: {},
       selectedElement: null,
       selectedOpen: false,
-      events: [
-        {
-          name: 'Vacation',
-          details: 'Going to the beach!',
-          start: '2019-01-01 9:30',
-          end: '2019-01-01 10:00',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: 'Meeting',
-          details: 'Spending time on how we do not have enough time',
-          start: '2019-01-01 09:00',
-          end: '2019-01-01 09:30',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: 'Large Event',
-          details: 'This starts in the middle of an event and spans over multiple events',
-          start: '2019-01-01 10:00',
-          end: '2019-01-01 10:30',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: '3rd to 7th',
-          details: 'Testing',
-          start: '2019-01-01 10:30',
-          end: '2019-01-01 11:00',
-          allapot: 'foglalt',
-          color: '',
-        },
-        {
-          name: 'Big Meeting',
-          details: 'A very important meeting about nothing',
-          start: '2019-01-01 11:00',
-          end: '2019-01-01 11:30',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: 'Another Meeting',
-          details: 'Another important meeting about nothing',
-          start: '2019-01-01 11:30',
-          end: '2019-01-01 12:30',
-          allapot: 'szunet',
-          color: '',
-        },
-        {
-          name: '7th to 8th',
-          start: '2019-01-01 12:30',
-          end: '2019-01-01 13:00',
-          allapot: 'foglalt',
-          color: '',
-        },
-        {
-          name: 'Lunch',
-          details: 'Time to feed',
-          start: '2019-01-01 13:00',
-          end: '2019-01-01 13:30',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: '30th Birthday',
-          details: 'Celebrate responsibly',
-          start: '2019-01-01 13:30',
-          end: '2019-01-01 14:00',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: 'New Year',
-          details: 'Eat chocolate until you pass out',
-          start: '2019-01-01 14:00',
-          end: '2019-01-01 14:30',
-          allapot: 'szunet',
-          color: '',
-        },
-        {
-          name: 'Conference',
-          details: 'The best time of my life',
-          start: '2019-01-01 14:30',
-          end: '2019-01-01 15:00',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: 'Hackathon',
-          details: 'Code like there is no tommorrow',
-          start: '2019-01-01 15:00',
-          end: '2019-01-01 15:30',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: 'event 1',
-          start: '2019-01-01 15:30',
-          end: '2019-01-01 16:00',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: 'event 2',
-          start: '2019-01-02 08:00',
-          end: '2019-01-02 08:30',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: 'event 5',
-          start: '2019-01-02 08:30',
-          end: '2019-01-02 09:00',
-          allapot: 'foglalt',
-          color: '',
-        },
-        {
-          name: 'event 3',
-          start: '2019-01-02 09:00',
-          end: '2019-01-02 09:30',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: 'event 4',
-          start: '2019-01-02 10:00',
-          end: '2019-01-02 10:30',
-          allapot: 'szabad',
-          color: '',
-        },
-        {
-          name: 'event 6',
-          start: '2019-01-02 10:30',
-          end: '2019-01-02 11:00',
-          allapot: 'foglalt',
-          color: '',
-        },
-        {
-          name: 'event 7',
-          start: '2019-01-02 11:00',
-          end: '2019-01-02 12:30',
-          allapot: 'szunet',
-          color: '',
-        },
-      ],
+      events: [ { name: 'event 4', start: '2019-01-02 10:00', end: '2019-01-02 10:30', allapot: 'szabad', color: '' },
+        { name: 'event 6', start: '2019-01-02 10:30', end: '2019-01-02 11:00', allapot: 'foglalt', color: '' },
+        { name: 'event 7', start: '2019-01-02 11:00', end: '2019-01-02 12:30', allapot: 'szunet', color: '' } ],
     }),
     computed: {
       title() {
@@ -276,23 +129,20 @@
 
         const startMonth = this.monthFormatter(start);
         const endMonth = this.monthFormatter(end);
-        const suffixMonth = startMonth === endMonth ? '' : endMonth;
+        const suffixMonth = startMonth === endMonth ? '' : endMonth + ' ';
 
         const startYear = start.year;
         const endYear = end.year;
-        const suffixYear = startYear === endYear ? '' : endYear;
+        const suffixYear = startYear === endYear ? '' : endYear + ' ';
 
-        const startDay = start.day + this.nth(start.day);
-        const endDay = end.day + this.nth(end.day);
+        const startDay = start.day;
+        const endDay = end.day;
 
         switch (this.type) {
-          case 'month':
-            return `${startMonth} ${startYear}`;
           case 'week':
-          case '4day':
-            return `${startMonth} ${startDay} ${startYear} - ${suffixMonth} ${endDay} ${suffixYear}`;
+            return `${startYear} ${startMonth} ${startDay} - ${suffixYear}${suffixMonth}${endDay}`;
           case 'day':
-            return `${startMonth} ${startDay} ${startYear}`;
+            return `${startYear} ${startMonth} ${startDay}`;
         }
         return '';
       },
@@ -349,11 +199,6 @@
         // now that we have the start and end dates on the calendar
         this.start = start;
         this.end = end;
-      },
-      nth(d) {
-        return d > 3 && d < 21
-            ? 'th'
-            : ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'][d % 10];
       },
       closeEventDetails() {
         this.selectedOpen = false;

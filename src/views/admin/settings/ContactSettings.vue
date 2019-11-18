@@ -205,7 +205,7 @@
 </template>
 
 <script>
-  import settingsService from '@/service/settingsService';
+  import contactService from '@/service/contactService';
 
   const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/timepicker/image/upload/v1573509010/profiles/profile_tcgkwt.png';
 
@@ -242,9 +242,8 @@
       async fetchContactSettings() {
         this.password = '';
         this.imageUrl = DEFAULT_IMAGE_URL;
-        await settingsService.getContactSettings({
-          user_email: this.$store.state.loggedInUserEmail,
-        }).then( (contact) => {
+        await contactService.getContactSettings(this.$store.state.ownServiceId)
+        .then( (contact) => {
           this.name = contact.data.name;
           this.phoneNumbers = contact.data.phoneNumbers;
           this.emails = contact.data.emails;
@@ -286,7 +285,7 @@
           formData.append('image', this.image, this.image.name);
         }
 
-        await settingsService.saveContact(formData);
+        await contactService.saveContact(formData);
         this.fetchContactSettings();
       },
     },

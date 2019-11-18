@@ -50,37 +50,7 @@ exports.getContact = function (req, res, next) { return __awaiter(void 0, void 0
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = js_base64_1.Base64.decode(req.params.service_id);
-        Services_1.Service.findOne({ service_id: serviceId }, 'user_email')
-            .then(function (dbService) {
-            if (!dbService) {
-                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
-                    error: 'Service not found',
-                });
-            }
-            var user_email = dbService.user_email;
-            Contacts_1.Contact.findOne({ user_email: user_email })
-                .then(function (dbContact) {
-                if (!dbContact) {
-                    return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
-                        error: 'Contact not found',
-                    });
-                }
-                var result = {
-                    name: dbContact.name,
-                    image_url: dbContact.image,
-                    phoneNumbers: dbContact.phoneNumbers,
-                    emails: dbContact.emails,
-                    addresses: dbContact.addresses,
-                };
-                return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
-            });
-        });
-        return [2 /*return*/];
-    });
-}); };
-exports.postGetContactSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        Contacts_1.Contact.findOne({ user_email: req.body.user_email })
+        Contacts_1.Contact.findOne({ service_id: serviceId })
             .then(function (dbContact) {
             if (!dbContact) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
@@ -94,16 +64,16 @@ exports.postGetContactSettings = function (req, res, next) { return __awaiter(vo
                 emails: dbContact.emails,
                 addresses: dbContact.addresses,
             };
-            return res.status(http2_1.constants.HTTP_STATUS_OK).json(result);
+            return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
         });
         return [2 /*return*/];
     });
 }); };
-exports.saveContact = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.saveContact = function (req, res, next, serviceId) { return __awaiter(void 0, void 0, void 0, function () {
     var contact;
     return __generator(this, function (_a) {
         contact = new Contacts_1.Contact({
-            user_email: req.body.email,
+            service_id: serviceId,
             name: req.body.name,
             phoneNumbers: [],
             emails: [],
@@ -128,66 +98,76 @@ exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, v
                 });
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)
-                .then(function (isMatch) { return __awaiter(void 0, void 0, void 0, function () {
-                var image, imageId_1, deleteImage, contact, contactAsObject;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            if (!isMatch) return [3 /*break*/, 3];
-                            image = null;
-                            deleteImage = req.body.deleteImage === 'true';
-                            if (!req.file) return [3 /*break*/, 2];
-                            return [4 /*yield*/, tryUploadImage(req, res, next)];
-                        case 1:
-                            image = _a.sent();
-                            _a.label = 2;
-                        case 2:
-                            contact = new Contacts_1.Contact({
-                                user_email: req.body.user_email,
-                                name: req.body.name,
-                                phoneNumbers: JSON.parse(req.body.phoneNumbers),
-                                emails: JSON.parse(req.body.emails),
-                                addresses: JSON.parse(req.body.addresses),
-                                image: image && image.url ? image.url : null,
-                                image_id: image && image.public_id ? image.public_id : null,
-                            });
-                            contactAsObject = contact.toObject();
-                            delete contactAsObject._id;
-                            if (!req.file && !deleteImage) {
-                                delete contactAsObject.image;
-                                delete contactAsObject.image_id;
-                            }
-                            else {
-                                Contacts_1.Contact.findOne({ user_email: contact.user_email })
-                                    .then(function (dbService) {
-                                    if (dbService) {
-                                        imageId_1 = dbService.image_id;
+                .then(function (isMatch) {
+                if (isMatch) {
+                    Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
+                        .then(function (dbService) { return __awaiter(void 0, void 0, void 0, function () {
+                        var image, imageId, deleteImage, contact, contactAsObject;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (!dbService) {
+                                        return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                                                error: 'Service not found',
+                                            })];
                                     }
-                                });
-                            }
-                            Contacts_1.Contact.findOneAndUpdate({ user_email: contact.user_email }, contactAsObject, { upsert: true }, function (updateError, no) {
-                                if (updateError) {
-                                    if (imageId_1) {
-                                        image_1.destroyImage(imageId_1);
-                                    }
-                                    console.log(updateError);
-                                    return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                                        error: 'Error occured during updating contact.',
+                                    image = null;
+                                    deleteImage = req.body.deleteImage === 'true';
+                                    if (!req.file) return [3 /*break*/, 2];
+                                    return [4 /*yield*/, tryUploadImage(req, res, next)];
+                                case 1:
+                                    image = _a.sent();
+                                    _a.label = 2;
+                                case 2:
+                                    contact = new Contacts_1.Contact({
+                                        service_id: dbService.service_id,
+                                        name: req.body.name,
+                                        phoneNumbers: JSON.parse(req.body.phoneNumbers),
+                                        emails: JSON.parse(req.body.emails),
+                                        addresses: JSON.parse(req.body.addresses),
+                                        image: image && image.url ? image.url : null,
+                                        image_id: image && image.public_id ? image.public_id : null,
                                     });
-                                }
-                                if (imageId_1) {
-                                    image_1.destroyImage(imageId_1);
-                                }
-                                return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
-                            });
-                            return [3 /*break*/, 4];
-                        case 3: return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                                error: 'Incorrect password',
-                            })];
-                        case 4: return [2 /*return*/];
-                    }
-                });
-            }); });
+                                    contactAsObject = contact.toObject();
+                                    delete contactAsObject._id;
+                                    if (!req.file && !deleteImage) {
+                                        delete contactAsObject.image;
+                                        delete contactAsObject.image_id;
+                                    }
+                                    else {
+                                        Contacts_1.Contact.findOne({ service_id: contact.service_id })
+                                            .then(function (dbContact) {
+                                            if (dbContact) {
+                                                imageId = dbContact.image_id;
+                                            }
+                                        });
+                                    }
+                                    Contacts_1.Contact.findOneAndUpdate({ service_id: contact.service_id }, contactAsObject, { upsert: true }, function (updateError, no) {
+                                        if (updateError) {
+                                            if (imageId) {
+                                                image_1.destroyImage(imageId);
+                                            }
+                                            console.log(updateError);
+                                            return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                                                error: 'Error occured during updating contact.',
+                                            });
+                                        }
+                                        if (imageId) {
+                                            image_1.destroyImage(imageId);
+                                        }
+                                        return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                                    });
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                }
+                else {
+                    return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                        error: 'Incorrect password',
+                    });
+                }
+            });
         });
         return [2 /*return*/];
     });

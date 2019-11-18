@@ -54,17 +54,17 @@ db.once('open', function () {
     router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
     router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
     router.post('/settings/service', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), serviceController.postUpdateService);
-    router.post('/settings/get-service', middleware_1.middleware.isAuthenticatedAsAdmin, serviceController.postGetServiceSettings);
+    router.get('/settings/service/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, serviceController.getServiceSettings);
     router.post('/settings/contact', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), contactController.postSaveContact);
-    router.post('/settings/get-contact', middleware_1.middleware.isAuthenticatedAsAdmin, contactController.postGetContactSettings);
+    router.get('/settings/contact/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, contactController.getContact);
     router.post('/settings/book', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postSaveBookTime);
-    router.post('/settings/get-book', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postGetBookTimeSettings);
+    router.get('/settings/book/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.getBookTimeSettings);
     router.post('/settings/breaks', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postSaveBreaks);
-    router.post('/settings/get-break', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postGetBreakSettings);
+    router.get('/settings/breaks/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.getBreakSettings);
     router.post('/settings/leaves', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postSaveLeaves);
-    router.post('/settings/get-leave', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postGetLeaveSettings);
+    router.get('/settings/leaves/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.getLeaveSettings);
     router.post('/settings/messages', middleware_1.middleware.isAuthenticatedAsAdmin, messageController.postSaveMessages);
-    router.post('/settings/get-messages', middleware_1.middleware.isAuthenticatedAsAdmin, messageController.postGetMessages);
+    router.get('/settings/messages/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, messageController.getMessages);
     app.use('/api', router);
     if (app.listen(port)) {
         // tslint:disable-next-line

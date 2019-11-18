@@ -165,6 +165,7 @@
       this.$root.$on('adminLoggedIn', () => {
         this.adminLoginMenu = false;
       });
+      this.adminItems[0].url = `/about/${this.usersServiceId}`;
     },
     methods: {
       logout() {

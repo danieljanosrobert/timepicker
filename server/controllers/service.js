@@ -44,7 +44,6 @@ var http2_1 = require("http2");
 var Services_1 = require("../models/Services");
 var AdminUsers_1 = require("../models/AdminUsers");
 var bcrypt_1 = __importDefault(require("bcrypt"));
-var uuid_1 = __importDefault(require("uuid"));
 var js_base64_1 = require("js-base64");
 exports.postObtainServiceId = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
@@ -96,9 +95,11 @@ exports.getAvailableServices = function (req, res, next) { return __awaiter(void
         return [2 /*return*/];
     });
 }); };
-exports.postGetServiceSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getServiceSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId;
     return __generator(this, function (_a) {
-        Services_1.Service.findOne({ user_email: req.body.user_email })
+        serviceId = js_base64_1.Base64.decode(req.params.service_id);
+        Services_1.Service.findOne({ service_id: serviceId })
             .then(function (dbService) {
             if (!dbService) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
@@ -116,12 +117,12 @@ exports.postGetServiceSettings = function (req, res, next) { return __awaiter(vo
         return [2 /*return*/];
     });
 }); };
-exports.saveService = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.saveService = function (req, res, next, service_id) { return __awaiter(void 0, void 0, void 0, function () {
     var service;
     return __generator(this, function (_a) {
         service = new Services_1.Service({
             user_email: req.body.email,
-            service_id: uuid_1.default.v4(),
+            service_id: service_id,
             name: req.body.servicename,
             description: '',
             hidden: true,

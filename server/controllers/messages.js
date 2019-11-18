@@ -45,46 +45,7 @@ exports.getMessages = function (req, res, next) { return __awaiter(void 0, void 
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = js_base64_1.Base64.decode(req.params.service_id);
-        Services_1.Service.findOne({ service_id: serviceId }, 'user_email')
-            .then(function (dbService) {
-            if (!dbService) {
-                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
-                    error: 'Service not found',
-                });
-            }
-            var user_email = dbService.user_email;
-            Messages_1.Messages.findOne({ user_email: user_email })
-                .then(function (dbMessages) {
-                if (!dbMessages) {
-                    return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
-                        error: 'Messages not found',
-                    });
-                }
-                return res.status(http2_1.constants.HTTP_STATUS_OK).json(dbMessages.messages);
-            });
-        });
-        return [2 /*return*/];
-    });
-}); };
-exports.createMessage = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var message;
-    return __generator(this, function (_a) {
-        message = new Messages_1.Messages({
-            user_email: req.body.email,
-            messages: [],
-        });
-        message.save(function (saveError) {
-            if (saveError) {
-                next(saveError);
-            }
-            next();
-        });
-        return [2 /*return*/];
-    });
-}); };
-exports.postGetMessages = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        Messages_1.Messages.findOne({ user_email: req.body.user_email })
+        Messages_1.Messages.findOne({ service_id: serviceId })
             .then(function (dbMessages) {
             if (!dbMessages) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
@@ -94,7 +55,23 @@ exports.postGetMessages = function (req, res, next) { return __awaiter(void 0, v
             var result = {
                 messages: dbMessages.messages,
             };
-            return res.status(http2_1.constants.HTTP_STATUS_OK).json(result);
+            return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.createMessage = function (req, res, next, serviceId) { return __awaiter(void 0, void 0, void 0, function () {
+    var message;
+    return __generator(this, function (_a) {
+        message = new Messages_1.Messages({
+            service_id: serviceId,
+            messages: [],
+        });
+        message.save(function (saveError) {
+            if (saveError) {
+                next(saveError);
+            }
+            next();
         });
         return [2 /*return*/];
     });
@@ -108,20 +85,28 @@ exports.postSaveMessages = function (req, res, next) { return __awaiter(void 0, 
                     error: 'User does not exist'
                 });
             }
-            var messages = new Messages_1.Messages({
-                user_email: req.body.user_email,
-                messages: JSON.parse(req.body.messages),
-            });
-            var messagesAsObject = messages.toObject();
-            delete messagesAsObject._id;
-            Messages_1.Messages.findOneAndUpdate({ user_email: messages.user_email }, messagesAsObject, { upsert: true }, function (updateError, no) {
-                if (updateError) {
-                    console.log(updateError);
-                    return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                        error: 'Error occured during updating user\'s messages.',
+            Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
+                .then(function (dbService) {
+                if (!dbService) {
+                    return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                        error: 'Service not found',
                     });
                 }
-                return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                var messages = new Messages_1.Messages({
+                    service_id: dbService.service_id,
+                    messages: JSON.parse(req.body.messages),
+                });
+                var messagesAsObject = messages.toObject();
+                delete messagesAsObject._id;
+                Messages_1.Messages.findOneAndUpdate({ service_id: messages.service_id }, messagesAsObject, { upsert: true }, function (updateError, no) {
+                    if (updateError) {
+                        console.log(updateError);
+                        return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                            error: 'Error occured during updating user\'s messages.',
+                        });
+                    }
+                    return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                });
             });
         });
         return [2 /*return*/];

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 export type MessageDocument = mongoose.Document & {
-  user_email: string;
+  service_id: string;
   messages: [{
       title: string,
       sub: string,
@@ -10,7 +10,7 @@ export type MessageDocument = mongoose.Document & {
 };
 
 const messageSchema = new mongoose.Schema({
-  user_email: { type: String, required: true, unique: true },
+  service_id: { type: String, required: true, unique: true },
   messages: [{
     title: String,
     sub: String,

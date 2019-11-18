@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 export type BreakDocument = mongoose.Document & {
-  user_email: string;
+  service_id: string;
   breaks: [{
       date: string,
       startTime: string,
@@ -11,7 +11,7 @@ export type BreakDocument = mongoose.Document & {
 };
 
 const breakSchema = new mongoose.Schema({
-  user_email: { type: String, required: true, unique: true },
+  service_id: { type: String, required: true, unique: true },
   breaks: [{
     date: String,
     startTime: String,

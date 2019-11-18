@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 export type ContactDocument = mongoose.Document & {
-  user_email: string;
+  service_id: string;
   name: string;
   phoneNumbers: [{number: string, comment: string}],
   emails: [{email: string, comment: string}],
@@ -11,7 +11,7 @@ export type ContactDocument = mongoose.Document & {
 };
 
 const contactSchema = new mongoose.Schema({
-  user_email: { type: String, required: true, unique: true },
+  service_id: { type: String, required: true, unique: true },
   name: String,
   phoneNumbers: [{
     number: String,

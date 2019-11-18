@@ -142,7 +142,7 @@
 </template>
 
 <script>
-import settingsService from '@/service/settingsService';
+import bookService from '@/service/bookService';
 
 export default {
 name: 'SetBookTimes',
@@ -186,9 +186,8 @@ name: 'SetBookTimes',
   methods: {
     async fetchBookSettings() {
       this.password = '';
-      await settingsService.getBookSettings({
-          user_email: this.$store.state.loggedInUserEmail,
-        }).then( (book) => {
+      await bookService.getBookSettings(this.$store.state.ownServiceId)
+        .then( (book) => {
           this.lastMonth = book.data.lastMonth;
           this.startTime = book.data.startTime;
           this.endTime = book.data.endTime;
@@ -197,7 +196,7 @@ name: 'SetBookTimes',
         });
     },
     async save() {
-      await settingsService.saveBook({
+      await bookService.saveBook({
         user_email: this.$store.state.loggedInUserEmail,
         password: this.password,
         lastMonth: this.lastMonth,

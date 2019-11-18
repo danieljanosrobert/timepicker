@@ -81,7 +81,7 @@
 </template>
 
 <script>
-  import settingsService from '@/service/settingsService';
+  import serviceService from '@/service/serviceService';
 
   const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/timepicker/image/upload/v1573508434/services/default_service_j961rq.jpg';
 
@@ -118,9 +118,8 @@
       async fetchServiceSettings() {
         this.password = '';
         this.imageUrl = DEFAULT_IMAGE_URL;
-        await settingsService.getServiceSettings({
-          user_email: this.$store.state.loggedInUserEmail,
-        }).then( (service) => {
+        await serviceService.getServiceSettings(this.$store.state.ownServiceId).
+        then( (service) => {
           this.name = service.data.name;
           this.description = service.data.description;
           this.serviceHidden = service.data.hidden;
@@ -142,7 +141,7 @@
           formData.append('image', this.image, this.image.name);
         }
 
-        await settingsService.saveService(formData);
+        await serviceService.saveService(formData);
         this.fetchServiceSettings();
       },
     },

@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import settingsService from '@/service/settingsService';
+import bookService from '@/service/bookService';
 
 export default {
 name: 'SetLeaveTimes',
@@ -87,14 +87,13 @@ name: 'SetLeaveTimes',
   methods: {
     async fetchLeaveSettings() {
       this.password = '';
-      await settingsService.getLeaveSettings({
-          user_email: this.$store.state.loggedInUserEmail,
-        }).then( (leaves) => {
+      await bookService.getLeaveSettings(this.$store.state.ownServiceId)
+        .then( (leaves) => {
           this.leaves = leaves.data.leaves;
         });
     },
     async save() {
-      await settingsService.saveLeaves({
+      await bookService.saveLeaves({
         user_email: this.$store.state.loggedInUserEmail,
         password: this.password,
         leaves: JSON.stringify(this.leaves),

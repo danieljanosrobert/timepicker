@@ -52,18 +52,18 @@ db.once('open', () => {
 
   router.post('/settings/service', middleware.isAuthenticatedAsAdmin, upload.single('image'),
       serviceController.postUpdateService);
-  router.post('/settings/get-service', middleware.isAuthenticatedAsAdmin, serviceController.postGetServiceSettings);
+  router.get('/settings/service/:service_id', middleware.isAuthenticatedAsAdmin, serviceController.getServiceSettings);
   router.post('/settings/contact', middleware.isAuthenticatedAsAdmin, upload.single('image'),
       contactController.postSaveContact);
-  router.post('/settings/get-contact', middleware.isAuthenticatedAsAdmin, contactController.postGetContactSettings);
+  router.get('/settings/contact/:service_id', middleware.isAuthenticatedAsAdmin, contactController.getContact);
   router.post('/settings/book', middleware.isAuthenticatedAsAdmin, bookController.postSaveBookTime);
-  router.post('/settings/get-book', middleware.isAuthenticatedAsAdmin, bookController.postGetBookTimeSettings);
+  router.get('/settings/book/:service_id', middleware.isAuthenticatedAsAdmin, bookController.getBookTimeSettings);
   router.post('/settings/breaks', middleware.isAuthenticatedAsAdmin, bookController.postSaveBreaks);
-  router.post('/settings/get-break', middleware.isAuthenticatedAsAdmin, bookController.postGetBreakSettings);
+  router.get('/settings/breaks/:service_id', middleware.isAuthenticatedAsAdmin, bookController.getBreakSettings);
   router.post('/settings/leaves', middleware.isAuthenticatedAsAdmin, bookController.postSaveLeaves);
-  router.post('/settings/get-leave', middleware.isAuthenticatedAsAdmin, bookController.postGetLeaveSettings);
+  router.get('/settings/leaves/:service_id', middleware.isAuthenticatedAsAdmin, bookController.getLeaveSettings);
   router.post('/settings/messages', middleware.isAuthenticatedAsAdmin, messageController.postSaveMessages);
-  router.post('/settings/get-messages', middleware.isAuthenticatedAsAdmin, messageController.postGetMessages);
+  router.get('/settings/messages/:service_id', middleware.isAuthenticatedAsAdmin, messageController.getMessages);
 
   app.use('/api', router);
 

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 export type BookTimeDocument = mongoose.Document & {
-  user_email: string;
+  service_id: string;
   lastMonth: string;
   startTime: string;
   endTime: string;
@@ -10,7 +10,7 @@ export type BookTimeDocument = mongoose.Document & {
 };
 
 const bookTimeSchema = new mongoose.Schema({
-  user_email: { type: String, required: true, unique: true },
+  service_id: { type: String, required: true, unique: true },
   lastMonth: String,
   startTime: String,
   endTime: String,
