@@ -1,63 +1,35 @@
-import {NextFunction, Request, Response} from 'express';
-import {AdminUser} from '../models/AdminUsers';
-import {constants} from 'http2';
+import { NextFunction, Request, Response } from 'express';
+import { AdminUser } from '../models/AdminUsers';
+import { constants } from 'http2';
 import bcrypt from 'bcrypt';
-import {Contact} from '../models/Contacts';
-import {destroyImage, uploadImage} from '../utils/image';
+import { Contact } from '../models/Contacts';
+import { destroyImage, uploadImage } from '../utils/image';
 import { Base64 } from 'js-base64';
-import {Service} from '../models/Services';
+import { Service } from '../models/Services';
 
 export const getContact = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
-  Service.findOne({service_id: serviceId}, 'user_email')
-      .then((dbService) => {
-        if (!dbService) {
-          return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
-            error: 'Service not found',
-          });
-        }
-        const user_email = dbService.user_email;
-        Contact.findOne({user_email})
-            .then((dbContact) => {
-              if (!dbContact) {
-                return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
-                  error: 'Contact not found',
-                });
-              }
-              const result = {
-                name: dbContact.name,
-                image_url: dbContact.image,
-                phoneNumbers: dbContact.phoneNumbers,
-                emails: dbContact.emails,
-                addresses: dbContact.addresses,
-              };
-              return res.status(constants.HTTP_STATUS_OK).send(result);
-            });
-      });
+  Contact.findOne({ service_id: serviceId })
+    .then((dbContact) => {
+      if (!dbContact) {
+        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
+          error: 'Contact not found',
+        });
+      }
+      const result = {
+        name: dbContact.name,
+        image_url: dbContact.image,
+        phoneNumbers: dbContact.phoneNumbers,
+        emails: dbContact.emails,
+        addresses: dbContact.addresses,
+      };
+      return res.status(constants.HTTP_STATUS_OK).send(result);
+    });
 };
 
-export const postGetContactSettings = async (req: any, res: Response, next: NextFunction) => {
-  Contact.findOne({user_email: req.body.user_email})
-      .then((dbContact) => {
-        if (!dbContact) {
-          return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
-            error: 'Contact not found',
-          });
-        }
-        const result = {
-          name: dbContact.name,
-          image_url: dbContact.image,
-          phoneNumbers: dbContact.phoneNumbers,
-          emails: dbContact.emails,
-          addresses: dbContact.addresses,
-        };
-        return res.status(constants.HTTP_STATUS_OK).json(result);
-      });
-};
-
-export const saveContact = async (req: any, res: Response, next: NextFunction) => {
+export const saveContact = async (req: any, res: Response, next: NextFunction, serviceId: string) => {
   const contact = new Contact({
-    user_email: req.body.email,
+    service_id: serviceId,
     name: req.body.name,
     phoneNumbers: [],
     emails: [],
@@ -72,16 +44,23 @@ export const saveContact = async (req: any, res: Response, next: NextFunction) =
 };
 
 export const postSaveContact = async (req: any, res: Response, next: NextFunction) => {
-  AdminUser.findOne({email: req.body.user_email})
-      .then((dbUser) => {
-        if (!dbUser) {
-          return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-            error: 'User does not exist',
-          });
-        }
-        bcrypt.compare(req.body.password, dbUser.password)
-            .then(async (isMatch) => {
-              if (isMatch) {
+  AdminUser.findOne({ email: req.body.user_email })
+    .then((dbUser) => {
+      if (!dbUser) {
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+          error: 'User does not exist',
+        });
+      }
+      bcrypt.compare(req.body.password, dbUser.password)
+        .then((isMatch) => {
+          if (isMatch) {
+            Service.findOne({ user_email: req.body.user_email }, 'service_id')
+              .then(async (dbService) => {
+                if (!dbService) {
+                  return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
+                    error: 'Service not found',
+                  });
+                }
                 let image: any = null;
                 let imageId: string;
                 const deleteImage = req.body.deleteImage === 'true';
@@ -89,7 +68,7 @@ export const postSaveContact = async (req: any, res: Response, next: NextFunctio
                   image = await tryUploadImage(req, res, next);
                 }
                 const contact = new Contact({
-                  user_email: req.body.user_email,
+                  service_id: dbService.service_id,
                   name: req.body.name,
                   phoneNumbers: JSON.parse(req.body.phoneNumbers),
                   emails: JSON.parse(req.body.emails),
@@ -103,36 +82,37 @@ export const postSaveContact = async (req: any, res: Response, next: NextFunctio
                   delete contactAsObject.image;
                   delete contactAsObject.image_id;
                 } else {
-                  Contact.findOne({user_email: contact.user_email})
-                      .then((dbService) => {
-                        if (dbService) {
-                          imageId = dbService.image_id;
-                        }
-                      });
-                }
-                Contact.findOneAndUpdate({user_email: contact.user_email}, contactAsObject, {upsert: true},
-                    (updateError, no) => {
-                      if (updateError) {
-                        if (imageId) {
-                          destroyImage(imageId);
-                        }
-                        console.log(updateError);
-                        return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                          error: 'Error occured during updating contact.',
-                        });
+                  Contact.findOne({ service_id: contact.service_id })
+                    .then((dbContact) => {
+                      if (dbContact) {
+                        imageId = dbContact.image_id;
                       }
+                    });
+                }
+                Contact.findOneAndUpdate({ service_id: contact.service_id }, contactAsObject, { upsert: true },
+                  (updateError, no) => {
+                    if (updateError) {
                       if (imageId) {
                         destroyImage(imageId);
                       }
-                      return res.sendStatus(constants.HTTP_STATUS_OK);
-                    });
-              } else {
-                return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-                  error: 'Incorrect password',
-                });
-              }
+                      console.log(updateError);
+                      return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                        error: 'Error occured during updating contact.',
+                      });
+                    }
+                    if (imageId) {
+                      destroyImage(imageId);
+                    }
+                    return res.sendStatus(constants.HTTP_STATUS_OK);
+                  });
+              });
+          } else {
+            return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+              error: 'Incorrect password',
             });
-      });
+          }
+        });
+    });
 };
 
 async function tryUploadImage(req: any, res: any, next: any) {

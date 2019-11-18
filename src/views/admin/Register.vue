@@ -58,14 +58,8 @@
             name: this.name,
             servicename: this.servicename,
           });
-          this.$store.dispatch('refreshBearerToken', response.data.token);
-          this.$store.dispatch('updateUserEmail', this.email);
-          const serviceId = await serviceService.postObtainServiceId({
-            user_email: this.email,
-          });
-          this.$store.dispatch('adminLogin', serviceId.data.service_id);
           this.$store.dispatch('openSnackbar', {
-            message: 'Sikeres regisztráció',
+            message: 'Sikeres regisztráció. Lépjen be az oldal használatához.',
             type: 'success',
           });
           this.$router.go(-1);

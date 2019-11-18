@@ -101,7 +101,7 @@
 </template>
 
 <script>
-import settingsService from '@/service/settingsService';
+import bookService from '@/service/bookService';
 
 export default {
 name: 'SetBreakTimes',
@@ -132,14 +132,13 @@ name: 'SetBreakTimes',
   methods: {
     async fetchBreakSettings() {
       this.password = '';
-      await settingsService.getBreakSettings({
-          user_email: this.$store.state.loggedInUserEmail,
-        }).then( (breaks) => {
+      await bookService.getBreakSettings(this.$store.state.ownServiceId)
+        .then( (breaks) => {
           this.breaks = breaks.data.breaks;
         });
     },
     async save() {
-      await settingsService.saveBreaks({
+      await bookService.saveBreaks({
         user_email: this.$store.state.loggedInUserEmail,
         password: this.password,
         breaks: JSON.stringify(this.breaks),

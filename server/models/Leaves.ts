@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 export type LeaveDocument = mongoose.Document & {
-  user_email: string;
+  service_id: string;
   leaves: [{
       leaveInterval: [string],
       label: string,
@@ -9,7 +9,7 @@ export type LeaveDocument = mongoose.Document & {
 };
 
 const leaveSchema = new mongoose.Schema({
-  user_email: { type: String, required: true, unique: true },
+  service_id: { type: String, required: true, unique: true },
   leaves: [{
     leaveInterval: [String],
     label: String,

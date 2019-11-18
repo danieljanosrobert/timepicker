@@ -13,7 +13,6 @@ const vuexPersist = new VuexPersist({
 export default new Vuex.Store({
   plugins: [vuexPersist.plugin],
   state: {
-    aboutPage: '',
     loggedInAsAdmin: false,
     bearerToken: '',
     loggedInUserEmail: '',
@@ -24,9 +23,6 @@ export default new Vuex.Store({
     snackbarColor: '',
   },
   mutations: {
-    _refreshAboutPage(state: any, value: string) {
-      state.aboutPage = value;
-    },
     _logInAsAdmin(state: any) {
       state.loggedInAsAdmin = true;
     },
@@ -59,9 +55,6 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    openAboutPage({commit}: any, value: string) {
-      commit('_refreshAboutPage', value);
-    },
     adminLogin({commit}: any, value: string) {
       commit('_logInAsAdmin');
       commit('_setOwnServiceId', value);

@@ -48,7 +48,7 @@
     methods: {
       async fetchMessages() {
         await messageService.getMessages(this.$route.params.service_id)
-            .then((messages) => { this.messages = messages.data; });
+            .then((messages) => { this.messages = messages.data.messages; });
       },
       isUserServiceOwner() {
         return this.$store.state.loggedInAsAdmin && this.$store.state.ownServiceId === this.$route.params.service_id;

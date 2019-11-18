@@ -45,9 +45,12 @@ var BookTimes_1 = require("../models/BookTimes");
 var Breaks_1 = require("../models/Breaks");
 var Leaves_1 = require("../models/Leaves");
 var bcrypt_1 = __importDefault(require("bcrypt"));
-exports.postGetBookTimeSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+var Services_1 = require("../models/Services");
+exports.getBookTimeSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId;
     return __generator(this, function (_a) {
-        BookTimes_1.BookTime.findOne({ user_email: req.body.user_email })
+        serviceId = Base64.decode(req.params.service_id);
+        BookTimes_1.BookTime.findOne({ service_id: serviceId })
             .then(function (dbBookTime) {
             if (!dbBookTime) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
@@ -61,7 +64,7 @@ exports.postGetBookTimeSettings = function (req, res, next) { return __awaiter(v
                 bookDuration: dbBookTime.bookDuration,
                 selectedWeekdays: dbBookTime.selectedWeekdays,
             };
-            return res.status(http2_1.constants.HTTP_STATUS_OK).json(result);
+            return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
         });
         return [2 /*return*/];
     });
@@ -77,27 +80,34 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)
                 .then(function (isMatch) { return __awaiter(void 0, void 0, void 0, function () {
-                var bookTime, bookTimeAsObject;
                 return __generator(this, function (_a) {
                     if (isMatch) {
-                        bookTime = new BookTimes_1.BookTime({
-                            user_email: req.body.user_email,
-                            lastMonth: req.body.lastMonth,
-                            startTime: req.body.startTime,
-                            endTime: req.body.endTime,
-                            bookDuration: req.body.bookDuration,
-                            selectedWeekdays: JSON.parse(req.body.selectedWeekdays),
-                        });
-                        bookTimeAsObject = bookTime.toObject();
-                        delete bookTimeAsObject._id;
-                        BookTimes_1.BookTime.findOneAndUpdate({ user_email: bookTime.user_email }, bookTimeAsObject, { upsert: true }, function (updateError, no) {
-                            if (updateError) {
-                                console.log(updateError);
-                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                                    error: 'Error occured during updating bookTime.',
+                        Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
+                            .then(function (dbService) {
+                            if (!dbService) {
+                                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                                    error: 'Service not found',
                                 });
                             }
-                            return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                            var bookTime = new BookTimes_1.BookTime({
+                                service_id: dbService.service_id,
+                                lastMonth: req.body.lastMonth,
+                                startTime: req.body.startTime,
+                                endTime: req.body.endTime,
+                                bookDuration: req.body.bookDuration,
+                                selectedWeekdays: JSON.parse(req.body.selectedWeekdays),
+                            });
+                            var bookTimeAsObject = bookTime.toObject();
+                            delete bookTimeAsObject._id;
+                            BookTimes_1.BookTime.findOneAndUpdate({ service_id: bookTime.service_id }, bookTimeAsObject, { upsert: true }, function (updateError, no) {
+                                if (updateError) {
+                                    console.log(updateError);
+                                    return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                                        error: 'Error occured during updating bookTime.',
+                                    });
+                                }
+                                return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                            });
                         });
                     }
                     else {
@@ -112,9 +122,11 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
         return [2 /*return*/];
     });
 }); };
-exports.postGetBreakSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getBreakSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId;
     return __generator(this, function (_a) {
-        Breaks_1.Break.findOne({ user_email: req.body.user_email })
+        serviceId = Base64.decode(req.params.service_id);
+        Breaks_1.Break.findOne({ service_id: serviceId })
             .then(function (dbBreak) {
             if (!dbBreak) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
@@ -124,7 +136,7 @@ exports.postGetBreakSettings = function (req, res, next) { return __awaiter(void
             var result = {
                 breaks: dbBreak.breaks,
             };
-            return res.status(http2_1.constants.HTTP_STATUS_OK).json(result);
+            return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
         });
         return [2 /*return*/];
     });
@@ -140,23 +152,30 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)
                 .then(function (isMatch) { return __awaiter(void 0, void 0, void 0, function () {
-                var breaks, breakAsObject;
                 return __generator(this, function (_a) {
                     if (isMatch) {
-                        breaks = new Breaks_1.Break({
-                            user_email: req.body.user_email,
-                            breaks: JSON.parse(req.body.breaks),
-                        });
-                        breakAsObject = breaks.toObject();
-                        delete breakAsObject._id;
-                        Breaks_1.Break.findOneAndUpdate({ user_email: breaks.user_email }, breakAsObject, { upsert: true }, function (updateError, no) {
-                            if (updateError) {
-                                console.log(updateError);
-                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                                    error: 'Error occured during updating breaks.',
+                        Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
+                            .then(function (dbService) {
+                            if (!dbService) {
+                                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                                    error: 'Service not found',
                                 });
                             }
-                            return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                            var breaks = new Breaks_1.Break({
+                                service_id: dbService.service_id,
+                                breaks: JSON.parse(req.body.breaks),
+                            });
+                            var breakAsObject = breaks.toObject();
+                            delete breakAsObject._id;
+                            Breaks_1.Break.findOneAndUpdate({ service_id: breaks.service_id }, breakAsObject, { upsert: true }, function (updateError, no) {
+                                if (updateError) {
+                                    console.log(updateError);
+                                    return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                                        error: 'Error occured during updating breaks.',
+                                    });
+                                }
+                                return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                            });
                         });
                     }
                     else {
@@ -171,9 +190,11 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
         return [2 /*return*/];
     });
 }); };
-exports.postGetLeaveSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getLeaveSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId;
     return __generator(this, function (_a) {
-        Leaves_1.Leave.findOne({ user_email: req.body.user_email })
+        serviceId = Base64.decode(req.params.service_id);
+        Leaves_1.Leave.findOne({ service_id: serviceId })
             .then(function (dbLeave) {
             if (!dbLeave) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
@@ -183,7 +204,7 @@ exports.postGetLeaveSettings = function (req, res, next) { return __awaiter(void
             var result = {
                 leaves: dbLeave.leaves,
             };
-            return res.status(http2_1.constants.HTTP_STATUS_OK).json(result);
+            return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
         });
         return [2 /*return*/];
     });
@@ -199,23 +220,30 @@ exports.postSaveLeaves = function (req, res, next) { return __awaiter(void 0, vo
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)
                 .then(function (isMatch) { return __awaiter(void 0, void 0, void 0, function () {
-                var leaves, leavesAsObject;
                 return __generator(this, function (_a) {
                     if (isMatch) {
-                        leaves = new Leaves_1.Leave({
-                            user_email: req.body.user_email,
-                            leaves: JSON.parse(req.body.leaves),
-                        });
-                        leavesAsObject = leaves.toObject();
-                        delete leavesAsObject._id;
-                        Leaves_1.Leave.findOneAndUpdate({ user_email: leaves.user_email }, leavesAsObject, { upsert: true }, function (updateError, no) {
-                            if (updateError) {
-                                console.log(updateError);
-                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                                    error: 'Error occured during updating leaves.',
+                        Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
+                            .then(function (dbService) {
+                            if (!dbService) {
+                                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                                    error: 'Service not found',
                                 });
                             }
-                            return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                            var leaves = new Leaves_1.Leave({
+                                service_id: dbService.service_id,
+                                leaves: JSON.parse(req.body.leaves),
+                            });
+                            var leavesAsObject = leaves.toObject();
+                            delete leavesAsObject._id;
+                            Leaves_1.Leave.findOneAndUpdate({ service_id: leaves.service_id }, leavesAsObject, { upsert: true }, function (updateError, no) {
+                                if (updateError) {
+                                    console.log(updateError);
+                                    return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                                        error: 'Error occured during updating leaves.',
+                                    });
+                                }
+                                return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                            });
                         });
                     }
                     else {
