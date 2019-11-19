@@ -65,7 +65,7 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
         validationErrorResult = express_validator_1.validationResult(req);
         if (!validationErrorResult.isEmpty()) {
             console.log(validationErrorResult.mapped());
-            return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send('Validation error')];
+            return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Validation error' })];
         }
         user = new AdminUsers_1.AdminUser({
             email: req.body.email,
@@ -78,7 +78,7 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
                 return next(err);
             }
             if (existingUser) {
-                return res.status(http2_1.constants.HTTP_STATUS_CONFLICT).send('Account with that email address already exists.');
+                return res.status(http2_1.constants.HTTP_STATUS_CONFLICT).send({ error: 'Account with that email address already exists.' });
             }
             user.save(function (saveError) {
                 if (saveError) {
@@ -118,7 +118,7 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
         AdminUsers_1.AdminUser.findOne({ email: user.email })
             .then(function (dbUser) {
             if (!dbUser) {
-                return res.sendStatus(http2_1.constants.HTTP_STATUS_BAD_REQUEST);
+                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
             }
             bcrypt_1.default.compare(user.password, dbUser.password)
                 .then(function (isMatch) {
@@ -126,7 +126,7 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
                     authorization_1.jwtSignUser(res, { email: user.email }, undefined, authorization_1.ADMIN);
                 }
                 else {
-                    res.sendStatus(http2_1.constants.HTTP_STATUS_BAD_REQUEST);
+                    return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
                 }
             });
         });

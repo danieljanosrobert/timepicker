@@ -188,7 +188,7 @@ export default {
   methods: {
     // MOUNT
     async fetchBook() {
-      await bookService.getBooktime(this.$store.state.ownServiceId)
+      await bookService.getBooktime(this.$route.params.service_id)
         .then( (book) => {
           this.bookLastMonth = book.data.lastMonth;
           this.bookStartTime = book.data.startTime;
@@ -196,11 +196,11 @@ export default {
           this.bookDuration = book.data.bookDuration;
           this.bookSelectedWeekdays = book.data.selectedWeekdays;
         });
-      await bookService.getBreaks(this.$store.state.ownServiceId)
+      await bookService.getBreaks(this.$route.params.service_id)
         .then( (breaks) => {
           this.bookBreaks = breaks.data.breaks;
         });
-      await bookService.getLeaves(this.$store.state.ownServiceId)
+      await bookService.getLeaves(this.$route.params.service_id)
         .then( (leaves) => {
           this.bookLeaves = leaves.data.leaves;
         });

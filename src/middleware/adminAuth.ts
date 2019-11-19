@@ -5,11 +5,12 @@ export default async function({ next, store }: any) {
     await authenticationService.isAuthenticatedAsAdmin({
       user_email: store.state.loggedInUserEmail,
     });
-  } catch (e) {
-    store.dispatch('adminLogout');
-    store.dispatch('logout');
+  } catch {
+    return next({
+      name: 'home',
+    });
   }
-  if (!store.getters.auth) {
+  if (!store.getters.adminAuth) {
     return next({
       name: 'home',
     });

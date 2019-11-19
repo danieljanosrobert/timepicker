@@ -126,7 +126,7 @@
       </v-col>
     </v-row>
 
-    <form class="pa-6">
+    <v-form class="pa-6" @submit.prevent="save">
       <v-divider class="pb-2"></v-divider>
       <v-text-field
         id="password"
@@ -137,7 +137,7 @@
       ></v-text-field>
 
       <v-btn class="mr-4" @click="save">Mentés</v-btn>
-    </form>
+    </v-form>
   </v-card>
 </template>
 
@@ -196,16 +196,27 @@ name: 'SetBookTimes',
         });
     },
     async save() {
-      await bookService.saveBook({
-        user_email: this.$store.state.loggedInUserEmail,
-        password: this.password,
-        lastMonth: this.lastMonth,
-        startTime: this.startTime,
-        endTime: this.endTime,
-        bookDuration: this.bookDuration,
-        selectedWeekdays: JSON.stringify(this.selectedWeekdays),
-      });
-      this.fetchBookSettings();
+      try {
+        await bookService.saveBook({
+          user_email: this.$store.state.loggedInUserEmail,
+          password: this.password,
+          lastMonth: this.lastMonth,
+          startTime: this.startTime,
+          endTime: this.endTime,
+          bookDuration: this.bookDuration,
+          selectedWeekdays: JSON.stringify(this.selectedWeekdays),
+        });
+        this.fetchBookSettings();
+        this.$store.dispatch('openSnackbar', {
+          message: 'Időpontok beállításai mentésre kerültek',
+          type: 'success',
+        });
+      } catch {
+        this.$store.dispatch('openSnackbar', {
+          message: 'Hiba történt a mentés során!',
+          type: 'error',
+        });
+      }
     },
     remove(item) {
       const index = this.selectedWeekdays.indexOf(item);

@@ -49,7 +49,7 @@
         </v-row>
       </v-col>
     </v-row>
-    <form class="pa-6">
+    <v-form class="pa-6" @submit.prevent="save">
       <v-divider class="pb-2"></v-divider>
       <v-text-field
         id="leavepassword"
@@ -59,7 +59,7 @@
         type="password"
       ></v-text-field>
       <v-btn class="mr-4" @click="save">Mentés</v-btn>
-    </form>
+    </v-form>
   </v-card>
 </template>
 
@@ -94,12 +94,23 @@ name: 'SetLeaveTimes',
         });
     },
     async save() {
-      await bookService.saveLeaves({
-        user_email: this.$store.state.loggedInUserEmail,
-        password: this.password,
-        leaves: JSON.stringify(this.leaves),
-      });
-      this.fetchLeaveSettings();
+      try {
+        await bookService.saveLeaves({
+          user_email: this.$store.state.loggedInUserEmail,
+          password: this.password,
+          leaves: JSON.stringify(this.leaves),
+        });
+        this.$store.dispatch('openSnackbar', {
+          message: 'Szabadságok beállításai mentésre kerültek',
+          type: 'success',
+        });
+        this.fetchLeaveSettings();
+      } catch {
+        this.$store.dispatch('openSnackbar', {
+          message: 'Hiba történt a mentés során!',
+          type: 'error',
+        });
+      }
     },
     addLeave() {
       this.leaves.push( {leaveInterval: [], label: ''} );

@@ -86,7 +86,7 @@
         </v-row>
       </v-col>
     </v-row>
-    <form class="pa-6">
+    <v-form class="pa-6" @submit.prevent="save">
       <v-divider class="pb-2"></v-divider>
       <v-text-field
         id="breakpassword"
@@ -96,7 +96,7 @@
         type="password"
       ></v-text-field>
       <v-btn class="mr-4" @click="save">Mentés</v-btn>
-    </form>
+    </v-form>
   </v-card>
 </template>
 
@@ -138,12 +138,23 @@ name: 'SetBreakTimes',
         });
     },
     async save() {
-      await bookService.saveBreaks({
-        user_email: this.$store.state.loggedInUserEmail,
-        password: this.password,
-        breaks: JSON.stringify(this.breaks),
-      });
-      this.fetchBreakSettings();
+      try {
+        await bookService.saveBreaks({
+          user_email: this.$store.state.loggedInUserEmail,
+          password: this.password,
+          breaks: JSON.stringify(this.breaks),
+        });
+        this.$store.dispatch('openSnackbar', {
+          message: 'Szünetek beállításai mentésre kerültek',
+          type: 'success',
+        });
+        this.fetchBreakSettings();
+      } catch {
+        this.$store.dispatch('openSnackbar', {
+          message: 'Hiba történt a mentés során!',
+          type: 'error',
+        });
+      }
     },
     addBreak() {
       this.breaks.push({date: '', startTime: '', duration: '', always: false});

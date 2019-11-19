@@ -31,7 +31,7 @@
                 <span class="headers">Telefon</span>
               </v-col>
               <v-row v-if="phoneNumbers[0]">
-                <v-col v-for="(item, i) in phoneNumbers" :key="i" cols="12" class="py-0">
+                <v-col v-for="(item, i) in phoneNumbers" :key="i" cols="12" class="py-0 px-6">
                   <v-row>
                     <v-col cols="5" class="py-0">
                       <v-text-field label="Telefonszám" v-model="item.number"></v-text-field>
@@ -59,7 +59,7 @@
                 <span class="headers">E-mail</span>
               </v-col>
               <v-row v-if="emails[0]">
-                <v-col v-for="(item, i) in emails" :key="i" cols="12" class="py-0">
+                <v-col v-for="(item, i) in emails" :key="i" cols="12" class="py-0 px-6">
                   <v-row>
                     <v-col cols="5" class="py-0">
                       <v-text-field label="E-mail" v-model="item.email"></v-text-field>
@@ -87,7 +87,7 @@
                 <span class="headers">Cím</span>
               </v-col>
               <v-row v-if="addresses[0]">
-                <v-col v-for="(item, i) in addresses" :key="i" cols="12" class="py-0">
+                <v-col v-for="(item, i) in addresses" :key="i" cols="12" class="py-0 px-6">
                   <v-row>
                     <v-col cols="2" class="py-0">
                       <v-text-field label="Irányítószám" v-model="item.stateNumber"></v-text-field>
@@ -113,10 +113,12 @@
 
             <v-divider class="pb-2"></v-divider>
 
-            <v-text-field id="password" label="Mentéshez szükséges jelszó" v-model="password" name="password"
-                          type="password"></v-text-field>
+            <v-form  @submit.prevent="save">
+              <v-text-field id="password" label="Mentéshez szükséges jelszó" v-model="password" name="password"
+                            type="password"></v-text-field>
 
-            <v-btn class="mr-4" @click="save">Mentés</v-btn>
+              <v-btn class="mr-4" @click="save">Mentés</v-btn>
+            </v-form>
           </form>
 
         </v-card>
@@ -284,9 +286,19 @@
         if (this.image) {
           formData.append('image', this.image, this.image.name);
         }
-
-        await contactService.saveContact(formData);
-        this.fetchContactSettings();
+        try {
+          await contactService.saveContact(formData);
+          this.fetchContactSettings();
+          this.$store.dispatch('openSnackbar', {
+            message: 'Elérhetőségek beállításai mentésre kerültek',
+            type: 'success',
+          });
+        } catch {
+        this.$store.dispatch('openSnackbar', {
+          message: 'Hiba történt a mentés során!',
+          type: 'error',
+        });
+        }
       },
     },
   };

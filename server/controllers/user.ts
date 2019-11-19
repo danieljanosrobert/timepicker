@@ -14,19 +14,23 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
   const validationErrorResult = validationResult(req);
 
   if (!validationErrorResult.isEmpty()) {
-    console.log(validationErrorResult.mapped());
-    return res.status(constants.HTTP_STATUS_BAD_REQUEST).json('Validation error');
+    return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Validation error' });
   }
   const user = new User({
     email: req.body.email,
     password: req.body.password,
+    lastName: req.body.lastName,
+    firstName: req.body.firstName,
+    city: req.body.city,
+    age: req.body.age,
+    selectedServiceTags: req.body.selectedServiceTags,
   });
   User.findOne({ email: user.email }, (err, existingUser) => {
     if (err) {
       return next(err);
     }
     if (existingUser) {
-      return res.status(constants.HTTP_STATUS_CONFLICT).json('Account with that email address already exists.');
+      return res.status(constants.HTTP_STATUS_CONFLICT).send({ error: 'Account with that email address already exists.' });
     }
     user.save((saveError) => {
       if (saveError) {
@@ -47,7 +51,7 @@ export const postLogin = async (req: Request, res: Response) => {
 
   if (!validationErrorResult.isEmpty()) {
     console.log(validationErrorResult.mapped());
-    return res.status(constants.HTTP_STATUS_BAD_REQUEST).json('Validation error');
+    return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Validation error' });
   }
   const user = new User({
     email: req.body.email,
@@ -56,14 +60,14 @@ export const postLogin = async (req: Request, res: Response) => {
   User.findOne({ email: user.email })
       .then( (dbUser) => {
         if (!dbUser) {
-          return res.sendStatus(constants.HTTP_STATUS_BAD_REQUEST);
+          return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
         }
         bcrypt.compare(user.password, dbUser.password)
           .then((isMatch) => {
             if (isMatch) {
               jwtSignUser(res, {email: user.email});
             } else {
-                res.sendStatus(constants.HTTP_STATUS_BAD_REQUEST);
+                return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
             }
           });
       });

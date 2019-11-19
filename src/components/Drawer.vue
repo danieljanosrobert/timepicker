@@ -1,5 +1,6 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <v-navigation-drawer v-model="drawer" app bottom temporary>
+    <user-register-dialog/>
       <v-list-item class="pr-1">
         <v-list-item-title class="pa-2 text-center headline text-dark-mahogany text-uppercase">
           <router-link class="link-disable-decoration" to="/">
@@ -29,7 +30,53 @@
 
     <v-divider></v-divider>
 
-    <v-list v-if="!userLoggedInAsAdmin">
+    <v-list v-if="!isLoggedIn">
+      <v-subheader>Felhasználó</v-subheader>
+      <v-menu v-model="userLoginMenu" :close-on-content-click="false" offset-x>
+        <template v-slot:activator="{ on }">
+          <v-list-item link v-on="on">
+            <v-list-item-icon>
+              <v-icon> mdi-account </v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title> Belépés </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+        <user-login-menu></user-login-menu>
+      </v-menu>
+
+      <v-list-item link @click.stop="openRegisterDialog()">
+        <v-list-item-icon>
+          <v-icon> mdi-account-key </v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content>
+          <v-list-item-title> Regisztráció </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      
+      <v-divider/>
+
+    <v-subheader>Szolgáltató</v-subheader>
+      <v-menu v-model="adminLoginMenu" :close-on-content-click="false" offset-x>
+        <template v-slot:activator="{ on }">
+          <v-list-item link v-on="on">
+            <v-list-item-icon>
+              <v-icon> mdi-gavel </v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title> belépés </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+        <AdminLoginMenu></AdminLoginMenu>
+      </v-menu>
+    </v-list>
+
+    <v-list v-if="userLoggedInAsUser">
       <v-list-item v-for="item in userItems" :key="item.title" link :to="item.url">
         <v-list-item-icon>
           <v-icon>{{ item.icon }}</v-icon>
@@ -39,24 +86,9 @@
           <v-list-item-title>{{ item.title }}</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-
-      <v-menu v-model="adminLoginMenu" :close-on-content-click="false" offset-x>
-        <template v-slot:activator="{ on }">
-          <v-list-item link v-on="on">
-            <v-list-item-icon>
-              <v-icon> mdi-gavel </v-icon>
-            </v-list-item-icon>
-
-            <v-list-item-content>
-              <v-list-item-title> Admin belépés </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </template>
-        <AdminLoginMenu></AdminLoginMenu>
-      </v-menu>
     </v-list>
 
-    <v-list v-else>
+    <v-list v-if="userLoggedInAsAdmin">
       <template v-for="item in adminItems">
 
         <v-list-group v-if="item.subItems" :key="item.title">
@@ -104,32 +136,29 @@
 
 <script>
   import AdminLoginMenu from '@/components/menu/AdminLoginMenu.vue';
+  import UserLoginMenu from '@/components/menu/UserLoginMenu.vue';
+  import UserRegisterDialog from '@/components/menu/UserRegisterDialog.vue';
   import { mapState } from 'vuex';
 
   export default {
     name: 'Drawer',
-    components: {AdminLoginMenu},
+    components: {
+      AdminLoginMenu,
+      UserLoginMenu,
+      UserRegisterDialog,
+    },
     data: () => ({
-        admins: [
-          ['Management', 'people_outline'],
-          ['Settings', 'settings'],
-        ],
-        cruds: [
-          ['Create', 'add'],
-          ['Read', 'insert_drive_file'],
-          ['Update', 'update'],
-          ['Delete', 'delete'],
-        ],
         adminLoginMenu: false,
+        userLoginMenu: false,
         drawer: false,
-        userLoggedIn: false,
         home: 'home',
         essentials: [
           {title: 'Főoldal', icon: 'mdi-view-dashboard', url: '/'},
           {title: 'Keresés', icon: 'mdi-book-search', url: '/search'},
         ],
         userItems: [
-          {title: 'Belépés', icon: 'mdi-account', url: '/about'},
+          {title: 'Kedvencek', icon: 'mdi-account', url: '/favorites'},
+          {title: 'Beállítások', icon: 'mdi-settings', url: '/settings'},
         ],
         adminItems: [
           {title: 'Saját oldal', icon: 'mdi-book-open-page-variant', url: ''},
@@ -139,6 +168,7 @@
               {title: 'Foglalás', icon: 'mdi-clock-start', url: '/settings/book'},
               {title: 'Üzenőfal', icon: 'mdi-email', url: '/settings/message-board'},
               {title: 'Elérhetőségek', icon: 'mdi-account-supervisor-circle', url: '/settings/contact'},
+              {title: 'Jelszó megváltoztatása', icon: 'mdi-lock', url: '/admin/settings/password'},
             ],
           },
           {title: 'Galléria', icon: 'mdi-image-album', url: '/about'},
@@ -147,10 +177,11 @@
     computed: {
       ...mapState({
         userLoggedInAsAdmin: 'loggedInAsAdmin',
+        userLoggedInAsUser: 'loggedInAsUser',
         usersServiceId: 'ownServiceId',
       }),
       isLoggedIn() {
-        return this.userLoggedIn || this.userLoggedInAsAdmin;
+        return this.userLoggedInAsUser || this.userLoggedInAsAdmin;
       },
     },
     watch: {
@@ -162,20 +193,24 @@
       this.$root.$on('openDrawer', (data) => {
         this.drawer = data;
       });
-      this.$root.$on('adminLoggedIn', () => {
+      this.$root.$on('loggedIn', () => {
         this.adminLoginMenu = false;
       });
       this.adminItems[0].url = `/about/${this.usersServiceId}`;
     },
     methods: {
       logout() {
-        if (this.userLoggedInAsAdmin) {
-          this.$store.dispatch('adminLogout');
-        }
         this.$store.dispatch('logout');
         if (this.$router.currentRoute.path !== '/') {
           this.$router.push('/');
         }
+        this.$store.dispatch('openSnackbar', {
+          message: 'Sikeres kijelentkezés',
+          type: 'success',
+        });
+      },
+      openRegisterDialog() {
+        this.$root.$emit('openRegisterDialog');
       },
     },
   };

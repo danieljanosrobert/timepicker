@@ -8,6 +8,11 @@ var mongoose_1 = __importDefault(require("mongoose"));
 var userSchema = new mongoose_1.default.Schema({
     email: { type: String, unique: true },
     password: String,
+    lastName: String,
+    firstName: String,
+    city: String,
+    age: String,
+    selectedServiceTags: [String],
 }, { timestamps: true });
 userSchema.pre('save', function save(next) {
     var user = this;

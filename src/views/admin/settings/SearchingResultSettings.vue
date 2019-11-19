@@ -32,10 +32,13 @@
             ></v-checkbox>
 
             <v-divider class="pb-2"></v-divider>
-            <v-text-field id="password" label="Mentéshez szükséges jelszó" v-model="password" name="password"
-                          type="password"></v-text-field>
 
-            <v-btn class="mr-4" @click="save">Mentés</v-btn>
+            <v-form @submit.prevent="save">
+              <v-text-field id="password" label="Mentéshez szükséges jelszó" v-model="password" name="password"
+                            type="password"></v-text-field>
+
+              <v-btn class="mr-4" @click="save">Mentés</v-btn>
+            </v-form>
           </form>
 
         </v-card>
@@ -140,9 +143,19 @@
         if (this.image) {
           formData.append('image', this.image, this.image.name);
         }
-
-        await serviceService.saveService(formData);
-        this.fetchServiceSettings();
+        try {
+          await serviceService.saveService(formData);
+          this.fetchServiceSettings();
+          this.$store.dispatch('openSnackbar', {
+            message: 'Szolgáltatás beállításai mentésre kerültek',
+            type: 'success',
+          });
+        } catch {
+          this.$store.dispatch('openSnackbar', {
+          message: 'Hiba történt a mentés során!',
+          type: 'error',
+        });
+        }
       },
     },
   };

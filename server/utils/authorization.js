@@ -13,10 +13,10 @@ function jwtSignUser(res, payload, status, admin) {
     if (admin === void 0) { admin = false; }
     jsonwebtoken_1.default.sign(payload, admin ? adminSecret : secret, { expiresIn: '100h' }, function (err, token) {
         if (err) {
-            res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({ error: 'Error signing token', raw: err });
+            res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Error signing token', raw: err });
         }
         status === http2_1.constants.HTTP_STATUS_OK
-            ? res.status(status).json({ token: "Bearer " + token })
+            ? res.status(status).send({ token: "Bearer " + token })
             : res.sendStatus(status);
     });
 }

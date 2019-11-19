@@ -4,11 +4,21 @@ import mongoose from 'mongoose';
 export type UserDocument = mongoose.Document & {
   email: string;
   password: string;
+  lastName: string;
+  firstName: string;
+  city: string;
+  age: string;
+  selectedServiceTags: [string];
 };
 
 const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String,
+  lastName: String,
+  firstName: String,
+  city: String,
+  age: String,
+  selectedServiceTags: [String],
 }, { timestamps: true });
 
 userSchema.pre('save', function save(next) {

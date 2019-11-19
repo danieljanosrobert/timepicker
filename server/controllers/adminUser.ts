@@ -19,7 +19,7 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
 
   if (!validationErrorResult.isEmpty()) {
     console.log(validationErrorResult.mapped());
-    return res.status(constants.HTTP_STATUS_BAD_REQUEST).send('Validation error');
+    return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Validation error' });
   }
   const user = new AdminUser({
     email: req.body.email,
@@ -32,7 +32,7 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
       return next(err);
     }
     if (existingUser) {
-      return res.status(constants.HTTP_STATUS_CONFLICT).send('Account with that email address already exists.');
+      return res.status(constants.HTTP_STATUS_CONFLICT).send({ error: 'Account with that email address already exists.' });
     }
     user.save((saveError) => {
       if (saveError) {
@@ -70,14 +70,14 @@ export const postLogin = async (req: Request, res: Response) => {
   AdminUser.findOne({ email: user.email })
     .then((dbUser) => {
       if (!dbUser) {
-        return res.sendStatus(constants.HTTP_STATUS_BAD_REQUEST);
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
       }
       bcrypt.compare(user.password, dbUser.password)
         .then((isMatch) => {
           if (isMatch) {
             jwtSignUser(res, { email: user.email }, undefined, ADMIN);
           } else {
-            res.sendStatus(constants.HTTP_STATUS_BAD_REQUEST);
+            return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
           }
         });
     });

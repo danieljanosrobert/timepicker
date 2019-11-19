@@ -108,11 +108,22 @@
         this.deleteDialogVisible = false;
       },
       async save() {
-        await messageService.saveMessages({
-          user_email: this.$store.state.loggedInUserEmail,
-          messages: JSON.stringify(this.messages),
-        });
-        this.fetchMessages();
+        try {
+          await messageService.saveMessages({
+            user_email: this.$store.state.loggedInUserEmail,
+            messages: JSON.stringify(this.messages),
+          });
+          this.fetchMessages();
+          this.$store.dispatch('openSnackbar', {
+            message: 'Üzenőfalon történő változtatások elmentve',
+            type: 'success',
+          });
+        } catch {
+          this.$store.dispatch('openSnackbar', {
+            message: 'Hiba történt az üzenőfal változtatása során!',
+            type: 'error',
+          });
+        }
       },
     },
     async mounted() {
