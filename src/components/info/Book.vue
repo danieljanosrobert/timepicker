@@ -55,14 +55,14 @@
 
       <v-sheet height="800">
         <v-calendar ref="calendar" v-model="focus" color="primary" locale="hu" :events="events"
-                :event-color="getEventColor" :event-margin-bottom="3" :now="today" :short-weekdays="false"
-                :type="type" :weekdays="weekdays" @click:event="showEvent" @click:more="viewWeek"
-                @click:date="viewWeek" @change="updateRange" interval-minutes="30" first-interval="14"
-                    :event-overlap-threshold="-1"></v-calendar>
+                :event-color="getEventColor" :event-margin-bottom="3" :event-overlap-threshold="-1"
+                :now="today" :short-weekdays="false" :type="type" :weekdays="weekdays" :date="viewWeek"
+                :interval-minutes="intervalMinutes" :first-interval="firstInterval" :interval-count="intervalCount"
+                @click:event="showEvent" @click:more="viewWeek" @change="updateRange"> </v-calendar>
         <v-menu v-model="selectedOpen" :close-on-content-click="false" :activator="selectedElement" offset-x>
 
           <v-card color="grey lighten-4" in-width="350px" flat>
-            <v-toolbar :color="setColorFromAllapot(selectedEvent.allapot)" dark>
+            <v-toolbar :color="selectedEvent.color" dark>
               <!--<v-btn icon>
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>-->
@@ -98,128 +98,333 @@
 </template>
 
 <script>
-  import * as _ from 'lodash';
+import bookService from '@/service/bookService';
+import dateUtil from '@/utils/dateUtil';
 
-  export default {
-    name: 'Book',
-    data: () => ({
-      weekdays: [1, 2, 3, 4, 5, 6, 0],
-      today: '2019-01-01',
-      focus: '2019-01-01',
-      type: 'week',
-      typeToLabel: {
-        week: 'Hét',
-        day: 'Nap',
-      },
-      start: null,
-      end: null,
-      selectedEvent: {},
-      selectedElement: null,
-      selectedOpen: false,
-      events: [ { name: 'event 4', start: '2019-01-02 10:00', end: '2019-01-02 10:30', allapot: 'szabad', color: '' },
-        { name: 'event 6', start: '2019-01-02 10:30', end: '2019-01-02 11:00', allapot: 'foglalt', color: '' },
-        { name: 'event 7', start: '2019-01-02 11:00', end: '2019-01-02 12:30', allapot: 'szunet', color: '' } ],
-    }),
-    computed: {
-      title() {
-        const { start, end } = this;
-        if (!start || !end) {
-          return '';
-        }
+export default {
+  name: 'Book',
+  data: () => ({
+    // BOOK
+    bookLastMonth: '',
+    bookStartTime: '',
+    bookEndTime: '',
+    bookDuration: '',
+    bookSelectedWeekdays: [],
+    bookBreaks: [{
+      date: '2019-01-01',
+      startTime: '08:00',
+      duration: 30,
+      always: false,
+    }],
+    bookLeaves: [{
+      leaveInterval: ['2019-01-03', '2019-01-04'],
+      label: '2019-01-03 - 2019-01-04',
+    }],
 
-        const startMonth = this.monthFormatter(start);
-        const endMonth = this.monthFormatter(end);
-        const suffixMonth = startMonth === endMonth ? '' : endMonth + ' ';
+    // CALENDAR
+    weekdays: [1, 2, 3, 4, 5, 6, 0],
+    today: '2019-01-01',
+    focus: '2019-01-01',
+    type: 'week',
+    typeToLabel: {
+      week: 'Hét',
+      day: 'Nap',
+    },
+    start: null,
+    end: null,
+    intervalMinutes: 30,
+    firstInterval: 14,
+    intervalCount: 24,
 
-        const startYear = start.year;
-        const endYear = end.year;
-        const suffixYear = startYear === endYear ? '' : endYear + ' ';
-
-        const startDay = start.day;
-        const endDay = end.day;
-
-        switch (this.type) {
-          case 'week':
-            return `${startYear} ${startMonth} ${startDay} - ${suffixYear}${suffixMonth}${endDay}`;
-          case 'day':
-            return `${startYear} ${startMonth} ${startDay}`;
-        }
+    // EVENTS
+    selectedEvent: {},
+    selectedElement: null,
+    selectedOpen: false,
+    events: [],
+    renderedEventDates: [],
+  }),
+  computed: {
+    title() {
+      const { start, end } = this;
+      if (!start || !end) {
         return '';
-      },
-      monthFormatter() {
-        return this.$refs.calendar.getFormatter({
-          timeZone: 'UTC', month: 'long',
-        });
-      },
+      }
+
+      const startMonth = this.monthFormatter(start);
+      const endMonth = this.monthFormatter(end);
+      const suffixMonth = startMonth === endMonth ? '' : endMonth + ' ';
+
+      const startYear = start.year;
+      const endYear = end.year;
+      const suffixYear = startYear === endYear ? '' : endYear + ' ';
+
+      const startDay = start.day;
+      const endDay = end.day;
+
+      switch (this.type) {
+        case 'week':
+          return `${startYear} ${startMonth} ${startDay} - ${suffixYear}${suffixMonth}${endDay}`;
+        case 'day':
+          return `${startYear} ${startMonth} ${startDay}`;
+      }
+      return '';
     },
-    mounted() {
-      _.forEach(this.events, (evt) => {
-        evt.color = this.setColorFromAllapot(evt.allapot);
+    monthFormatter() {
+      return this.$refs.calendar.getFormatter({
+        timeZone: 'UTC', month: 'long',
       });
-      this.$refs.calendar.checkChange();
     },
-    methods: {
-      isUserServiceOwner() {
-        return this.$store.state.loggedInAsAdmin && this.$store.state.ownServiceId === this.$route.params.service_id;
-      },
-      viewWeek({ date }) {
-        this.focus = date;
-        this.type = 'week';
-      },
-      getEventColor(event) {
-        return event.color;
-      },
-      setToday() {
-        this.focus = this.today;
-      },
-      prev() {
-        this.$refs.calendar.prev();
-      },
-      next() {
-        this.$refs.calendar.next();
-      },
-      showEvent({ nativeEvent, event }) {
-        const open = () => {
-          this.selectedEvent = event;
-          this.selectedElement = nativeEvent.target;
-          setTimeout(() => this.selectedOpen = true, 10);
-        };
+  },
+  async mounted() {
+    await this.fetchBook();
+    _.forEach(this.events, (evt) => {
+      evt.color = this.setColorFromAllapot(evt.allapot);
+    });
+    this.today = dateUtil.createStringFromDate(new Date());
+    this.focus = this.today;
+    this.$refs.calendar.checkChange();
+    this.addLeavesToCalendar();
+  },
+  methods: {
+    // MOUNT
+    async fetchBook() {
+      await bookService.getBooktime(this.$store.state.ownServiceId)
+        .then( (book) => {
+          this.bookLastMonth = book.data.lastMonth;
+          this.bookStartTime = book.data.startTime;
+          this.bookEndTime = book.data.endTime;
+          this.bookDuration = book.data.bookDuration;
+          this.bookSelectedWeekdays = book.data.selectedWeekdays;
+        });
+      await bookService.getBreaks(this.$store.state.ownServiceId)
+        .then( (breaks) => {
+          this.bookBreaks = breaks.data.breaks;
+        });
+      await bookService.getLeaves(this.$store.state.ownServiceId)
+        .then( (leaves) => {
+          this.bookLeaves = leaves.data.leaves;
+        });
+      this.generateEventsFromBook();
+    },
+    isUserServiceOwner() {
+      return this.$store.state.loggedInAsAdmin && this.$store.state.ownServiceId === this.$route.params.service_id;
+    },
 
-        if (this.selectedOpen) {
-          this.selectedOpen = false;
-          setTimeout(open, 10);
-        } else {
-          open();
+    // GENERATING
+    generateEventsFromBook() {
+      this.calculateCalendarSize();
+      this.setUpEventsInCalendar();
+    },
+    calculateCalendarSize() {
+      const shiftStartingMinute = dateUtil.minuteFromHour(this.bookStartTime);
+      const shiftEndingMinute = dateUtil.minuteFromHour(this.bookEndTime);
+      if (shiftStartingMinute > shiftEndingMinute) {
+        this.firstInterval = 0;
+        this.intervalMinutes = this.bookDuration;
+        this.intervalCount =  24 * 60 / this.intervalMinutes;
+        return;
+      }
+      const overallDuration = shiftEndingMinute - shiftStartingMinute;
+      this.intervalMinutes = this.bookDuration < 60 ? this.bookDuration : 60;
+      const slotsNeeded = Math.ceil(overallDuration / this.intervalMinutes);
+      if (slotsNeeded > 12) {
+        this.intervalCount = slotsNeeded;
+        this.firstInterval = shiftStartingMinute / this.bookDuration;
+      } else {
+        this.intervalCount = 24;
+        this.intervalMinutes /= 2;
+        this.firstInterval = 2 * (shiftStartingMinute / this.bookDuration);
+      }
+    },
+    setUpEventsInCalendar() {
+      setTimeout(() => {
+        const visibleDates = dateUtil.getStringArrayBetweenTwoDates(this.start.date, this.end.date);
+        _.forEach(visibleDates, (date) => {
+          if (dateUtil.isDateInSelectedWeekday(date, this.bookSelectedWeekdays)) {
+            this.createEventsIfNeeded(date);
+          }
+        });
+      }, 1);
+    },
+    createEventsIfNeeded(date) {
+      const [ y, m ] = _.split(this.bookLastMonth, '-');
+      const lastDayOfLastMonth = dateUtil.getLastDayInMonth(parseInt(y, 10), parseInt(m, 10));
+      if (dateUtil.isDateInRange(date, this.today, `${this.bookLastMonth}-${lastDayOfLastMonth}`)
+        && !_.includes(this.renderedEventDates, date)) {
+        this.addEventsToCalendar(date);
+        this.renderedEventDates.push(date);
+      }
+    },
+    addEventsToCalendar(date) {
+      let eventTimes = [];
+      const shiftStartingMinute = dateUtil.minuteFromHour(this.bookStartTime);
+      const shiftEndingMinute = dateUtil.minuteFromHour(this.bookEndTime);
+      if (shiftStartingMinute > shiftEndingMinute) {
+        for (let currMin = shiftStartingMinute; currMin < shiftEndingMinute + 1440; currMin += this.bookDuration) {
+          const startOfEvent = dateUtil.hourFromMinute(currMin);
+          const endOfEvent = shiftEndingMinute + 1440 + this.bookDuration < currMin + this.bookDuration
+            ? dateUtil.hourFromMinute(shiftEndingMinute)
+            : dateUtil.hourFromMinute(currMin + this.bookDuration);
+          const isOnAnotherDay = currMin % 1440 > dateUtil.minuteFromHour(endOfEvent);
+          eventTimes.push({
+            start: `${date} ${startOfEvent}`,
+            end: `${isOnAnotherDay ? dateUtil.createStringFromDate(dateUtil.addDaysToDate(date, 1)) : date} ${endOfEvent}`,
+            label: `${startOfEvent} - ${endOfEvent}`,
+          });
         }
+      } else {
+        for (let currMin = shiftStartingMinute; currMin < shiftEndingMinute; currMin += this.bookDuration) {
+          const startOfEvent = dateUtil.hourFromMinute(currMin);
+          const endOfEvent = shiftEndingMinute + this.bookDuration < currMin + this.bookDuration
+            ? dateUtil.hourFromMinute(shiftEndingMinute)
+            : dateUtil.hourFromMinute(currMin + this.bookDuration);
+          eventTimes.push({
+            start: `${date} ${startOfEvent}`,
+            end: `${date} ${endOfEvent}`,
+            label: `${startOfEvent} - ${endOfEvent}`,
+          });
+        }
+      }
+      eventTimes = this.alterEventsBasedOnLeaves(date, eventTimes);
+      eventTimes = this.createBreaksIfNeeded(date, eventTimes);
+      _.forEach(eventTimes, (eventTime) => {
+        this.events.push({
+          name: eventTime.label,
+          start: eventTime.start,
+          end: eventTime.end,
+          color: 'info',
+        });
+      });
+    },
+    createBreaksIfNeeded(date, eventTimes) {
+      let filteredEventTimes = eventTimes;
+      _.forEach(this.bookBreaks, (currBreak) => {
+        if (dateUtil.isAfterEquals(date, this.today) &&
+          (dateUtil.equals(currBreak.date, date) || dateUtil.isAfter(date, currBreak.date) && currBreak.always)) {
+            const breakStartTime = `${date} ${currBreak.startTime}`;
+            const breakEndInMinute = dateUtil.minuteFromHour(currBreak.startTime) + parseInt(currBreak.duration, 10);
+            const breakEndTime = `${date} ${dateUtil.hourFromMinute(breakEndInMinute)}`;
+            filteredEventTimes =
+              this.alterEventsBasedOnBreaks(breakStartTime, breakEndTime, date, filteredEventTimes);
+            this.addBreaksToCalendar(breakStartTime, breakEndTime, filteredEventTimes);
+        }
+      });
+      return filteredEventTimes;
+    },
+    alterEventsBasedOnBreaks(breakStartTime, breakEndTime, date, eventTimes) {
+      _.remove(eventTimes, (event) => {
+        return dateUtil.isAfterEquals(event.start , breakStartTime)
+          && dateUtil.isBeforeEquals(event.end, breakEndTime);
+      });
+      _.forEach(eventTimes, (event) => {
+        const eventStart = `${date} ${event.start}`;
+        const eventEnd = `${date} ${event.end}`;
+        if (dateUtil.isAfter(event.end, breakStartTime) && dateUtil.isBefore(event.start, breakStartTime)) {
+          event.end = breakStartTime;
+          event.label = `${_.split(event.start, ' ')[1]} - ${_.split(event.end, ' ')[1]}`;
+        }
+        if (dateUtil.isBefore(event.start, breakEndTime) && dateUtil.isAfter(event.end, breakEndTime)) {
+          event.start = breakEndTime;
+          event.label = `${_.split(event.start, ' ')[1]} - ${_.split(event.end, ' ')[1]}`;
+        }
+      });
+      return eventTimes;
+    },
+    addBreaksToCalendar(startDate, endDate, eventTimes) {
+      if (!_.isEmpty(eventTimes)) {
+        this.events.push({
+          name: 'szünet',
+          start: startDate,
+          end: endDate,
+          color: 'grey',
+        });
+      }
+    },
+    alterEventsBasedOnLeaves(date, eventTimes) {
+      let filteredEventTimes = eventTimes;
+      _.forEach(this.bookLeaves, (leave) =>  {
+        const datesBetweenLeaves =
+          dateUtil.getStringArrayBetweenTwoDates(leave.leaveInterval[0], leave.leaveInterval[1]);
+        if (_.includes(datesBetweenLeaves, date)) {
+          filteredEventTimes = [];
+        }
+      });
+      return filteredEventTimes;
+    },
+    addLeavesToCalendar() {
+      _.forEach(this.bookLeaves, (leave) => {
+        if (dateUtil.isAfter(leave.leaveInterval[1], this.today)) {
+          this.events.push({
+          name: 'szabadság',
+          start: leave.leaveInterval[0],
+          end: leave.leaveInterval[1],
+          color: 'grey',
+        });
+        }
+      });
+    },
 
-        nativeEvent.stopPropagation();
-      },
-      updateRange({ start, end }) {
-        // You could load events from an outside source (like database)
-        // now that we have the start and end dates on the calendar
-        this.start = start;
-        this.end = end;
-      },
-      closeEventDetails() {
+    // CALENDAR VIEW
+    viewWeek({ date }) {
+      this.focus = date;
+      this.type = 'week';
+    },
+    getEventColor(event) {
+      return event.color;
+    },
+    setToday() {
+      this.focus = this.today;
+    },
+    prev() {
+      this.setUpEventsInCalendar();
+      this.$refs.calendar.prev();
+    },
+    next() {
+      this.setUpEventsInCalendar();
+      this.$refs.calendar.next();
+    },
+    showEvent({ nativeEvent, event }) {
+      const open = () => {
+        this.selectedEvent = event;
+        this.selectedElement = nativeEvent.target;
+        setTimeout(() => this.selectedOpen = true, 10);
+      };
+
+      if (this.selectedOpen) {
         this.selectedOpen = false;
-      },
-      openBookingDialog(event) {
-        this.closeEventDetails();
-        this.$root.$emit('bookingDialog', event);
-      },
-      setColorFromAllapot(allapot) {
-        switch (allapot) {
-          case ('szabad'):
-            return 'blue';
-          case ('foglalt'):
-            return 'red';
-          case ('szunet'):
-            return 'grey';
-        }
-        return 'green';
-      },
+        setTimeout(open, 10);
+      } else {
+        open();
+      }
+
+      nativeEvent.stopPropagation();
     },
-  };
+    updateRange({ start, end }) {
+      // You could load events from an outside source (like database)
+      // now that we have the start and end dates on the calendar
+      this.start = start;
+      this.end = end;
+    },
+    closeEventDetails() {
+      this.selectedOpen = false;
+    },
+    openBookingDialog(event) {
+      this.closeEventDetails();
+      this.$root.$emit('bookingDialog', event);
+    },
+    setColorFromAllapot(allapot) {
+      switch (allapot) {
+        case ('szabad'):
+          return 'blue';
+        case ('foglalt'):
+          return 'red';
+        case ('szunet'):
+          return 'grey';
+      }
+      return 'green';
+    },
+  },
+};
 </script>
 
 <style scoped>

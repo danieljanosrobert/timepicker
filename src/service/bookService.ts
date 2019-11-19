@@ -19,13 +19,13 @@ export default {
   getLeaveSettings(param: string) {
     return Api().get(`/settings/leaves/${param}`);
   },
-  getBooktimes(param: string) {
-    return Api().get(`book/book-times/${param}`);
+  getBooktime(param: string) {
+    return Api().get(`book/book-time/${param}`);
   },
   getBreaks(param: string) {
     return Api().get(`book/breaks/${param}`);
   },
   getLeaves(param: string) {
-    return Api().get(`book/leaves${param}`);
+    return Api().get(`book/leaves/${param}`);
   },
 };
