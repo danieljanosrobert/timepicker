@@ -46,7 +46,7 @@ var Breaks_1 = require("../models/Breaks");
 var Leaves_1 = require("../models/Leaves");
 var bcrypt_1 = __importDefault(require("bcrypt"));
 var Services_1 = require("../models/Services");
-exports.getBookTimeSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getBookTime = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = Base64.decode(req.params.service_id);
@@ -122,7 +122,7 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
         return [2 /*return*/];
     });
 }); };
-exports.getBreakSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getBreaks = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = Base64.decode(req.params.service_id);
@@ -190,7 +190,7 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
         return [2 /*return*/];
     });
 }); };
-exports.getLeaveSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getLeaves = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = Base64.decode(req.params.service_id);

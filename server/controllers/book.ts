@@ -7,7 +7,7 @@ import { Leave } from '../models/Leaves';
 import bcrypt from 'bcrypt';
 import { Service } from '../models/Services';
 
-export const getBookTimeSettings = async (req: any, res: Response, next: NextFunction) => {
+export const getBookTime = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   BookTime.findOne({ service_id: serviceId })
     .then((dbBookTime) => {
@@ -75,7 +75,7 @@ export const postSaveBookTime = async (req: any, res: Response, next: NextFuncti
     });
 };
 
-export const getBreakSettings = async (req: any, res: Response, next: NextFunction) => {
+export const getBreaks = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   Break.findOne({ service_id: serviceId })
     .then((dbBreak) => {
@@ -135,7 +135,7 @@ export const postSaveBreaks = async (req: any, res: Response, next: NextFunction
     });
 };
 
-export const getLeaveSettings = async (req: any, res: Response, next: NextFunction) => {
+export const getLeaves = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   Leave.findOne({ service_id: serviceId })
     .then((dbLeave) => {
