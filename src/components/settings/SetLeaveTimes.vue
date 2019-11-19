@@ -65,6 +65,7 @@
 
 <script>
 import bookService from '@/service/bookService';
+import dateUtil from '../../utils/dateUtil';
 
 export default {
 name: 'SetLeaveTimes',
@@ -119,9 +120,7 @@ name: 'SetLeaveTimes',
       if (!date) {
         return false;
       }
-      const selectedDate = new Date(date).getTime();
-      const actualDate = new Date(this.getToday()).getTime();
-      return selectedDate < actualDate ? true : false;
+      return dateUtil.isBefore(date, this.getToday());
     },
     getToday() {
       const result = new Date();
