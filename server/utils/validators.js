@@ -11,7 +11,7 @@ exports.credentialValidator = [
         .isLength({ min: 6 })
         .withMessage('Password must be at least 6 characters long'),
 ];
-exports.registerValidator = exports.credentialValidator.concat([
+exports.passwordValidator = [
     express_validator_1.check('confirmPassword', 'ConfirmPassword must exist').exists(),
     express_validator_1.check('password', 'Password and ConfirmPassword should be equal')
         .custom(function (value, _a) {
@@ -23,4 +23,18 @@ exports.registerValidator = exports.credentialValidator.concat([
             return value;
         }
     }),
-]);
+];
+exports.registerValidator = exports.credentialValidator.concat(exports.passwordValidator);
+exports.passwordChangeValidator = [
+    express_validator_1.check('oldPassword', 'OldPassword must exist').exists(),
+    express_validator_1.check('oldPassword', 'Password and OldPassword should not be equal')
+        .custom(function (value, _a) {
+        var req = _a.req;
+        if (value === req.body.password) {
+            throw new Error('Passwords match');
+        }
+        else {
+            return value;
+        }
+    })
+].concat(exports.passwordValidator);

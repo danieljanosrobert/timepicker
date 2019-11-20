@@ -7,4 +7,7 @@ export default {
   login(credentials: any) {
     return Api().post('admin/login', credentials);
   },
+  changePassword(credentials: any) {
+    return Api().post('/settings/change-password/admin', credentials);
+  },
 };

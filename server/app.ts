@@ -13,6 +13,7 @@ import * as contactController from './controllers/contact';
 import * as bookController from './controllers/book';
 import * as messageController from './controllers/messages';
 import multer from 'multer';
+import {constants} from 'http2';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -49,10 +50,18 @@ db.once('open', () => {
   router.get('/book/breaks/:service_id', bookController.getBreaks);
   router.get('/book/leaves/:service_id', bookController.getLeaves);
 
-  router.post('/admin/auth', middleware.isAuthenticatedAsAdmin, adminUserController.auth);
+  router.post('/user/auth', middleware.isAuthenticatedAsUser, (req, res) => res.sendStatus(constants.HTTP_STATUS_OK));
+  router.post('/admin/auth', middleware.isAuthenticatedAsAdmin, (req, res) => res.sendStatus(constants.HTTP_STATUS_OK));
   router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
   router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
 
+  router.post('/settings/change-password', middleware.isAuthenticatedAsUser, validator.passwordChangeValidator,
+  userController.postChangePassword);
+  router.post('/settings/get-user-data', middleware.isAuthenticatedAsUser, userController.postGetUserData);
+  router.post('/settings/modify-user', middleware.isAuthenticatedAsUser, userController.updateUserData);
+
+  router.post('/settings/change-password/admin', middleware.isAuthenticatedAsAdmin, validator.passwordChangeValidator,
+    adminUserController.postChangePassword);
   router.post('/settings/service', middleware.isAuthenticatedAsAdmin, upload.single('image'),
     serviceController.postUpdateService);
   router.get('/settings/service/:service_id', middleware.isAuthenticatedAsAdmin, serviceController.getServiceSettings);

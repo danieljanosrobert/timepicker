@@ -70,7 +70,7 @@ export const postLogin = async (req: Request, res: Response) => {
   AdminUser.findOne({ email: user.email })
     .then((dbUser) => {
       if (!dbUser) {
-        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'User not found' });
       }
       bcrypt.compare(user.password, dbUser.password)
         .then((isMatch) => {
@@ -78,6 +78,37 @@ export const postLogin = async (req: Request, res: Response) => {
             jwtSignUser(res, { email: user.email }, undefined, ADMIN);
           } else {
             return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
+          }
+        });
+    });
+};
+
+/**
+ * POST /settings/change-password
+ * Change password
+ */
+export const postChangePassword = async (req: Request, res: Response) => {
+console.log(req.body)
+
+  const validationErrorResult = validationResult(req);
+
+  if (!validationErrorResult.isEmpty()) {
+    console.log(validationErrorResult.mapped());
+    return res.status(constants.HTTP_STATUS_BAD_REQUEST).send('Validation error');
+  }
+  AdminUser.findOne({ email: req.body.user_email })
+    .then((dbUser) => {
+      if (!dbUser) {
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+      }
+      bcrypt.compare(req.body.oldPassword, dbUser.password)
+        .then((isMatch) => {
+          if (isMatch) {
+            dbUser.password = req.body.password;
+            dbUser.save();
+            return res.sendStatus(constants.HTTP_STATUS_OK);
+          } else {
+            return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
           }
         });
     });

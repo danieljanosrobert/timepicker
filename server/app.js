@@ -25,6 +25,7 @@ var contactController = __importStar(require("./controllers/contact"));
 var bookController = __importStar(require("./controllers/book"));
 var messageController = __importStar(require("./controllers/messages"));
 var multer_1 = __importDefault(require("multer"));
+var http2_1 = require("http2");
 var upload = multer_1.default({
     storage: multer_1.default.memoryStorage(),
 });
@@ -53,9 +54,14 @@ db.once('open', function () {
     router.get('/book/book-time/:service_id', bookController.getBookTime);
     router.get('/book/breaks/:service_id', bookController.getBreaks);
     router.get('/book/leaves/:service_id', bookController.getLeaves);
-    router.post('/admin/auth', middleware_1.middleware.isAuthenticatedAsAdmin, adminUserController.auth);
+    router.post('/user/auth', middleware_1.middleware.isAuthenticatedAsUser, function (req, res) { return res.sendStatus(http2_1.constants.HTTP_STATUS_OK); });
+    router.post('/admin/auth', middleware_1.middleware.isAuthenticatedAsAdmin, function (req, res) { return res.sendStatus(http2_1.constants.HTTP_STATUS_OK); });
     router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
     router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
+    router.post('/settings/change-password', middleware_1.middleware.isAuthenticatedAsUser, validator.passwordChangeValidator, userController.postChangePassword);
+    router.post('/settings/get-user-data', middleware_1.middleware.isAuthenticatedAsUser, userController.postGetUserData);
+    router.post('/settings/modify-user', middleware_1.middleware.isAuthenticatedAsUser, userController.updateUserData);
+    router.post('/settings/change-password/admin', middleware_1.middleware.isAuthenticatedAsAdmin, validator.passwordChangeValidator, adminUserController.postChangePassword);
     router.post('/settings/service', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), serviceController.postUpdateService);
     router.get('/settings/service/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, serviceController.getServiceSettings);
     router.post('/settings/contact', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), contactController.postSaveContact);

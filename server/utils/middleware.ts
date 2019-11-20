@@ -33,6 +33,22 @@ class Middleware {
       res.status(constants.HTTP_STATUS_UNAUTHORIZED).send({error: 'auth'});
     }
   }
+
+  public static async isAuthenticatedAsUser(req: any, res: any, next: any): Promise<any> {
+    const header = req.headers.authorization;
+    if (!_.isEmpty(header)) {
+      const token = header.split(' ')[1];
+      jwt.verify(token, secret, (err: any, authData: any) => {
+        if (err) {
+          res.status(constants.HTTP_STATUS_UNAUTHORIZED).send({error: 'auth'});
+        } else {
+          next();
+        }
+      });
+    } else {
+      res.status(constants.HTTP_STATUS_UNAUTHORIZED).send({error: 'auth'});
+    }
+  }
 }
 
 export {Middleware as middleware};

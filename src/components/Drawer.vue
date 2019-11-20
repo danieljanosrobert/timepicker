@@ -168,7 +168,7 @@
               {title: 'Foglalás', icon: 'mdi-clock-start', url: '/settings/book'},
               {title: 'Üzenőfal', icon: 'mdi-email', url: '/settings/message-board'},
               {title: 'Elérhetőségek', icon: 'mdi-account-supervisor-circle', url: '/settings/contact'},
-              {title: 'Jelszó megváltoztatása', icon: 'mdi-lock', url: '/admin/settings/password'},
+              {title: 'Jelszó megváltoztatása', icon: 'mdi-lock', url: '/settings/change-password'},
             ],
           },
           {title: 'Galléria', icon: 'mdi-image-album', url: '/about'},
@@ -195,6 +195,7 @@
       });
       this.$root.$on('loggedIn', () => {
         this.adminLoginMenu = false;
+        this.userLoginMenu = false;
       });
       this.adminItems[0].url = `/about/${this.usersServiceId}`;
     },
@@ -206,7 +207,7 @@
         }
         this.$store.dispatch('openSnackbar', {
           message: 'Sikeres kijelentkezés',
-          type: 'success',
+          type: 'warning',
         });
       },
       openRegisterDialog() {

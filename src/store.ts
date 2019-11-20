@@ -89,5 +89,6 @@ export default new Vuex.Store({
   },
   getters: {
     adminAuth: (state) => state.loggedInAsAdmin,
+    userAuth: (state) => state.loggedInAsUser,
   },
 });

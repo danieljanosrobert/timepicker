@@ -37,7 +37,7 @@
                 </v-col>
                 <v-col cols="12" sm="6">
                   <v-select v-model="age"
-                          :items="['0-17', '18-24', '25-34', '35-44', '45-54', '54+']"
+                          :items="ages"
                           label="Kor"
                   ></v-select>
                 </v-col>
@@ -90,6 +90,9 @@ export default {
     serviceTags() {
       return constants.serviceTags;
     },
+    ages() {
+      return constants.ages;
+    },
   },
   mounted() {
     this.$root.$on('openRegisterDialog', () => {
@@ -107,7 +110,7 @@ export default {
           firstName: this.firstName,
           city: this.city,
           age: this.age,
-          selectedServiceTags: JSON.stringify(this.selectedServiceTags),
+          selectedServiceTags: this.selectedServiceTags,
         });
         this.$store.dispatch('openSnackbar', {
           message: 'Sikeres regisztráció. Lépjen be az oldal használatához.',

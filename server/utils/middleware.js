@@ -94,6 +94,29 @@ var Middleware = /** @class */ (function () {
             });
         });
     };
+    Middleware.isAuthenticatedAsUser = function (req, res, next) {
+        return __awaiter(this, void 0, void 0, function () {
+            var header, token;
+            return __generator(this, function (_a) {
+                header = req.headers.authorization;
+                if (!_.isEmpty(header)) {
+                    token = header.split(' ')[1];
+                    jsonwebtoken_1.default.verify(token, secret, function (err, authData) {
+                        if (err) {
+                            res.status(http2_1.constants.HTTP_STATUS_UNAUTHORIZED).send({ error: 'auth' });
+                        }
+                        else {
+                            next();
+                        }
+                    });
+                }
+                else {
+                    res.status(http2_1.constants.HTTP_STATUS_UNAUTHORIZED).send({ error: 'auth' });
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
     return Middleware;
 }());
 exports.middleware = Middleware;

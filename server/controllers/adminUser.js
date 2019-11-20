@@ -118,7 +118,7 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
         AdminUsers_1.AdminUser.findOne({ email: user.email })
             .then(function (dbUser) {
             if (!dbUser) {
-                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
+                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'User not found' });
             }
             bcrypt_1.default.compare(user.password, dbUser.password)
                 .then(function (isMatch) {
@@ -127,6 +127,39 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
                 }
                 else {
                     return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
+                }
+            });
+        });
+        return [2 /*return*/];
+    });
+}); };
+/**
+ * POST /settings/change-password
+ * Change password
+ */
+exports.postChangePassword = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var validationErrorResult;
+    return __generator(this, function (_a) {
+        console.log(req.body);
+        validationErrorResult = express_validator_1.validationResult(req);
+        if (!validationErrorResult.isEmpty()) {
+            console.log(validationErrorResult.mapped());
+            return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send('Validation error')];
+        }
+        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
+            .then(function (dbUser) {
+            if (!dbUser) {
+                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+            }
+            bcrypt_1.default.compare(req.body.oldPassword, dbUser.password)
+                .then(function (isMatch) {
+                if (isMatch) {
+                    dbUser.password = req.body.password;
+                    dbUser.save();
+                    return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                }
+                else {
+                    return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
                 }
             });
         });

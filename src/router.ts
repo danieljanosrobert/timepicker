@@ -2,14 +2,18 @@ import Vue from 'vue';
 import Router from 'vue-router';
 import store from '@/store';
 import adminAuth from '@/middleware/adminAuth';
-import Home from './views/Home.vue';
-import About from './views/About.vue';
-import Search from './views/Search.vue';
-import Register from './views/admin/Register.vue';
-import Service from './views/admin/settings/SearchingResultSettings.vue';
-import Contact from './views/admin/settings/ContactSettings.vue';
-import Book from './views/admin/settings/BookSettings.vue';
-import MessageBoard from './views/admin/settings/MessageBoard.vue';
+import userAuth from '@/middleware/userAuth';
+import middlewarePipeline from '@/middleware/middlewarePipeline';
+import Home from '@/views/Home.vue';
+import About from '@/views/About.vue';
+import Search from '@/views/Search.vue';
+import Register from '@/views/admin/Register.vue';
+import Settings from '@/views/Settings.vue';
+import Service from '@/views/admin/settings/SearchingResultSettings.vue';
+import Contact from '@/views/admin/settings/ContactSettings.vue';
+import Book from '@/views/admin/settings/BookSettings.vue';
+import MessageBoard from '@/views/admin/settings/MessageBoard.vue';
+import PasswordSettings from '@/views/admin/settings/PasswordSettings.vue';
 
 Vue.use(Router);
 
@@ -38,11 +42,21 @@ const router = new Router({
       component: Register,
     },
     {
+      path: '/settings',
+      name: 'settings',
+      component: Settings,
+      meta: {
+        middleware: [
+          userAuth,
+        ],
+      },
+    },
+    {
       path: '/settings/service',
       name: 'service',
       component: Service,
       meta: {
-        middleware: [ adminAuth ],
+        middleware: [adminAuth],
       },
     },
     {
@@ -50,7 +64,7 @@ const router = new Router({
       name: 'contact',
       component: Contact,
       meta: {
-        middleware: [ adminAuth ],
+        middleware: [adminAuth],
       },
     },
     {
@@ -58,7 +72,7 @@ const router = new Router({
       name: 'book',
       component: Book,
       meta: {
-        middleware: [ adminAuth ],
+        middleware: [adminAuth],
       },
     },
     {
@@ -66,7 +80,15 @@ const router = new Router({
       name: 'message-board',
       component: MessageBoard,
       meta: {
-        middleware: [ adminAuth ],
+        middleware: [adminAuth],
+      },
+    },
+    {
+      path: '/settings/change-password',
+      name: 'change-password',
+      component: PasswordSettings,
+      meta: {
+        middleware: [adminAuth],
       },
     },
   ],
@@ -87,7 +109,10 @@ router.beforeEach((to, from, next) => {
   };
 
 
-  return middleware[0]({ ...context });
+  return middleware[0]({
+    ...context,
+    next: middlewarePipeline(context, middleware, 1),
+   });
 
 });
 
