@@ -19,6 +19,9 @@
         'snackbarColor',
       ]),
     },
+    mounted() {
+      this.$store.dispatch('closeSnackbar');
+    },
     watch: {
       snackbarVisible(newValue, oldValue) {
         if (newValue) { this.show = newValue; }
