@@ -38,6 +38,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var AdminUsers_1 = require("../models/AdminUsers");
 var http2_1 = require("http2");
@@ -46,6 +53,8 @@ var Breaks_1 = require("../models/Breaks");
 var Leaves_1 = require("../models/Leaves");
 var bcrypt_1 = __importDefault(require("bcrypt"));
 var Services_1 = require("../models/Services");
+var dateUtil_1 = __importDefault(require("../utils/dateUtil"));
+var _ = __importStar(require("lodash"));
 exports.getBookTime = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
@@ -167,6 +176,19 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
                             });
                             var breakAsObject = breaks.toObject();
                             delete breakAsObject._id;
+                            console.log(JSON.stringify(breakAsObject.breaks));
+                            _.forEach(breakAsObject.breaks, function (currBreak) {
+                                var totalTime = dateUtil_1.default.minuteFromHour(currBreak.startTime) + currBreak.duration;
+                                if (totalTime > 1440) {
+                                    currBreak.duration -= totalTime % 1440;
+                                    breakAsObject.breaks.push({
+                                        date: dateUtil_1.default.createStringFromDate(dateUtil_1.default.addDaysToDate(currBreak.date, 1)),
+                                        startTime: '00:00',
+                                        duration: totalTime % 1440,
+                                        always: currBreak.always,
+                                    });
+                                }
+                            });
                             Breaks_1.Break.findOneAndUpdate({ service_id: breaks.service_id }, breakAsObject, { upsert: true }, function (updateError, no) {
                                 if (updateError) {
                                     console.log(updateError);

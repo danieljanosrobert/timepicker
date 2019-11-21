@@ -6,6 +6,8 @@ import { Break } from '../models/Breaks';
 import { Leave } from '../models/Leaves';
 import bcrypt from 'bcrypt';
 import { Service } from '../models/Services';
+import dateUtil from '../utils/dateUtil';
+import * as _ from 'lodash';
 
 export const getBookTime = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
@@ -115,6 +117,19 @@ export const postSaveBreaks = async (req: any, res: Response, next: NextFunction
                 });
                 const breakAsObject = breaks.toObject();
                 delete breakAsObject._id;
+                console.log(JSON.stringify(breakAsObject.breaks));
+                _.forEach(breakAsObject.breaks, (currBreak) => {
+                  const totalTime = dateUtil.minuteFromHour(currBreak.startTime) + currBreak.duration;
+                  if (totalTime > 1440) {
+                    currBreak.duration -= totalTime % 1440;
+                    breakAsObject.breaks.push({
+                      date: dateUtil.createStringFromDate(dateUtil.addDaysToDate(currBreak.date, 1)),
+                      startTime: '00:00',
+                      duration: totalTime % 1440,
+                      always: currBreak.always,
+                    })
+                  }
+                })
                 Break.findOneAndUpdate({ service_id: breaks.service_id }, breakAsObject, { upsert: true },
                   (updateError, no) => {
                     if (updateError) {

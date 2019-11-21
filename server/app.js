@@ -24,6 +24,7 @@ var serviceController = __importStar(require("./controllers/service"));
 var contactController = __importStar(require("./controllers/contact"));
 var bookController = __importStar(require("./controllers/book"));
 var messageController = __importStar(require("./controllers/messages"));
+var reservationController = __importStar(require("./controllers/reservation"));
 var multer_1 = __importDefault(require("multer"));
 var http2_1 = require("http2");
 var upload = multer_1.default({
@@ -54,6 +55,8 @@ db.once('open', function () {
     router.get('/book/book-time/:service_id', bookController.getBookTime);
     router.get('/book/breaks/:service_id', bookController.getBreaks);
     router.get('/book/leaves/:service_id', bookController.getLeaves);
+    router.post('/reserve', reservationController.postReserve);
+    router.get('/reservations/:service_id', reservationController.getReservations);
     router.post('/user/auth', middleware_1.middleware.isAuthenticatedAsUser, function (req, res) { return res.sendStatus(http2_1.constants.HTTP_STATUS_OK); });
     router.post('/admin/auth', middleware_1.middleware.isAuthenticatedAsAdmin, function (req, res) { return res.sendStatus(http2_1.constants.HTTP_STATUS_OK); });
     router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);

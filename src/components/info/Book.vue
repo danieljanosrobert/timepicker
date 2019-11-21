@@ -61,7 +61,7 @@
                 @click:event="showEvent" @click:more="viewWeek" @change="updateRange"> </v-calendar>
         <v-menu v-model="selectedOpen" :close-on-content-click="false" :activator="selectedElement" offset-x>
 
-          <v-card color="grey lighten-4" in-width="350px" flat>
+          <v-card :disabled="isCardDisabled(selectedEvent)" color="grey lighten-4" in-width="350px" flat>
             <v-toolbar :color="selectedEvent.color" dark>
               <!--<v-btn icon>
                 <v-icon>mdi-pencil</v-icon>
@@ -79,7 +79,7 @@
               <span v-html="selectedEvent.details"></span>
             </v-card-text>
 
-            <v-card-actions>
+            <v-card-actions v-if="!isCardDisabled(selectedEvent)">
               <v-btn text color="secondary" @click="closeEventDetails">
                 Mégse
               </v-btn>
@@ -99,6 +99,7 @@
 
 <script>
 import bookService from '@/service/bookService';
+import reservationService from '@/service/reservationService';
 import dateUtil from '@/utils/dateUtil';
 
 export default {
@@ -119,6 +120,13 @@ export default {
     bookLeaves: [{
       leaveInterval: ['2019-01-03', '2019-01-04'],
       label: '2019-01-03 - 2019-01-04',
+    }],
+    reservations: [{
+        lastName: '',
+        firstName: '',
+        start: '',
+        end: '',
+        createdAt: '',
     }],
 
     // CALENDAR
@@ -184,6 +192,12 @@ export default {
     this.focus = this.today;
     this.$refs.calendar.checkChange();
     this.addLeavesToCalendar();
+    this.$root.$on('newReservation', async () => {
+      this.renderedEventDates = [];
+      this.events = [];
+      await this.fetchBook();
+      this.addLeavesToCalendar();
+    });
   },
   methods: {
     // MOUNT
@@ -204,10 +218,17 @@ export default {
         .then( (leaves) => {
           this.bookLeaves = leaves.data.leaves;
         });
+      await this.fetchReservations();
       this.generateEventsFromBook();
     },
     isUserServiceOwner() {
       return this.$store.state.loggedInAsAdmin && this.$store.state.ownServiceId === this.$route.params.service_id;
+    },
+    async fetchReservations() {
+      await reservationService.getReservations(this.$route.params.service_id)
+        .then( (reservations) => {
+          this.reservations = reservations.data;
+        });
     },
 
     // GENERATING
@@ -262,7 +283,7 @@ export default {
       if (shiftStartingMinute > shiftEndingMinute) {
         for (let currMin = shiftStartingMinute; currMin < shiftEndingMinute + 1440; currMin += this.bookDuration) {
           const startOfEvent = dateUtil.hourFromMinute(currMin);
-          const endOfEvent = shiftEndingMinute + 1440 + this.bookDuration < currMin + this.bookDuration
+          const endOfEvent = shiftEndingMinute + 1440 < currMin + this.bookDuration
             ? dateUtil.hourFromMinute(shiftEndingMinute)
             : dateUtil.hourFromMinute(currMin + this.bookDuration);
           const isOnAnotherDay = currMin % 1440 > dateUtil.minuteFromHour(endOfEvent);
@@ -275,7 +296,7 @@ export default {
       } else {
         for (let currMin = shiftStartingMinute; currMin < shiftEndingMinute; currMin += this.bookDuration) {
           const startOfEvent = dateUtil.hourFromMinute(currMin);
-          const endOfEvent = shiftEndingMinute + this.bookDuration < currMin + this.bookDuration
+          const endOfEvent = shiftEndingMinute < currMin + this.bookDuration
             ? dateUtil.hourFromMinute(shiftEndingMinute)
             : dateUtil.hourFromMinute(currMin + this.bookDuration);
           eventTimes.push({
@@ -285,6 +306,7 @@ export default {
           });
         }
       }
+      eventTimes = this.showOccupiedReservations(date, eventTimes);
       eventTimes = this.alterEventsBasedOnLeaves(date, eventTimes);
       eventTimes = this.createBreaksIfNeeded(date, eventTimes);
       _.forEach(eventTimes, (eventTime) => {
@@ -296,6 +318,23 @@ export default {
         });
       });
     },
+    showOccupiedReservations(date, eventTimes) {
+      _.forEach(this.reservations, (reservation) => {
+        _.forEach(eventTimes, (event) => {
+          if (event && dateUtil.equals(reservation.start, event.start)) {
+            this.events.push({
+              name: `${this.$store.getters.adminAuth ? reservation.lastName : 'Foglalt'}`,
+              details: `${this.$store.getters.adminAuth ? reservation.lastName + ' ' + reservation.firstName : ''}`,
+              start: reservation.start,
+              end: reservation.end,
+              color: 'error',
+            });
+            _.pull(eventTimes, event);
+          }
+        });
+      });
+      return eventTimes;
+    },
     createBreaksIfNeeded(date, eventTimes) {
       let filteredEventTimes = eventTimes;
       _.forEach(this.bookBreaks, (currBreak) => {
@@ -305,20 +344,18 @@ export default {
             const breakEndInMinute = dateUtil.minuteFromHour(currBreak.startTime) + parseInt(currBreak.duration, 10);
             const breakEndTime = `${date} ${dateUtil.hourFromMinute(breakEndInMinute)}`;
             filteredEventTimes =
-              this.alterEventsBasedOnBreaks(breakStartTime, breakEndTime, date, filteredEventTimes);
+              this.alterEventsBasedOnBreaks(breakStartTime, breakEndTime, filteredEventTimes);
             this.addBreaksToCalendar(breakStartTime, breakEndTime, filteredEventTimes);
         }
       });
       return filteredEventTimes;
     },
-    alterEventsBasedOnBreaks(breakStartTime, breakEndTime, date, eventTimes) {
+    alterEventsBasedOnBreaks(breakStartTime, breakEndTime, eventTimes) {
       _.remove(eventTimes, (event) => {
         return dateUtil.isAfterEquals(event.start , breakStartTime)
           && dateUtil.isBeforeEquals(event.end, breakEndTime);
       });
       _.forEach(eventTimes, (event) => {
-        const eventStart = `${date} ${event.start}`;
-        const eventEnd = `${date} ${event.end}`;
         if (dateUtil.isAfter(event.end, breakStartTime) && dateUtil.isBefore(event.start, breakStartTime)) {
           event.end = breakStartTime;
           event.label = `${_.split(event.start, ' ')[1]} - ${_.split(event.end, ' ')[1]}`;
@@ -411,6 +448,12 @@ export default {
     openBookingDialog(event) {
       this.closeEventDetails();
       this.$root.$emit('bookingDialog', event);
+    },
+    isCardDisabled(event) {
+      if (!this.$store.getters.adminAuth) {
+        return _.includes(['error', 'grey'], event.color);
+      }
+      return event.color === 'grey';
     },
     setColorFromAllapot(allapot) {
       switch (allapot) {

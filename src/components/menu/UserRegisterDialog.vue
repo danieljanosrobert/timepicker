@@ -120,7 +120,7 @@ export default {
         Object.assign(this.$data, this.$options.data());
       } catch {
         this.$store.dispatch('openSnackbar', {
-          message: 'Valami hiba történt!',
+          message: 'Hiba történt az adatok feldolgozása során. Kérem próbálja újra később',
           type: 'error',
         });
       }

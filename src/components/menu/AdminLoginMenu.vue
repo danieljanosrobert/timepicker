@@ -52,7 +52,7 @@
           });
         } catch {
           this.$store.dispatch('openSnackbar', {
-            message: 'Valami hiba történt!',
+            message: 'Hiba történt bejelentkezés során. Kérem próbálja újra később',
             type: 'error',
           });
         }

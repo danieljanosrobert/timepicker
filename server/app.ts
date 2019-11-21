@@ -12,6 +12,7 @@ import * as serviceController from './controllers/service';
 import * as contactController from './controllers/contact';
 import * as bookController from './controllers/book';
 import * as messageController from './controllers/messages';
+import * as reservationController from './controllers/reservation';
 import multer from 'multer';
 import {constants} from 'http2';
 
@@ -49,6 +50,9 @@ db.once('open', () => {
   router.get('/book/book-time/:service_id', bookController.getBookTime);
   router.get('/book/breaks/:service_id', bookController.getBreaks);
   router.get('/book/leaves/:service_id', bookController.getLeaves);
+
+  router.post('/reserve', reservationController.postReserve);
+  router.get('/reservations/:service_id', reservationController.getReservations);
 
   router.post('/user/auth', middleware.isAuthenticatedAsUser, (req, res) => res.sendStatus(constants.HTTP_STATUS_OK));
   router.post('/admin/auth', middleware.isAuthenticatedAsAdmin, (req, res) => res.sendStatus(constants.HTTP_STATUS_OK));
