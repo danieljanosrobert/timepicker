@@ -13,10 +13,16 @@ var dateUtil = {
         var _a = _.split(hour, ':', 2), h = _a[0], m = _a[1];
         return 60 * parseInt(h, 10) + parseInt(m, 10);
     },
+    hourFromMinute: function (minute) {
+        minute = minute % 1440;
+        var h = ('00' + Math.floor(minute / 60)).slice(-2);
+        var m = ('00' + minute % 60).slice(-2);
+        return h + ":" + m;
+    },
     addDaysToDate: function (dateString, daysToAdd) {
         var dateOfString = new Date(dateString);
         dateOfString.setDate(dateOfString.getDate() + daysToAdd);
-        return dateOfString;
+        return this.createStringFromDate(dateOfString);
     },
     createStringFromDate: function (date) {
         var year = date.getFullYear();

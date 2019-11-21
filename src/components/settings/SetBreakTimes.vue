@@ -111,6 +111,9 @@ name: 'SetBreakTimes',
     breakMinuteFlag: [],
   }),
   async mounted() {
+    this.$root.$on('breaksDeleted', async () => {
+      Object.assign(this.$data, this.$options.data());
+    });
     await this.fetchBreakSettings();
 
     this.breaks.forEach((actualBreak, index) => {

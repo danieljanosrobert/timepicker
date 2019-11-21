@@ -1,5 +1,17 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <v-card>
+    <v-dialog v-model="warnDialog" persistent max-width="460">
+      <v-card>
+        <v-card-title class="headline" style="word-break: normal">Biztosan meg szeretné változtatni az időpontokat?</v-card-title>
+        <v-card-text>Ezzel a művelettel a foglalások elkerülnek helyükről. Továbbá a szünetek törlésre kerülnek. 
+          Új szüneteket felvehet a 'Szünetek beállításai' részen. A művelet nem visszavonható</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn dark color="brown darken-1 pa-2" @click="warnDialog = false">Mégse</v-btn>
+          <v-btn dark color="error darken-4" @click="save()">Mentés</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-col cols="12" class="pa-0">
       <v-card class="pa-0 brown lighten-4">
         <v-card-text class="text-center" style="font-size: 2em;">Időpontok beállításai</v-card-text>
@@ -126,7 +138,7 @@
       </v-col>
     </v-row>
 
-    <v-form class="pa-6" @submit.prevent="save">
+    <v-form class="pa-6" @submit.prevent="warnDialog = true">
       <v-divider class="pb-2"></v-divider>
       <v-text-field
         id="password"
@@ -136,7 +148,7 @@
         type="password"
       ></v-text-field>
 
-      <v-btn class="mr-4" @click="save">Mentés</v-btn>
+      <v-btn class="mr-4" @click="warnDialog = true">Mentés</v-btn>
     </v-form>
   </v-card>
 </template>
@@ -147,6 +159,7 @@ import bookService from '@/service/bookService';
 export default {
 name: 'SetBookTimes',
   data: () => ({
+    warnDialog: false,
     password: '',
     lastMonth: '',
     dateMotnhsMenu: false,
@@ -204,13 +217,15 @@ name: 'SetBookTimes',
           startTime: this.startTime,
           endTime: this.endTime,
           bookDuration: this.bookDuration,
-          selectedWeekdays: JSON.stringify(this.selectedWeekdays),
+          selectedWeekdays: this.selectedWeekdays,
         });
         this.fetchBookSettings();
+        this.warnDialog = false;
         this.$store.dispatch('openSnackbar', {
           message: 'Időpontok beállításai mentésre kerültek',
           type: 'success',
         });
+        this.$root.$emit('breaksDeleted');
       } catch {
         this.$store.dispatch('openSnackbar', {
           message: 'Hiba történt a mentés során!',

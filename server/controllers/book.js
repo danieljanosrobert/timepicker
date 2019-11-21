@@ -35,9 +35,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -45,7 +42,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var reservationController = __importStar(require("./reservation"));
 var AdminUsers_1 = require("../models/AdminUsers");
 var http2_1 = require("http2");
 var BookTimes_1 = require("../models/BookTimes");
@@ -104,17 +105,31 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
                                 startTime: req.body.startTime,
                                 endTime: req.body.endTime,
                                 bookDuration: req.body.bookDuration,
-                                selectedWeekdays: JSON.parse(req.body.selectedWeekdays),
+                                selectedWeekdays: req.body.selectedWeekdays,
                             });
                             var bookTimeAsObject = bookTime.toObject();
                             delete bookTimeAsObject._id;
-                            BookTimes_1.BookTime.findOneAndUpdate({ service_id: bookTime.service_id }, bookTimeAsObject, { upsert: true }, function (updateError, no) {
+                            BookTimes_1.BookTime.findOneAndUpdate({ service_id: bookTime.service_id }, bookTimeAsObject, { upsert: true }, function (updateError, originalBookTime) {
                                 if (updateError) {
                                     console.log(updateError);
                                     return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                                         error: 'Error occured during updating bookTime.',
                                     });
                                 }
+                                if (originalBookTime && originalBookTime.startTime) {
+                                    if (originalBookTime.startTime !== bookTime.startTime
+                                        || originalBookTime.bookDuration !== bookTime.bookDuration
+                                        || originalBookTime.endTime !== bookTime.endTime) {
+                                        reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
+                                    }
+                                }
+                                Breaks_1.Break.deleteOne({ service_id: dbService.service_id }, function (err) {
+                                    if (err) {
+                                        return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                                            error: 'Error occured during deleting breaks.',
+                                        });
+                                    }
+                                });
                                 return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
                             });
                         });
@@ -182,7 +197,7 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
                                 if (totalTime > 1440) {
                                     currBreak.duration -= totalTime % 1440;
                                     breakAsObject.breaks.push({
-                                        date: dateUtil_1.default.createStringFromDate(dateUtil_1.default.addDaysToDate(currBreak.date, 1)),
+                                        date: dateUtil_1.default.addDaysToDate(currBreak.date, 1),
                                         startTime: '00:00',
                                         duration: totalTime % 1440,
                                         always: currBreak.always,

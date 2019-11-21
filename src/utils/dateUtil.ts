@@ -8,7 +8,7 @@ const dateUtil = {
     const daysbetween = this.calculateDaysBetweenDates(firstDate, secondDate);
     for (let index = 0; index <= daysbetween; index++) {
       const nextDay = this.addDaysToDate(firstDate, index);
-      result.push(this.createStringFromDate(nextDay));
+      result.push(nextDay);
     }
     return result;
   },
@@ -18,10 +18,10 @@ const dateUtil = {
     return Math.round(Math.abs((new Date(secondDate).getTime() - new Date(firstDate).getTime()) / oneDay));
   },
 
-  addDaysToDate(dateString: string, daysToAdd: number): Date {
+  addDaysToDate(dateString: string, daysToAdd: number): string {
     const dateOfString = new Date(dateString);
     dateOfString.setDate(dateOfString.getDate() + daysToAdd);
-    return dateOfString;
+    return this.createStringFromDate(dateOfString);
   },
 
   createStringFromDate(date: Date): string {

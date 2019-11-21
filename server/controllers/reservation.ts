@@ -16,7 +16,7 @@ export const getReservations = async (req: any, res: Response, next: NextFunctio
         });
       }
       const today = new Date();
-      today.setHours(0,0,0,0);
+      today.setHours(0, 0, 0, 0);
       const result = _.filter(dbReservation, (reservation) => {
         return dateUtil.isAfterEquals(reservation.start, new Date(today));
       })
@@ -42,7 +42,6 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
         age: req.body.age,
         comment: req.body.comment,
         start: req.body.start,
-        end: req.body.end,
       });
       Reservation.findOne({ service_id: serviceId, start: reservation.start })
         .then((dbReservation) => {
@@ -60,5 +59,87 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
           });
           res.sendStatus(constants.HTTP_STATUS_OK);
         });
+    });
+};
+
+export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime: any) => {
+  Reservation.find({ service_id: bookTime.service_id }, undefined, { sort: 'start' })
+    .then((dbReservation) => {
+      if (!dbReservation) {
+        return;
+      }
+      const oldStartTime = dateUtil.minuteFromHour(originalBookTime.startTime);
+      let oldEndTime = dateUtil.minuteFromHour(originalBookTime.endTime);
+      const newStartTime = dateUtil.minuteFromHour(bookTime.startTime);
+      let newEndTime = dateUtil.minuteFromHour(bookTime.endTime);
+
+      _.forEach(dbReservation, (reservation) => {
+        let [reservationDate, reservationTime] = _.split(reservation.start, ' ');
+
+        // check if reservation was shifted by break. If so, put the reservation on the next point based on duration
+        if (dateUtil.minuteFromHour(reservationTime) % originalBookTime.bookDuration
+          !== oldStartTime % originalBookTime.bookDuration) {
+          reservationTime = dateUtil.hourFromMinute(
+            dateUtil.minuteFromHour(reservationTime) + originalBookTime.bookDuration
+            - dateUtil.minuteFromHour(reservationTime) % originalBookTime.bookDuration
+            + oldStartTime % originalBookTime.bookDuration);
+        }
+        // check if duration changed. If so, put the reservation on the next point based on new duration
+        if (originalBookTime.bookDuration !== bookTime.bookDuration) {
+          if (dateUtil.minuteFromHour(reservationTime) % bookTime.bookDuration
+            !== newStartTime % bookTime.bookDuration) {
+            reservationTime = dateUtil.hourFromMinute(
+              dateUtil.minuteFromHour(reservationTime) + bookTime.bookDuration
+              - dateUtil.minuteFromHour(reservationTime) % bookTime.bookDuration
+              + newStartTime % bookTime.bookDuration);
+          }
+        }
+        // check if starting time changed. If so, set the reservation time to startTime
+        if (newStartTime > oldStartTime) {
+          if (dateUtil.minuteFromHour(reservationTime) < newStartTime) {
+            reservationTime = dateUtil.hourFromMinute(newStartTime);
+          }
+        }
+
+        // check if starting time changed. If so, set the reservation time to startTime
+        if (newEndTime < oldEndTime) {
+          if (dateUtil.minuteFromHour(reservationTime) > newEndTime) {
+            reservationTime = dateUtil.hourFromMinute(newEndTime - bookTime.bookDuration < newStartTime
+              ? newStartTime : newEndTime - bookTime.bookDuration);
+          }
+        }
+
+        const resultDate = dateUtil.addDaysToDate(reservationDate, Math.floor(dateUtil.minuteFromHour(reservationTime) / 1440))
+        reservation.start = `${resultDate} ${reservationTime}`
+      });
+
+      // shift times by if on the same position
+      const countByTime = _.countBy(dbReservation, 'start');
+      let occupiedTimes = _.keysIn(countByTime);
+      _.forEach(countByTime, (count, date) => {
+        if (count > 1) {
+          const filteredReservations = _.filter(dbReservation, (res) => res.start === date);
+          _.forEach(filteredReservations, (reservation) => {
+            let flag = true;
+            let [reservationDate, reservationTime] = _.split(reservation.start, ' ');
+            let reservationTimeInMinutes = dateUtil.minuteFromHour(reservationTime);
+            while (flag) {
+              if (reservationTimeInMinutes >= newEndTime) {
+                reservationTimeInMinutes = newStartTime;
+                reservationDate = dateUtil.addDaysToDate(reservationDate, 1);
+              }
+              const constructedDate = `${reservationDate} ${dateUtil.hourFromMinute(reservationTimeInMinutes)}`;
+              if (!_.includes(occupiedTimes, constructedDate)) {
+                occupiedTimes.push(constructedDate);
+                reservation.start = constructedDate;
+                flag = false;
+              }
+              reservationTimeInMinutes += bookTime.bookDuration;
+            }
+          });
+        }
+      });
+      // save modified reservations
+      _.forEach(dbReservation, (reservation) => reservation.save());
     });
 };

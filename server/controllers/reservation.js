@@ -93,7 +93,6 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                 age: req.body.age,
                 comment: req.body.comment,
                 start: req.body.start,
-                end: req.body.end,
             });
             Reservations_1.Reservation.findOne({ service_id: serviceId, start: reservation.start })
                 .then(function (dbReservation) {
@@ -111,6 +110,83 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                 });
                 res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
             });
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        Reservations_1.Reservation.find({ service_id: bookTime.service_id }, undefined, { sort: 'start' })
+            .then(function (dbReservation) {
+            if (!dbReservation) {
+                return;
+            }
+            var oldStartTime = dateUtil_1.default.minuteFromHour(originalBookTime.startTime);
+            var oldEndTime = dateUtil_1.default.minuteFromHour(originalBookTime.endTime);
+            var newStartTime = dateUtil_1.default.minuteFromHour(bookTime.startTime);
+            var newEndTime = dateUtil_1.default.minuteFromHour(bookTime.endTime);
+            _.forEach(dbReservation, function (reservation) {
+                var _a = _.split(reservation.start, ' '), reservationDate = _a[0], reservationTime = _a[1];
+                // check if reservation was shifted by break. If so, put the reservation on the next point based on duration
+                if (dateUtil_1.default.minuteFromHour(reservationTime) % originalBookTime.bookDuration
+                    !== oldStartTime % originalBookTime.bookDuration) {
+                    reservationTime = dateUtil_1.default.hourFromMinute(dateUtil_1.default.minuteFromHour(reservationTime) + originalBookTime.bookDuration
+                        - dateUtil_1.default.minuteFromHour(reservationTime) % originalBookTime.bookDuration
+                        + oldStartTime % originalBookTime.bookDuration);
+                }
+                // check if duration changed. If so, put the reservation on the next point based on new duration
+                if (originalBookTime.bookDuration !== bookTime.bookDuration) {
+                    if (dateUtil_1.default.minuteFromHour(reservationTime) % bookTime.bookDuration
+                        !== newStartTime % bookTime.bookDuration) {
+                        reservationTime = dateUtil_1.default.hourFromMinute(dateUtil_1.default.minuteFromHour(reservationTime) + bookTime.bookDuration
+                            - dateUtil_1.default.minuteFromHour(reservationTime) % bookTime.bookDuration
+                            + newStartTime % bookTime.bookDuration);
+                    }
+                }
+                // check if starting time changed. If so, set the reservation time to startTime
+                if (newStartTime > oldStartTime) {
+                    if (dateUtil_1.default.minuteFromHour(reservationTime) < newStartTime) {
+                        reservationTime = dateUtil_1.default.hourFromMinute(newStartTime);
+                    }
+                }
+                // check if starting time changed. If so, set the reservation time to startTime
+                if (newEndTime < oldEndTime) {
+                    if (dateUtil_1.default.minuteFromHour(reservationTime) > newEndTime) {
+                        reservationTime = dateUtil_1.default.hourFromMinute(newEndTime - bookTime.bookDuration < newStartTime
+                            ? newStartTime : newEndTime - bookTime.bookDuration);
+                    }
+                }
+                var resultDate = dateUtil_1.default.addDaysToDate(reservationDate, Math.floor(dateUtil_1.default.minuteFromHour(reservationTime) / 1440));
+                reservation.start = resultDate + " " + reservationTime;
+            });
+            // shift times by if on the same position
+            var countByTime = _.countBy(dbReservation, 'start');
+            var occupiedTimes = _.keysIn(countByTime);
+            _.forEach(countByTime, function (count, date) {
+                if (count > 1) {
+                    var filteredReservations = _.filter(dbReservation, function (res) { return res.start === date; });
+                    _.forEach(filteredReservations, function (reservation) {
+                        var flag = true;
+                        var _a = _.split(reservation.start, ' '), reservationDate = _a[0], reservationTime = _a[1];
+                        var reservationTimeInMinutes = dateUtil_1.default.minuteFromHour(reservationTime);
+                        while (flag) {
+                            if (reservationTimeInMinutes >= newEndTime) {
+                                reservationTimeInMinutes = newStartTime;
+                                reservationDate = dateUtil_1.default.addDaysToDate(reservationDate, 1);
+                            }
+                            var constructedDate = reservationDate + " " + dateUtil_1.default.hourFromMinute(reservationTimeInMinutes);
+                            if (!_.includes(occupiedTimes, constructedDate)) {
+                                occupiedTimes.push(constructedDate);
+                                reservation.start = constructedDate;
+                                flag = false;
+                            }
+                            reservationTimeInMinutes += bookTime.bookDuration;
+                        }
+                    });
+                }
+            });
+            // save modified reservations
+            _.forEach(dbReservation, function (reservation) { return reservation.save(); });
         });
         return [2 /*return*/];
     });

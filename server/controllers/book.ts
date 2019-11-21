@@ -1,4 +1,5 @@
 import { NextFunction, Response } from 'express';
+import * as reservationController from './reservation';
 import { AdminUser } from '../models/AdminUsers';
 import { constants } from "http2";
 import { BookTime } from '../models/BookTimes';
@@ -53,18 +54,32 @@ export const postSaveBookTime = async (req: any, res: Response, next: NextFuncti
                   startTime: req.body.startTime,
                   endTime: req.body.endTime,
                   bookDuration: req.body.bookDuration,
-                  selectedWeekdays: JSON.parse(req.body.selectedWeekdays),
+                  selectedWeekdays: req.body.selectedWeekdays,
                 });
                 const bookTimeAsObject = bookTime.toObject();
                 delete bookTimeAsObject._id;
                 BookTime.findOneAndUpdate({ service_id: bookTime.service_id }, bookTimeAsObject, { upsert: true },
-                  (updateError, no) => {
+                  (updateError, originalBookTime) => {
                     if (updateError) {
                       console.log(updateError);
                       return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                         error: 'Error occured during updating bookTime.',
                       });
                     }
+                    if (originalBookTime && originalBookTime.startTime) {
+                      if (originalBookTime.startTime !== bookTime.startTime
+                        || originalBookTime.bookDuration !== bookTime.bookDuration
+                        || originalBookTime.endTime !== bookTime.endTime) {
+                        reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
+                      }
+                    }
+                    Break.deleteOne({ service_id: dbService.service_id }, (err) => {
+                      if (err) {
+                        return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                          error: 'Error occured during deleting breaks.',
+                        });
+                      }
+                    });
                     return res.sendStatus(constants.HTTP_STATUS_OK);
                   });
               });
@@ -123,7 +138,7 @@ export const postSaveBreaks = async (req: any, res: Response, next: NextFunction
                   if (totalTime > 1440) {
                     currBreak.duration -= totalTime % 1440;
                     breakAsObject.breaks.push({
-                      date: dateUtil.createStringFromDate(dateUtil.addDaysToDate(currBreak.date, 1)),
+                      date: dateUtil.addDaysToDate(currBreak.date, 1),
                       startTime: '00:00',
                       duration: totalTime % 1440,
                       always: currBreak.always,

@@ -5,11 +5,18 @@ const dateUtil = {
     const [h, m] = _.split(hour, ':', 2);
     return 60 * parseInt(h, 10) + parseInt(m, 10);
   },
+
+  hourFromMinute(minute: number): string {
+    minute = minute % 1440;
+    const h = ('00' + Math.floor(minute / 60)).slice(-2);
+    const m = ('00' + minute % 60).slice(-2);
+    return `${h}:${m}`;
+  },
   
-  addDaysToDate(dateString: string, daysToAdd: number): Date {
+  addDaysToDate(dateString: string, daysToAdd: number): string {
     const dateOfString = new Date(dateString);
     dateOfString.setDate(dateOfString.getDate() + daysToAdd);
-    return dateOfString;
+    return this.createStringFromDate(dateOfString);
   },
 
   createStringFromDate(date: Date): string {

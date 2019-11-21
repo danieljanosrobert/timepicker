@@ -135,7 +135,6 @@ export default {
           age: this.age,
           comment: this.comment,
           start: this.event.start,
-          end: this.event.end,
         });
         this.$store.dispatch('openSnackbar', {
           message: 'Sikeres időpontfoglalás',

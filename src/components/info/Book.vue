@@ -202,23 +202,31 @@ export default {
   methods: {
     // MOUNT
     async fetchBook() {
-      await bookService.getBooktime(this.$route.params.service_id)
-        .then( (book) => {
-          this.bookLastMonth = book.data.lastMonth;
-          this.bookStartTime = book.data.startTime;
-          this.bookEndTime = book.data.endTime;
-          this.bookDuration = book.data.bookDuration;
-          this.bookSelectedWeekdays = book.data.selectedWeekdays;
-        });
-      await bookService.getBreaks(this.$route.params.service_id)
+      try {
+        await bookService.getBooktime(this.$route.params.service_id)
+          .then( (book) => {
+            this.bookLastMonth = book.data.lastMonth;
+            this.bookStartTime = book.data.startTime;
+            this.bookEndTime = book.data.endTime;
+            this.bookDuration = book.data.bookDuration;
+            this.bookSelectedWeekdays = book.data.selectedWeekdays;
+          });
+      } catch {}
+      try {
+        await bookService.getBreaks(this.$route.params.service_id)
         .then( (breaks) => {
           this.bookBreaks = breaks.data.breaks;
         });
-      await bookService.getLeaves(this.$route.params.service_id)
-        .then( (leaves) => {
-          this.bookLeaves = leaves.data.leaves;
-        });
-      await this.fetchReservations();
+      } catch {}
+      try {
+        await bookService.getLeaves(this.$route.params.service_id)
+          .then( (leaves) => {
+            this.bookLeaves = leaves.data.leaves;
+          });
+      } catch {}
+      try {
+        await this.fetchReservations();
+      } catch {}
       this.generateEventsFromBook();
     },
     isUserServiceOwner() {
@@ -289,7 +297,7 @@ export default {
           const isOnAnotherDay = currMin % 1440 > dateUtil.minuteFromHour(endOfEvent);
           eventTimes.push({
             start: `${date} ${startOfEvent}`,
-            end: `${isOnAnotherDay ? dateUtil.createStringFromDate(dateUtil.addDaysToDate(date, 1)) : date} ${endOfEvent}`,
+            end: `${isOnAnotherDay ? dateUtil.addDaysToDate(date, 1) : date} ${endOfEvent}`,
             label: `${startOfEvent} - ${endOfEvent}`,
           });
         }
@@ -306,9 +314,9 @@ export default {
           });
         }
       }
-      eventTimes = this.showOccupiedReservations(date, eventTimes);
       eventTimes = this.alterEventsBasedOnLeaves(date, eventTimes);
       eventTimes = this.createBreaksIfNeeded(date, eventTimes);
+      eventTimes = this.showOccupiedReservations(date, eventTimes);
       _.forEach(eventTimes, (eventTime) => {
         this.events.push({
           name: eventTime.label,
@@ -326,7 +334,7 @@ export default {
               name: `${this.$store.getters.adminAuth ? reservation.lastName : 'Foglalt'}`,
               details: `${this.$store.getters.adminAuth ? reservation.lastName + ' ' + reservation.firstName : ''}`,
               start: reservation.start,
-              end: reservation.end,
+              end: event.end,
               color: 'error',
             });
             _.pull(eventTimes, event);
@@ -351,6 +359,10 @@ export default {
       return filteredEventTimes;
     },
     alterEventsBasedOnBreaks(breakStartTime, breakEndTime, eventTimes) {
+      if (dateUtil.isBefore(breakEndTime, breakStartTime)) {
+        const [breakEndDate, breakEndTimeInHour] = _.split(breakEndTime, ' ');
+        breakEndTime = `${dateUtil.addDaysToDate(breakEndDate, 1)} ${breakEndTimeInHour}`;
+      }
       _.remove(eventTimes, (event) => {
         return dateUtil.isAfterEquals(event.start , breakStartTime)
           && dateUtil.isBeforeEquals(event.end, breakEndTime);

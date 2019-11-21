@@ -21,7 +21,6 @@ const reservationSchema = new mongoose.Schema({
   age: String,
   comment: String,
   start: String,
-  end: String,
 }, { timestamps: true });
 
 export const Reservation = mongoose.model<ReservationDocument>('Reservation', reservationSchema);
