@@ -7,7 +7,7 @@ var mongoose_1 = __importDefault(require("mongoose"));
 var leaveSchema = new mongoose_1.default.Schema({
     service_id: { type: String, required: true, unique: true },
     leaves: [{
-            leaveInterval: [String],
+            leaveInterval: [String, String],
             label: String,
         }],
 });

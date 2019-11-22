@@ -19,6 +19,19 @@ var dateUtil = {
         var m = ('00' + minute % 60).slice(-2);
         return h + ":" + m;
     },
+    getStringArrayBetweenTwoDates: function (firstDate, secondDate) {
+        var result = [];
+        var daysbetween = this.calculateDaysBetweenDates(firstDate, secondDate);
+        for (var index = 0; index <= daysbetween; index++) {
+            var nextDay = this.addDaysToDate(firstDate, index);
+            result.push(nextDay);
+        }
+        return result;
+    },
+    calculateDaysBetweenDates: function (firstDate, secondDate) {
+        var oneDay = 24 * 60 * 60 * 1000;
+        return Math.round(Math.abs((new Date(secondDate).getTime() - new Date(firstDate).getTime()) / oneDay));
+    },
     addDaysToDate: function (dateString, daysToAdd) {
         var dateOfString = new Date(dateString);
         dateOfString.setDate(dateOfString.getDate() + daysToAdd);

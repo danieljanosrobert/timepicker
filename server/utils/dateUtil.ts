@@ -12,7 +12,22 @@ const dateUtil = {
     const m = ('00' + minute % 60).slice(-2);
     return `${h}:${m}`;
   },
-  
+
+  getStringArrayBetweenTwoDates(firstDate: any, secondDate: any): string[] {
+    const result = [];
+    const daysbetween = this.calculateDaysBetweenDates(firstDate, secondDate);
+    for (let index = 0; index <= daysbetween; index++) {
+      const nextDay = this.addDaysToDate(firstDate, index);
+      result.push(nextDay);
+    }
+    return result;
+  },
+
+  calculateDaysBetweenDates(firstDate: any, secondDate: any): number {
+    const oneDay = 24 * 60 * 60 * 1000;
+    return Math.round(Math.abs((new Date(secondDate).getTime() - new Date(firstDate).getTime()) / oneDay));
+  },
+
   addDaysToDate(dateString: string, daysToAdd: number): string {
     const dateOfString = new Date(dateString);
     dateOfString.setDate(dateOfString.getDate() + daysToAdd);
