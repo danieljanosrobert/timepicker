@@ -172,10 +172,9 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                         _.forEach(countByTime, function (count, date) {
                             var filteredReservations = _.filter(dbReservation, function (res) { return res.start === date; });
                             _.forEach(filteredReservations, function (reservation) {
-                                var flag = true;
                                 var _a = _.split(reservation.start, ' '), reservationDate = _a[0], reservationTime = _a[1];
                                 var reservationTimeInMinutes = dateUtil_1.default.minuteFromHour(reservationTime);
-                                while (flag && count > 1) {
+                                while (count > 1) {
                                     if (reservationTimeInMinutes >= newEndTime) {
                                         reservationTimeInMinutes = newStartTime;
                                         reservationDate = dateUtil_1.default.addDaysToDate(reservationDate, 1);
@@ -184,7 +183,6 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                                     if (!_.includes(occupiedTimes, constructedDate)) {
                                         occupiedTimes.push(constructedDate);
                                         reservation.start = constructedDate;
-                                        flag = false;
                                         count--;
                                     }
                                     reservationTimeInMinutes += bookTime.bookDuration;
@@ -193,8 +191,8 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                                     reservationDate = dateUtil_1.default.addDaysToDate(reservationDate, 1);
                                     var constructedDate = reservationDate + " " + reservationTime;
                                     reservation.start = constructedDate;
-                                    if (!_.includes(occupiedDates, reservationDate)) {
-                                        flag = false;
+                                    if (_.includes(occupiedTimes, constructedDate)) {
+                                        countByTime[constructedDate]++;
                                     }
                                 }
                             });

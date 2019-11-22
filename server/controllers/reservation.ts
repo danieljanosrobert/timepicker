@@ -121,10 +121,9 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
       _.forEach(countByTime, (count, date) => {
         const filteredReservations = _.filter(dbReservation, (res) => res.start === date);
         _.forEach(filteredReservations, (reservation) => {
-          let flag = true;
           let [reservationDate, reservationTime] = _.split(reservation.start, ' ');
           let reservationTimeInMinutes = dateUtil.minuteFromHour(reservationTime);
-          while (flag && count > 1) {
+          while (count > 1) {
             if (reservationTimeInMinutes >= newEndTime) {
               reservationTimeInMinutes = newStartTime;
               reservationDate = dateUtil.addDaysToDate(reservationDate, 1);
@@ -133,7 +132,6 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
             if (!_.includes(occupiedTimes, constructedDate)) {
               occupiedTimes.push(constructedDate);
               reservation.start = constructedDate;
-              flag = false;
               count--;
             }
             reservationTimeInMinutes += bookTime.bookDuration;
@@ -142,8 +140,8 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
             reservationDate = dateUtil.addDaysToDate(reservationDate, 1);
             const constructedDate = `${reservationDate} ${reservationTime}`;
             reservation.start = constructedDate;
-            if (!_.includes(occupiedDates, reservationDate)) {
-              flag = false;
+            if (_.includes(occupiedTimes, constructedDate)) {
+              countByTime[constructedDate]++;
             }
           }
         });
