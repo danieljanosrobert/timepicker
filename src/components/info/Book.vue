@@ -244,6 +244,7 @@ export default {
       this.calculateCalendarSize();
       this.setUpEventsInCalendar();
     },
+    // TODO: fix
     calculateCalendarSize() {
       const shiftStartingMinute = dateUtil.minuteFromHour(this.bookStartTime);
       const shiftEndingMinute = dateUtil.minuteFromHour(this.bookEndTime);
@@ -256,13 +257,13 @@ export default {
       const overallDuration = shiftEndingMinute - shiftStartingMinute;
       this.intervalMinutes = this.bookDuration < 60 ? this.bookDuration : 60;
       const slotsNeeded = Math.ceil(overallDuration / this.intervalMinutes);
-      if (slotsNeeded > 12) {
-        this.intervalCount = slotsNeeded;
-        this.firstInterval = shiftStartingMinute / this.bookDuration;
-      } else {
+      if (slotsNeeded <= 12 && this.bookDuration % 10 === 0) {
         this.intervalCount = 24;
         this.intervalMinutes /= 2;
         this.firstInterval = 2 * (shiftStartingMinute / this.bookDuration);
+      } else {
+        this.intervalCount = slotsNeeded;
+        this.firstInterval = shiftStartingMinute / this.bookDuration;
       }
     },
     setUpEventsInCalendar() {

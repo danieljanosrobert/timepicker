@@ -32,7 +32,7 @@
         <v-divider/>
         <v-card-text>
           <v-container fluid>
-            <v-form id="book-form" @submit.prevent="book">
+            <v-form id="book-form" @submit.prevent="reservationDialogVisible = true">
               <v-row>
                 <v-col cols="12" sm="6">
                   <v-text-field v-model="lastName" :disabled="$store.state.loggedInAsUser" label="Vezetéknév*" required></v-text-field>

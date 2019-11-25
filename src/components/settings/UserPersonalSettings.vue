@@ -52,7 +52,7 @@ export default {
   data: () => ({
     lastName: '',
     firstName: '',
-    city: '',    
+    city: '',
     age: '',
     selectedServiceTags: [],
     password: '',
@@ -87,7 +87,7 @@ export default {
           password: this.password,
           lastName: this.lastName,
           firstName: this.firstName,
-          city: this.city,    
+          city: this.city,
           age: this.age,
           selectedServiceTags: this.selectedServiceTags,
         });

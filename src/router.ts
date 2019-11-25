@@ -9,6 +9,7 @@ import About from '@/views/About.vue';
 import Search from '@/views/Search.vue';
 import Register from '@/views/admin/Register.vue';
 import Settings from '@/views/Settings.vue';
+import SavedServices from '@/views/SavedServices.vue';
 import Service from '@/views/admin/settings/SearchingResultSettings.vue';
 import Contact from '@/views/admin/settings/ContactSettings.vue';
 import Book from '@/views/admin/settings/BookSettings.vue';
@@ -49,6 +50,14 @@ const router = new Router({
         middleware: [
           userAuth,
         ],
+      },
+    },
+    {
+      path: '/saved-services',
+      name: 'saved-services',
+      component: SavedServices,
+      meta: {
+        middleware: [userAuth],
       },
     },
     {

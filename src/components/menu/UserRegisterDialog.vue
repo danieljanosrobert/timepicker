@@ -55,7 +55,7 @@
           <small>*Kitöltés kötelező</small>
           <v-col>
             <v-divider/>
-            <v-btn type="submit" class="text-right pa-2 my-2" form="register-form" color="brown lighten-4" block @click="register()">Regisztráció</v-btn>
+            <v-btn type="submit" class="text-right pa-2 my-2" form="register-form" color="brown lighten-4" block>Regisztráció</v-btn>
           </v-col>
         </v-card-text>
 

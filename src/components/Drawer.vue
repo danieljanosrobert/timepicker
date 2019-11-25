@@ -157,7 +157,7 @@
           {title: 'Keresés', icon: 'mdi-book-search', url: '/search'},
         ],
         userItems: [
-          {title: 'Kedvencek', icon: 'mdi-account', url: '/favorites'},
+          {title: 'Mentett szolgáltatások', icon: 'mdi-flag', url: '/saved-services'},
           {title: 'Beállítások', icon: 'mdi-settings', url: '/settings'},
         ],
         adminItems: [

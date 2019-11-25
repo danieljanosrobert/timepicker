@@ -7,7 +7,7 @@
 
       <v-row class="pa-4 ma-0">
         <v-col class="text-center" cols="12" v-if="!searching[0]">
-          Nem létezik ilyen szolgáltatás.
+          Nincs mentve ilyen szolgáltatás.
         </v-col>
         <v-col v-for="(item, i) in searching" :key="i" cols="12" md="4">
           <v-card>
@@ -51,14 +51,13 @@
 </template>
 
 <script>
-  import serviceService from '@/service/serviceService';
   import flagService from '@/service/flagService';
   import { Base64 } from 'js-base64';
 
   const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/timepicker/image/upload/v1573508434/services/default_service_j961rq.jpg';
   
   export default {
-    name: 'DataCards',
+    name: 'SavedServices',
     data: () => ({
       search: '',
       isThereSearchingResult: false,
@@ -69,9 +68,6 @@
         this.fetchServices();
       });
       await this.fetchServices();
-      if (this.$store.getters.userAuth) {
-         this.fetchUserFlags();
-      }
     },
     methods: {
       getImageForService(url) {
@@ -84,20 +80,14 @@
         this.$router.push({name: 'about', params: { service_id: serviceId }});
       },
       async fetchServices() {
-        await serviceService.getAvailableServices()
-            .then((services) => {
-              this.services = services.data;
-              this.services.forEach((service) => this.$set(service, 'show', false));
-            });
-      },
-      async fetchUserFlags() {
         await flagService.getUsersFlags(Base64.encode(this.$store.state.loggedInUserEmail))
-        .then( (flags) => {
-          _.forEach(flags.data, (flag) => {
-            const flaggedService = _.find(this.services, {service_id: flag.service_id});
-            this.$set(flaggedService, 'flagged', true);
+          .then((services) => {
+            this.services = services.data;
+            this.services.forEach((service) => {
+              this.$set(service, 'show', false);
+              this.$set(service, 'flagged', true);
+            });
           });
-        });
       },
       async toggleFlagged(service) {
         try {
