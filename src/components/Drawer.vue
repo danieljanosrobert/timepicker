@@ -158,10 +158,12 @@
         ],
         userItems: [
           {title: 'Mentett szolgáltatások', icon: 'mdi-flag', url: '/saved-services'},
+          {title: 'Előzmények', icon: 'mdi-backburger', url: '/history'},
           {title: 'Beállítások', icon: 'mdi-settings', url: '/settings'},
         ],
         adminItems: [
           {title: 'Saját oldal', icon: 'mdi-book-open-page-variant', url: ''},
+          {title: 'Foglalások', icon: 'mdi-backburger', url: '/reservations'},
           {
             title: 'Beállítások', icon: 'mdi-settings', url: '', subItems: [
               {title: 'Szolgáltatás', icon: 'mdi-book', url: '/settings/service'},

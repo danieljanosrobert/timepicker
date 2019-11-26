@@ -4,7 +4,16 @@ export default {
   reserve(data: any) {
     return Api().post('/reserve', data);
   },
-  getReservations(param: string) {
-    return Api().get(`/reservations/${param}`);
+  getReservations(data: any) {
+    return Api().post(`/reservations`, data);
+  },
+  acceptReservation(data: any) {
+    return Api().post(`/reservations/accept`, data);
+  },
+  resignReservation(data: any) {
+    return Api().post(`/reservations/resign`, data);
+  },
+  deleteReservation(data: any) {
+    return Api().post(`/reservations/delete`, data);
   },
 };

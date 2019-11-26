@@ -7,7 +7,7 @@
           Új szüneteket felvehet a 'Szünetek beállításai' részen. A művelet nem visszavonható</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="warnDialog = false">Mégse</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="warnDialog = false">Mégsem</v-btn>
           <v-btn dark color="error darken-4" @click="save()">Mentés</v-btn>
         </v-card-actions>
       </v-card>

@@ -57,7 +57,10 @@ db.once('open', function () {
     router.get('/book/breaks/:service_id', bookController.getBreaks);
     router.get('/book/leaves/:service_id', bookController.getLeaves);
     router.post('/reserve', reservationController.postReserve);
-    router.get('/reservations/:service_id', reservationController.getReservations);
+    router.post('/reservations', reservationController.postGetReservations);
+    router.post('/reservations/resign', reservationController.postResignReservation);
+    router.post('/reservations/accept', middleware_1.middleware.isAuthenticatedAsAdmin, reservationController.postAcceptReservation);
+    router.post('/reservations/delete', middleware_1.middleware.isAuthenticatedAsAdmin, reservationController.postDeleteReservation);
     router.post('/flag', middleware_1.middleware.isAuthenticatedAsUser, flagController.postToggleFlagService);
     router.get('/flag/:user_email', middleware_1.middleware.isAuthenticatedAsUser, flagController.getUsersFlags);
     router.post('/user/auth', middleware_1.middleware.isAuthenticatedAsUser, function (req, res) { return res.sendStatus(http2_1.constants.HTTP_STATUS_OK); });

@@ -1,5 +1,54 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <v-row>
+    <v-dialog v-model="acceptDialogVisible" persistent max-width="460">
+      <v-card>
+        <v-card-title class="headline" style="word-break: normal">Biztosan el szeretné fogadni a foglalást?</v-card-title>
+        <v-card-text>A művelet nem visszavonható</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
+          <v-btn dark color="success" @click="confirmAccept">Elfogadás</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="refuseDialogVisible" persistent max-width="460">
+      <v-card>
+        <v-card-title class="headline" style="word-break: normal">Biztosan el szeretné utasítani a foglalást?</v-card-title>
+        <v-card-text>A művelet nem visszavonható</v-card-text>
+        <v-textarea class="mx-6" v-model="refuseMessage" label="Elutasítás oka (opcionális)"> </v-textarea>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
+          <v-btn dark color="error darken-4" @click="confirmRefuse">Elutasítás</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="resignDialogVisible" persistent max-width="460">
+      <v-card>
+        <v-card-title class="headline" style="word-break: normal">Biztosan le szeretné mondani a foglalást?</v-card-title>
+        <v-card-text>A művelet nem visszavonható</v-card-text>
+        <v-textarea class="mx-6" v-model="resignMessage" label="Lemondás oka (opcionális)"> </v-textarea>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
+          <v-btn dark color="error darken-4" @click="confirmResign">Elutasítás</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="deleteDialogVisible" persistent max-width="460">
+      <v-card>
+        <v-card-title class="headline" style="word-break: normal">Biztosan törölni szeretné a foglalást?</v-card-title>
+        <v-card-text>A művelet nem visszavonható</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
+          <v-btn dark color="error darken-4" @click="confirmDelete">Törlés</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-col cols="12">
       <v-card class=" brown lighten-4">
@@ -63,17 +112,20 @@
 
           <v-card :disabled="isCardDisabled(selectedEvent)" color="grey lighten-4" in-width="350px" flat>
             <v-toolbar :color="selectedEvent.color" dark>
-              <!--<v-btn icon>
-                <v-icon>mdi-pencil</v-icon>
-              </v-btn>-->
               <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
               <v-spacer></v-spacer>
-              <!--<v-btn icon>
-                <v-icon>mdi-heart</v-icon>
-              </v-btn>-->
-              <v-btn icon>
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
+              <v-menu v-if="canReSendEmail(selectedEvent)">
+                <template v-slot:activator="{ on }">
+                  <v-btn icon v-on="on">
+                    <v-icon>mdi-dots-vertical</v-icon>
+                  </v-btn>
+                </template>
+                 <v-list>
+                  <v-list-item link>
+                     <v-list-item-title>Email újraküldése</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
             </v-toolbar>
             <v-card-text>
               <span v-html="selectedEvent.details"></span>
@@ -81,11 +133,23 @@
 
             <v-card-actions v-if="!isCardDisabled(selectedEvent)">
               <v-btn text color="secondary" @click="closeEventDetails">
-                Mégse
+                Mégsem
               </v-btn>
               <v-spacer></v-spacer>
-              <v-btn text color="secondary" @click="openBookingDialog(selectedEvent)">
+              <v-btn v-if="canBookOnEvent(selectedEvent)" text color="secondary" @click="openBookingDialog(selectedEvent)">
                 Foglalás
+              </v-btn>
+              <v-btn v-if="canAcceptEvent(selectedEvent)" text color="success darken-2" @click="initAccept(selectedEvent)">
+                Elfogadás
+              </v-btn>
+              <v-btn v-if="canRefuseEvent(selectedEvent)" text color="error" @click="initRefuse(selectedEvent)">
+                Elutasítás
+              </v-btn>
+              <v-btn v-if="canResignEvent(selectedEvent)" text color="error" @click="initResign(selectedEvent)">
+                Lemondás
+              </v-btn>
+              <v-btn v-if="canDeleteEvent(selectedEvent)" text color="error" @click="initDelete(selectedEvent)">
+                Törlés
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -101,10 +165,25 @@
 import bookService from '@/service/bookService';
 import reservationService from '@/service/reservationService';
 import dateUtil from '@/utils/dateUtil';
+import { Base64 } from 'js-base64';
+import constants from '@/utils/constants';
+
+const FREE_EVENT = 'info';
+const OCCUPIED_EVENT = 'error';
+const DISABLED_EVENT = 'gray';
 
 export default {
   name: 'Book',
   data: () => ({
+    // DIALOGS
+    operationDate: '',
+    acceptDialogVisible: false,
+    refuseDialogVisible: false,
+    resignDialogVisible: false,
+    deleteDialogVisible: false,
+    resignMessage: '',
+    refuseMessage: '',
+
     // BOOK
     bookLastMonth: '',
     bookStartTime: '',
@@ -193,14 +272,17 @@ export default {
     this.$refs.calendar.checkChange();
     this.addLeavesToCalendar();
     this.$root.$on('newReservation', async () => {
+      await this.refreshEvents();
+    });
+  },
+  methods: {
+    async refreshEvents() {
       this.renderedEventDates = [];
       this.events = [];
       await this.fetchBook();
       this.addLeavesToCalendar();
-    });
-  },
-  methods: {
-    // MOUNT
+    },
+    // API CALLS
     async fetchBook() {
       try {
         await bookService.getBooktime(this.$route.params.service_id)
@@ -229,14 +311,158 @@ export default {
       } catch {}
       this.generateEventsFromBook();
     },
-    isUserServiceOwner() {
-      return this.$store.state.loggedInAsAdmin && this.$store.state.ownServiceId === this.$route.params.service_id;
-    },
     async fetchReservations() {
-      await reservationService.getReservations(this.$route.params.service_id)
-        .then( (reservations) => {
+      await reservationService.getReservations({
+        service_id: this.$route.params.service_id,
+        user_email: Base64.encode(this.$store.state.loggedInUserEmail),
+      }).then( (reservations) => {
           this.reservations = reservations.data;
         });
+    },
+    async acceptReservation(reservationDate) {
+      if (!this.operationDate) {
+        this.$store.dispatch('openSnackbar', {
+          message: 'Kérem jelöljön ki egy foglalást a művelet végrehajtásához',
+          type: 'warning',
+        });
+        return;
+      }
+      try {
+        await reservationService.acceptReservation({
+          service_id: this.$store.state.ownServiceId,
+          user_email: Base64.encode(this.$store.state.loggedInUserEmail),
+          start: reservationDate,
+        });
+        await this.refreshEvents();
+        this.$store.dispatch('openSnackbar', {
+          message: 'Foglalás elfogadva',
+          type: 'success',
+        });
+      } catch {
+        this.$store.dispatch('openSnackbar', {
+          message: 'Sikertelen módosítás. Kérem próbálja újra később',
+          type: 'error',
+        });
+      }
+    },
+    async resignReservation(reservationDate, resignMessage = '') {
+      if (!this.operationDate) {
+        this.$store.dispatch('openSnackbar', {
+          message: 'Kérem jelöljön ki egy foglalást a művelet végrehajtásához',
+          type: 'warning',
+        });
+        return;
+      }
+      try {
+        await reservationService.resignReservation({
+          service_id: this.$route.params.service_id,
+          user_email: Base64.encode(this.$store.state.loggedInUserEmail),
+          start: reservationDate,
+          resign_message: resignMessage,
+        });
+        await this.refreshEvents();
+        this.$store.dispatch('openSnackbar', {
+          message: 'Foglalás sikeresen lemondva',
+          type: 'success',
+        });
+      } catch {
+        this.$store.dispatch('openSnackbar', {
+          message: 'Sikertelen lemondás. Kérem próbálja újra később',
+          type: 'error',
+        });
+      }
+    },
+    async deleteReservation(reservationDate, refuseMessage = '') {
+      if (!this.operationDate) {
+        this.$store.dispatch('openSnackbar', {
+          message: 'Kérem jelöljön ki egy foglalást a művelet végrehajtásához',
+          type: 'warning',
+        });
+        return;
+      }
+      try {
+        await reservationService.deleteReservation({
+          service_id: this.$store.state.ownServiceId,
+          user_email: Base64.encode(this.$store.state.loggedInUserEmail),
+          start: reservationDate,
+          refuse_message: refuseMessage,
+        });
+        await this.refreshEvents();
+        this.$store.dispatch('openSnackbar', {
+          message: 'Foglalás sikeresen törölve',
+          type: 'success',
+        });
+      } catch {
+        this.$store.dispatch('openSnackbar', {
+          message: 'Sikertelen törlés. Kérem próbálja újra később',
+          type: 'error',
+        });
+      }
+    },
+
+    // BUTTONS
+    canReSendEmail(selectedEvent) {
+      return this.isUserServiceOwner() && selectedEvent.color === constants.colorOfReservationStatus[2];
+    },
+    canBookOnEvent(selectedEvent) {
+      return selectedEvent.color === FREE_EVENT;
+    },
+    canAcceptEvent(selectedEvent) {
+      return this.isUserServiceOwner() && selectedEvent.color === constants.colorOfReservationStatus[1];
+    },
+    canRefuseEvent(selectedEvent) {
+      return this.isUserServiceOwner() && (selectedEvent.color === constants.colorOfReservationStatus[1]
+        || selectedEvent.color === constants.colorOfReservationStatus[2]);
+    },
+    canResignEvent(selectedEvent) {
+      return !this.isUserServiceOwner() && (selectedEvent.color !== FREE_EVENT
+        && selectedEvent !== OCCUPIED_EVENT && selectedEvent !== DISABLED_EVENT);
+    },
+    canDeleteEvent(selectedEvent) {
+      return this.isUserServiceOwner() && selectedEvent.color === constants.colorOfReservationStatus[0];
+    },
+
+    // DIALOGS
+    async confirmAccept() {
+      await this.acceptReservation(this.operationDate);
+      this.endOperation();
+    },
+    async confirmRefuse() {
+      await this.deleteReservation(this.operationDate, this.refuseMessage);
+      this.refuseMessage = '';
+      this.endOperation();
+    },
+    async confirmResign() {
+      await this.resignReservation(this.operationDate, this.resignMessage);
+      this.resignMessage = '';
+      this.endOperation();
+    },
+    async confirmDelete() {
+      await this.deleteReservation(this.operationDate);
+      this.endOperation();
+    },
+    initAccept(reservation) {
+      this.operationDate = reservation.start;
+      this.acceptDialogVisible = true;
+    },
+    initRefuse(reservation) {
+      this.operationDate = reservation.start;
+      this.refuseDialogVisible = true;
+    },
+    initResign(reservation) {
+      this.operationDate = reservation.start;
+      this.resignDialogVisible = true;
+    },
+    initDelete(reservation) {
+      this.operationDate = reservation.start;
+      this.deleteDialogVisible = true;
+    },
+    endOperation() {
+      this.operationDate = '';
+      this.acceptDialogVisible = false;
+      this.refuseDialogVisible = false;
+      this.resignDialogVisible = false;
+      this.deleteDialogVisible = false;
     },
 
     // GENERATING
@@ -244,7 +470,6 @@ export default {
       this.calculateCalendarSize();
       this.setUpEventsInCalendar();
     },
-    // TODO: fix
     calculateCalendarSize() {
       const shiftStartingMinute = dateUtil.minuteFromHour(this.bookStartTime);
       const shiftEndingMinute = dateUtil.minuteFromHour(this.bookEndTime);
@@ -323,7 +548,7 @@ export default {
           name: eventTime.label,
           start: eventTime.start,
           end: eventTime.end,
-          color: 'info',
+          color: FREE_EVENT,
         });
       });
     },
@@ -332,11 +557,11 @@ export default {
         _.forEach(eventTimes, (event) => {
           if (event && dateUtil.equals(reservation.start, event.start)) {
             this.events.push({
-              name: `${this.$store.getters.adminAuth ? reservation.lastName : 'Foglalt'}`,
-              details: `${this.$store.getters.adminAuth ? reservation.lastName + ' ' + reservation.firstName : ''}`,
+              name: `${reservation.status ? reservation.status : 'Foglalt'}`,
+              details: `${reservation.status ? reservation.lastName + ' ' + reservation.firstName : ''}`,
               start: reservation.start,
               end: event.end,
-              color: 'error',
+              color: this.setColorOfOccupiedEvent(reservation.status),
             });
             _.pull(eventTimes, event);
           }
@@ -450,8 +675,6 @@ export default {
       nativeEvent.stopPropagation();
     },
     updateRange({ start, end }) {
-      // You could load events from an outside source (like database)
-      // now that we have the start and end dates on the calendar
       this.start = start;
       this.end = end;
     },
@@ -464,20 +687,23 @@ export default {
     },
     isCardDisabled(event) {
       if (!this.$store.getters.adminAuth) {
-        return _.includes(['error', 'grey'], event.color);
+        return _.includes([OCCUPIED_EVENT, 'grey'], event.color);
       }
       return event.color === 'grey';
     },
-    setColorFromAllapot(allapot) {
-      switch (allapot) {
-        case ('szabad'):
-          return 'blue';
-        case ('foglalt'):
-          return 'red';
-        case ('szunet'):
-          return 'grey';
+    setColorOfOccupiedEvent(status) {
+      switch (status) {
+        case (constants.reservationStatuses[0]):
+          return constants.colorOfReservationStatus[0];
+        case (constants.reservationStatuses[1]):
+          return constants.colorOfReservationStatus[1];
+        case (constants.reservationStatuses[2]):
+          return constants.colorOfReservationStatus[2];
       }
-      return 'green';
+      return OCCUPIED_EVENT;
+    },
+    isUserServiceOwner() {
+      return this.$store.state.loggedInAsAdmin && this.$store.state.ownServiceId === this.$route.params.service_id;
     },
   },
 };

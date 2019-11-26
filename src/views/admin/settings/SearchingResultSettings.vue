@@ -26,10 +26,12 @@
                     v-model="description"
                     label="Leírás"
             ></v-textarea>
-            <v-checkbox class="no-hover"
+            <v-switch class="no-hover"
+                    color="error"
+                    :error="serviceHidden"
                     v-model="serviceHidden"
                     label="Ne jelenjen meg a keresési eredményekben"
-            ></v-checkbox>
+            ></v-switch>
 
             <v-divider class="pb-2"></v-divider>
 

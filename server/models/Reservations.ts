@@ -9,7 +9,7 @@ export type ReservationDocument = mongoose.Document & {
   age: string;
   comment: string;
   start: string;
-  end: string;
+  status: string;
 };
 
 const reservationSchema = new mongoose.Schema({
@@ -21,6 +21,7 @@ const reservationSchema = new mongoose.Schema({
   age: String,
   comment: String,
   start: String,
+  status: String,
 }, { timestamps: true });
 
 export const Reservation = mongoose.model<ReservationDocument>('Reservation', reservationSchema);

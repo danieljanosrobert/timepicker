@@ -7,7 +7,7 @@
         <v-card-text>A művelet nem visszavonható</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="cancelDelete">Mégse</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="cancelDelete">Mégsem</v-btn>
           <v-btn dark color="error darken-4" @click="confirmDelete">Törlés</v-btn>
         </v-card-actions>
       </v-card>

@@ -13,5 +13,6 @@ var reservationSchema = new mongoose_1.default.Schema({
     age: String,
     comment: String,
     start: String,
+    status: String,
 }, { timestamps: true });
 exports.Reservation = mongoose_1.default.model('Reservation', reservationSchema);

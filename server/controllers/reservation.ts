@@ -2,24 +2,44 @@ import { NextFunction, Response } from 'express';
 import { constants } from 'http2';
 import { Base64 } from 'js-base64';
 import { Service } from '../models/Services';
-import { Reservation } from '../models/Reservations';
+import { Reservation, ReservationDocument } from '../models/Reservations';
 import * as _ from 'lodash';
 import dateUtil from '../utils/dateUtil';
 import { Leave } from '../models/Leaves';
+import { AdminUser } from '../models/AdminUsers';
+import { async } from 'q';
 
-export const getReservations = async (req: any, res: Response, next: NextFunction) => {
-  const serviceId = Base64.decode(req.params.service_id);
-  Reservation.find({ service_id: serviceId }, '-_id start end createdAt lastName firstName')
+export const postGetReservations = async (req: any, res: Response, next: NextFunction) => {
+  const serviceId = Base64.decode(req.body.service_id);
+  const email = Base64.decode(req.body.user_email);
+  let isAdmin = false;
+  let isOwnService = false;
+  await AdminUser.findOne({ email: email })
+    .then((dbUserAdmin) => {
+      if (dbUserAdmin) isAdmin = true;
+    })
+  await Service.findOne({ service_id: serviceId ,user_email: email })
+    .then((dbService) => {
+      if (dbService) isOwnService = true;
+    })
+  Reservation.find({ service_id: serviceId }, '-_id start createdAt lastName email firstName status')
     .then((dbReservation) => {
       if (!dbReservation) {
         return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
           error: 'Reservations not found',
         });
       }
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const result = _.filter(dbReservation, (reservation) => {
-        return dateUtil.isAfterEquals(reservation.start, new Date(today));
+      const result = req.body.all_dates ? dbReservation : filterDatesBeforeToday(dbReservation);
+      _.forEach(result, (current) => {
+        if (!email) {
+          current.status = '';
+        }
+        if (!isAdmin && current.email !== email) {
+          current.status = '';
+        } else if (isAdmin && !isOwnService && current.email !== email) {
+          current.status = '';
+        }
+        current.email = '';
       })
       return res.status(constants.HTTP_STATUS_OK).send(result);
     });
@@ -43,6 +63,7 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
         age: req.body.age,
         comment: req.body.comment,
         start: req.body.start,
+        status: req.body.status,
       });
       Reservation.findOne({ service_id: serviceId, start: reservation.start })
         .then((dbReservation) => {
@@ -60,6 +81,103 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
           });
           res.sendStatus(constants.HTTP_STATUS_OK);
         });
+    });
+};
+
+export const postAcceptReservation = async (req: any, res: Response, next: NextFunction) => {
+  const serviceId = Base64.decode(req.body.service_id);
+  const email = Base64.decode(req.body.user_email);
+  AdminUser.findOne({ email: email })
+    .then((dbUser) => {
+      if (dbUser) {
+        Reservation.findOne({service_id: serviceId, start: req.body.start})
+          .then( (dbReservation) => {
+            if (dbReservation) {
+              dbReservation.status = 'Elfogadott';
+              dbReservation.save((err) => {
+                if (err) {
+                  return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                    error: 'Error occured during trying to save reservation',
+                  });
+                }
+              });
+              return res.sendStatus(constants.HTTP_STATUS_OK);
+            } else {
+              return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+                error: 'Reservation does not exist'
+              });
+            }
+          })
+      } else {
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+          error: 'User does not exist'
+        });
+      }
+    });
+};
+
+export const postResignReservation = async (req: any, res: Response, next: NextFunction) => {
+  const serviceId = Base64.decode(req.body.service_id);
+  const email = Base64.decode(req.body.user_email);
+  Reservation.findOne({email: email, service_id: serviceId, start: req.body.start})
+    .then( (dbReservation) => {
+      if (dbReservation) {
+        dbReservation.remove((err) => {
+          if (err) {
+            return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+              error: 'Error occured during trying to remove reservation',
+            });
+          }
+        });
+        if (req.body.resign_message) {
+          console.log('lemondó email küldése, az üzenet:');
+          console.log(req.body.resign_message);
+        }
+        return res.sendStatus(constants.HTTP_STATUS_OK);
+      } else {
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+          error: 'Reservation does not exist'
+        });
+      }
+    });
+}
+
+export const postDeleteReservation = async (req: any, res: Response, next: NextFunction) => {
+  const serviceId = Base64.decode(req.body.service_id);
+  const email = Base64.decode(req.body.user_email);
+  AdminUser.findOne({ email: email })
+    .then((dbUser) => {
+      if (dbUser) {
+        Reservation.findOne({service_id: serviceId, start: req.body.start})
+          .then( (dbReservation) => {
+            if (dbReservation) {
+              dbReservation.remove((err) => {
+                if (err) {
+                  return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                    error: 'Error occured during trying to remove reservation',
+                  });
+                }
+              });
+              if (req.body.refuse_message) {
+                console.log('elutasító email küldése, az üzenet:');
+                console.log(req.body.refuse_message);
+              }
+              if (req.body.resign_message) {
+                console.log('lemondó email küldése, az üzenet:');
+                console.log(req.body.resign_message);
+              }
+              return res.sendStatus(constants.HTTP_STATUS_OK);
+            } else {
+              return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+                error: 'Reservation does not exist'
+              });
+            }
+          });
+      } else {
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+          error: 'User does not exist'
+        });
+      }
     });
 };
 
@@ -159,3 +277,11 @@ const shiftReservation = (reservationTime: string, duration: number, startTime: 
   }
   return reservationTime;
 };
+
+const filterDatesBeforeToday = (reservations: ReservationDocument[]): ReservationDocument[] => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return _.filter(reservations, (reservation) => {
+    return dateUtil.isAfterEquals(reservation.start, new Date(today));
+  });
+}

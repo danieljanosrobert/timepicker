@@ -65,7 +65,7 @@
 
 <script>
 import bookService from '@/service/bookService';
-import dateUtil from '../../utils/dateUtil';
+import dateUtil from '@/utils/dateUtil';
 
 export default {
 name: 'SetLeaveTimes',

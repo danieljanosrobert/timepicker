@@ -28,7 +28,7 @@
         </v-col>
         <v-col class="text-center" cols="12">
           <v-btn @click.stop="editorVisible = false" dark color="brown darken-2" class="mx-2">
-            Mégse
+            Mégsem
           </v-btn>
           <v-btn autofocus @click.stop="saveMessage" dark color="brown" class="mx-2">
             Mentés

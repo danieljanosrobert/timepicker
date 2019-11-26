@@ -53,25 +53,54 @@ var Reservations_1 = require("../models/Reservations");
 var _ = __importStar(require("lodash"));
 var dateUtil_1 = __importDefault(require("../utils/dateUtil"));
 var Leaves_1 = require("../models/Leaves");
-exports.getReservations = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var serviceId;
+var AdminUsers_1 = require("../models/AdminUsers");
+exports.postGetReservations = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId, email, isAdmin, isOwnService;
     return __generator(this, function (_a) {
-        serviceId = js_base64_1.Base64.decode(req.params.service_id);
-        Reservations_1.Reservation.find({ service_id: serviceId }, '-_id start end createdAt lastName firstName')
-            .then(function (dbReservation) {
-            if (!dbReservation) {
-                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
-                    error: 'Reservations not found',
+        switch (_a.label) {
+            case 0:
+                serviceId = js_base64_1.Base64.decode(req.body.service_id);
+                email = js_base64_1.Base64.decode(req.body.user_email);
+                isAdmin = false;
+                isOwnService = false;
+                return [4 /*yield*/, AdminUsers_1.AdminUser.findOne({ email: email })
+                        .then(function (dbUserAdmin) {
+                        if (dbUserAdmin)
+                            isAdmin = true;
+                    })];
+            case 1:
+                _a.sent();
+                return [4 /*yield*/, Services_1.Service.findOne({ service_id: serviceId, user_email: email })
+                        .then(function (dbService) {
+                        if (dbService)
+                            isOwnService = true;
+                    })];
+            case 2:
+                _a.sent();
+                Reservations_1.Reservation.find({ service_id: serviceId }, '-_id start createdAt lastName email firstName status')
+                    .then(function (dbReservation) {
+                    if (!dbReservation) {
+                        return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                            error: 'Reservations not found',
+                        });
+                    }
+                    var result = req.body.all_dates ? dbReservation : filterDatesBeforeToday(dbReservation);
+                    _.forEach(result, function (current) {
+                        if (!email) {
+                            current.status = '';
+                        }
+                        if (!isAdmin && current.email !== email) {
+                            current.status = '';
+                        }
+                        else if (isAdmin && !isOwnService && current.email !== email) {
+                            current.status = '';
+                        }
+                        current.email = '';
+                    });
+                    return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
                 });
-            }
-            var today = new Date();
-            today.setHours(0, 0, 0, 0);
-            var result = _.filter(dbReservation, function (reservation) {
-                return dateUtil_1.default.isAfterEquals(reservation.start, new Date(today));
-            });
-            return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
-        });
-        return [2 /*return*/];
+                return [2 /*return*/];
+        }
     });
 }); };
 exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
@@ -94,6 +123,7 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                 age: req.body.age,
                 comment: req.body.comment,
                 start: req.body.start,
+                status: req.body.status,
             });
             Reservations_1.Reservation.findOne({ service_id: serviceId, start: reservation.start })
                 .then(function (dbReservation) {
@@ -111,6 +141,117 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                 });
                 res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
             });
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.postAcceptReservation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId, email;
+    return __generator(this, function (_a) {
+        serviceId = js_base64_1.Base64.decode(req.body.service_id);
+        email = js_base64_1.Base64.decode(req.body.user_email);
+        AdminUsers_1.AdminUser.findOne({ email: email })
+            .then(function (dbUser) {
+            if (dbUser) {
+                Reservations_1.Reservation.findOne({ service_id: serviceId, start: req.body.start })
+                    .then(function (dbReservation) {
+                    if (dbReservation) {
+                        dbReservation.status = 'Elfogadott';
+                        dbReservation.save(function (err) {
+                            if (err) {
+                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                                    error: 'Error occured during trying to save reservation',
+                                });
+                            }
+                        });
+                        return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                    }
+                    else {
+                        return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                            error: 'Reservation does not exist'
+                        });
+                    }
+                });
+            }
+            else {
+                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                    error: 'User does not exist'
+                });
+            }
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.postResignReservation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId, email;
+    return __generator(this, function (_a) {
+        serviceId = js_base64_1.Base64.decode(req.body.service_id);
+        email = js_base64_1.Base64.decode(req.body.user_email);
+        Reservations_1.Reservation.findOne({ email: email, service_id: serviceId, start: req.body.start })
+            .then(function (dbReservation) {
+            if (dbReservation) {
+                dbReservation.remove(function (err) {
+                    if (err) {
+                        return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                            error: 'Error occured during trying to remove reservation',
+                        });
+                    }
+                });
+                if (req.body.resign_message) {
+                    console.log('lemondó email küldése, az üzenet:');
+                    console.log(req.body.resign_message);
+                }
+                return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+            }
+            else {
+                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                    error: 'Reservation does not exist'
+                });
+            }
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.postDeleteReservation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId, email;
+    return __generator(this, function (_a) {
+        serviceId = js_base64_1.Base64.decode(req.body.service_id);
+        email = js_base64_1.Base64.decode(req.body.user_email);
+        AdminUsers_1.AdminUser.findOne({ email: email })
+            .then(function (dbUser) {
+            if (dbUser) {
+                Reservations_1.Reservation.findOne({ service_id: serviceId, start: req.body.start })
+                    .then(function (dbReservation) {
+                    if (dbReservation) {
+                        dbReservation.remove(function (err) {
+                            if (err) {
+                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                                    error: 'Error occured during trying to remove reservation',
+                                });
+                            }
+                        });
+                        if (req.body.refuse_message) {
+                            console.log('elutasító email küldése, az üzenet:');
+                            console.log(req.body.refuse_message);
+                        }
+                        if (req.body.resign_message) {
+                            console.log('lemondó email küldése, az üzenet:');
+                            console.log(req.body.resign_message);
+                        }
+                        return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                    }
+                    else {
+                        return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                            error: 'Reservation does not exist'
+                        });
+                    }
+                });
+            }
+            else {
+                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                    error: 'User does not exist'
+                });
+            }
         });
         return [2 /*return*/];
     });
@@ -213,4 +354,11 @@ var shiftReservation = function (reservationTime, duration, startTime) {
             - dateUtil_1.default.minuteFromHour(reservationTime) % duration + startTime % duration);
     }
     return reservationTime;
+};
+var filterDatesBeforeToday = function (reservations) {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return _.filter(reservations, function (reservation) {
+        return dateUtil_1.default.isAfterEquals(reservation.start, new Date(today));
+    });
 };

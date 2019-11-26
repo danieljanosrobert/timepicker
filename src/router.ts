@@ -8,6 +8,7 @@ import Home from '@/views/Home.vue';
 import About from '@/views/About.vue';
 import Search from '@/views/Search.vue';
 import Register from '@/views/admin/Register.vue';
+import Reservations from '@/views/admin/Reservations.vue';
 import Settings from '@/views/Settings.vue';
 import SavedServices from '@/views/SavedServices.vue';
 import Service from '@/views/admin/settings/SearchingResultSettings.vue';
@@ -58,6 +59,14 @@ const router = new Router({
       component: SavedServices,
       meta: {
         middleware: [userAuth],
+      },
+    },
+    {
+      path: '/reservations',
+      name: 'reservations',
+      component: Reservations,
+      meta: {
+        middleware: [adminAuth],
       },
     },
     {

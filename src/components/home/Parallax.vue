@@ -1,7 +1,7 @@
 <template>
   <v-container :style="setToFullScreen" fluid class="font-alegreya pa-0">
     <v-parallax id="parallax" class="full-height" src="@/assets/images/doctor.jpg">
-      <v-row align="center" class="logo text-yellow" justify="center">
+      <v-row align="center" class="logo text-dark-mahogany" justify="center">
         <span class="logo-pick font-alegreya font-italic">Pick </span>
         <span class="logo-a font-weight-light pl-2">a</span>
         <span class="logo-time font-alegreya font-italic">Time</span>

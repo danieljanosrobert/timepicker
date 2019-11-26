@@ -53,7 +53,11 @@ db.once('open', () => {
   router.get('/book/leaves/:service_id', bookController.getLeaves);
 
   router.post('/reserve', reservationController.postReserve);
-  router.get('/reservations/:service_id', reservationController.getReservations);
+  router.post('/reservations', reservationController.postGetReservations);
+  router.post('/reservations/resign', reservationController.postResignReservation);
+  router.post('/reservations/accept', middleware.isAuthenticatedAsAdmin, reservationController.postAcceptReservation);
+  router.post('/reservations/delete', middleware.isAuthenticatedAsAdmin, reservationController.postDeleteReservation);
+
   router.post('/flag', middleware.isAuthenticatedAsUser, flagController.postToggleFlagService);
   router.get('/flag/:user_email', middleware.isAuthenticatedAsUser, flagController.getUsersFlags);
 

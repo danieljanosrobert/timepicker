@@ -6,7 +6,7 @@
         <v-card-text>Foglalás elküldése után a foglalás már nem szerkeszthető.</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="reservationDialogVisible = false">Mégse</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="reservationDialogVisible = false">Mégsem</v-btn>
           <v-btn dark color="success darken-2" @click="book">Igen</v-btn>
         </v-card-actions>
       </v-card>
@@ -135,9 +135,11 @@ export default {
           age: this.age,
           comment: this.comment,
           start: this.event.start,
+          status: this.$store.state.ownServiceId === this.$route.params.service_id ? 'Elfogadott' : 'Visszaigazolásra vár',
         });
         this.$store.dispatch('openSnackbar', {
-          message: 'Sikeres időpontfoglalás',
+          message: this.$store.state.loggedInUserEmail ? 'Sikeres időpontfoglalás'
+            : 'Sikeres időpontfoglalás. Az időpont elfogadásához kövesse az e-mail-ben kapott utasításokat',
           type: 'success',
         });
         this.reservationDialogVisible = false;
