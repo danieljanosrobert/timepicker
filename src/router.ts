@@ -7,6 +7,7 @@ import middlewarePipeline from '@/middleware/middlewarePipeline';
 import Home from '@/views/Home.vue';
 import About from '@/views/About.vue';
 import Search from '@/views/Search.vue';
+import MyReservations from '@/views/MyReservations.vue';
 import Register from '@/views/admin/Register.vue';
 import Reservations from '@/views/admin/Reservations.vue';
 import Settings from '@/views/Settings.vue';
@@ -57,6 +58,14 @@ const router = new Router({
       path: '/saved-services',
       name: 'saved-services',
       component: SavedServices,
+      meta: {
+        middleware: [userAuth],
+      },
+    },
+    {
+      path: '/my-reservations',
+      name: 'my-reservations',
+      component: MyReservations,
       meta: {
         middleware: [userAuth],
       },

@@ -58,6 +58,7 @@ db.once('open', function () {
     router.get('/book/leaves/:service_id', bookController.getLeaves);
     router.post('/reserve', reservationController.postReserve);
     router.post('/reservations', reservationController.postGetReservations);
+    router.get('/my-reservations/:user_email', middleware_1.middleware.isAuthenticatedAsUser, reservationController.getUsersReservations);
     router.post('/reservations/resign', reservationController.postResignReservation);
     router.post('/reservations/accept', middleware_1.middleware.isAuthenticatedAsAdmin, reservationController.postAcceptReservation);
     router.post('/reservations/delete', middleware_1.middleware.isAuthenticatedAsAdmin, reservationController.postDeleteReservation);

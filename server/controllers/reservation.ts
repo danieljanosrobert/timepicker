@@ -7,7 +7,28 @@ import * as _ from 'lodash';
 import dateUtil from '../utils/dateUtil';
 import { Leave } from '../models/Leaves';
 import { AdminUser } from '../models/AdminUsers';
-import { async } from 'q';
+
+export const getUsersReservations = async (req:any, res: Response, next: NextFunction) => {
+  const email = Base64.decode(req.params.user_email);
+  Reservation.find({email: email}, '-_id start createdAt status service_id').lean()
+    .then((dbReservations) => {
+      if (!dbReservations) {
+        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
+          error: 'Reservations not found',
+        });
+      }
+      const serviceIds = _.map(dbReservations, 'service_id');
+      Service.find({service_id: {$in: serviceIds}}, '-_id service_id name')
+        .then( (dbServices) => {
+          _.forEach(dbReservations, (reservation) => {
+            const reservationsService = _.find(dbServices, { 'service_id': reservation.service_id} )
+            reservation.serviceName = reservationsService ? reservationsService.name : '';
+            reservation.service_id = Base64.encode(reservation.service_id);
+          });
+          return res.status(constants.HTTP_STATUS_OK).send(dbReservations);
+        });
+    });
+};
 
 export const postGetReservations = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.body.service_id);

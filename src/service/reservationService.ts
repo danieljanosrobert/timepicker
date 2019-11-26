@@ -1,6 +1,9 @@
 import Api from '@/service/api';
 
 export default {
+  getUsersReservations(param: string) {
+    return Api().get(`/my-reservations/${param}`);
+  },
   reserve(data: any) {
     return Api().post('/reserve', data);
   },

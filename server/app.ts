@@ -54,6 +54,7 @@ db.once('open', () => {
 
   router.post('/reserve', reservationController.postReserve);
   router.post('/reservations', reservationController.postGetReservations);
+  router.get('/my-reservations/:user_email', middleware.isAuthenticatedAsUser, reservationController.getUsersReservations);
   router.post('/reservations/resign', reservationController.postResignReservation);
   router.post('/reservations/accept', middleware.isAuthenticatedAsAdmin, reservationController.postAcceptReservation);
   router.post('/reservations/delete', middleware.isAuthenticatedAsAdmin, reservationController.postDeleteReservation);

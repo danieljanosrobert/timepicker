@@ -158,7 +158,7 @@
         ],
         userItems: [
           {title: 'Mentett szolgáltatások', icon: 'mdi-flag', url: '/saved-services'},
-          {title: 'Előzmények', icon: 'mdi-backburger', url: '/history'},
+          {title: 'Foglalások', icon: 'mdi-backburger', url: '/my-reservations'},
           {title: 'Beállítások', icon: 'mdi-settings', url: '/settings'},
         ],
         adminItems: [

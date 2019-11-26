@@ -54,6 +54,31 @@ var _ = __importStar(require("lodash"));
 var dateUtil_1 = __importDefault(require("../utils/dateUtil"));
 var Leaves_1 = require("../models/Leaves");
 var AdminUsers_1 = require("../models/AdminUsers");
+exports.getUsersReservations = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var email;
+    return __generator(this, function (_a) {
+        email = js_base64_1.Base64.decode(req.params.user_email);
+        Reservations_1.Reservation.find({ email: email }, '-_id start createdAt status service_id').lean()
+            .then(function (dbReservations) {
+            if (!dbReservations) {
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
+                    error: 'Reservations not found',
+                });
+            }
+            var serviceIds = _.map(dbReservations, 'service_id');
+            Services_1.Service.find({ service_id: { $in: serviceIds } }, '-_id service_id name')
+                .then(function (dbServices) {
+                _.forEach(dbReservations, function (reservation) {
+                    var reservationsService = _.find(dbServices, { 'service_id': reservation.service_id });
+                    reservation.serviceName = reservationsService ? reservationsService.name : '';
+                    reservation.service_id = js_base64_1.Base64.encode(reservation.service_id);
+                });
+                return res.status(http2_1.constants.HTTP_STATUS_OK).send(dbReservations);
+            });
+        });
+        return [2 /*return*/];
+    });
+}); };
 exports.postGetReservations = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId, email, isAdmin, isOwnService;
     return __generator(this, function (_a) {
