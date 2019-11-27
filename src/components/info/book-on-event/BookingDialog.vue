@@ -135,11 +135,11 @@ export default {
           age: this.age,
           comment: this.comment,
           start: this.event.start,
-          status: this.$store.state.ownServiceId === this.$route.params.service_id ? 'Elfogadott' : 'Visszaigazolásra vár',
+          status: this.isOwnService() ? constants.reservationStatuses[0] : constants.reservationStatuses[2],
         });
         this.$store.dispatch('openSnackbar', {
-          message: this.$store.state.loggedInUserEmail ? 'Sikeres időpontfoglalás'
-            : 'Sikeres időpontfoglalás. Az időpont elfogadásához kövesse az e-mail-ben kapott utasításokat',
+          message: this.isOwnService() ? 'Sikeres időpontfoglalás'
+            : 'Sikeres időpontfoglalás. Az időpont megerősítéséhez szükséges linket e-mailben kapta meg.',
           type: 'success',
         });
         this.reservationDialogVisible = false;
@@ -157,6 +157,9 @@ export default {
         Object.assign(this.$data, this.$options.data());
         await this.completeFormIfLoggedIn();
       }
+    },
+    isOwnService() {
+      return this.$store.state.ownServiceId === this.$route.params.service_id;
     },
   },
   async mounted() {

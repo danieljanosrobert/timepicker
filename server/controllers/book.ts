@@ -70,7 +70,13 @@ export const postSaveBookTime = async (req: any, res: Response, next: NextFuncti
                       if (originalBookTime.startTime !== bookTime.startTime
                         || originalBookTime.bookDuration !== bookTime.bookDuration
                         || originalBookTime.endTime !== bookTime.endTime) {
-                        reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
+                        try {
+                          reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
+                        } catch (err) {
+                          return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+                            error: err
+                          })
+                        }
                       }
                     }
                     Break.deleteOne({ service_id: dbService.service_id }, (err) => {

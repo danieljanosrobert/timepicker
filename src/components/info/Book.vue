@@ -29,11 +29,10 @@
       <v-card>
         <v-card-title class="headline" style="word-break: normal">Biztosan le szeretné mondani a foglalást?</v-card-title>
         <v-card-text>A művelet nem visszavonható</v-card-text>
-        <v-textarea class="mx-6" v-model="resignMessage" label="Lemondás oka (opcionális)"> </v-textarea>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
-          <v-btn dark color="error darken-4" @click="confirmResign">Elutasítás</v-btn>
+          <v-btn dark color="error darken-4" @click="confirmResign">Lemondás</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -181,7 +180,6 @@ export default {
     refuseDialogVisible: false,
     resignDialogVisible: false,
     deleteDialogVisible: false,
-    resignMessage: '',
     refuseMessage: '',
 
     // BOOK
@@ -345,7 +343,7 @@ export default {
         });
       }
     },
-    async resignReservation(reservationDate, resignMessage = '') {
+    async resignReservation(reservationDate) {
       if (!this.operationDate) {
         this.$store.dispatch('openSnackbar', {
           message: 'Kérem jelöljön ki egy foglalást a művelet végrehajtásához',
@@ -358,7 +356,6 @@ export default {
           service_id: this.$route.params.service_id,
           user_email: Base64.encode(this.$store.state.loggedInUserEmail),
           start: reservationDate,
-          resign_message: resignMessage,
         });
         await this.refreshEvents();
         this.$store.dispatch('openSnackbar', {
@@ -433,8 +430,7 @@ export default {
       this.endOperation();
     },
     async confirmResign() {
-      await this.resignReservation(this.operationDate, this.resignMessage);
-      this.resignMessage = '';
+      await this.resignReservation(this.operationDate);
       this.endOperation();
     },
     async confirmDelete() {

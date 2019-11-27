@@ -4,11 +4,10 @@
       <v-card>
         <v-card-title class="headline" style="word-break: normal">Biztosan le szeretné mondani a foglalást?</v-card-title>
         <v-card-text>A művelet nem visszavonható</v-card-text>
-        <v-textarea class="mx-6" v-model="resignMessage" label="Lemondás oka (opcionális)"> </v-textarea>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
-          <v-btn dark color="error darken-4" @click="confirmResign">Elutasítás</v-btn>
+          <v-btn dark color="error darken-4" @click="confirmResign">Lemondás</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -129,7 +128,6 @@ export default {
       operationDate: '',
       resignDialogVisible: false,
       resignedServiceId: '',
-      resignMessage: '',
       expanded: [],
       reservations: [],
       headers: [
@@ -223,7 +221,7 @@ export default {
           });
       } catch {}
     },
-    async resignReservation(reservationDate, resignedServiceId, resignMessage = '') {
+    async resignReservation(reservationDate, resignedServiceId) {
       if (!this.operationDate) {
         this.$store.dispatch('openSnackbar', {
           message: 'Kérem jelöljön ki egy foglalást a művelet végrehajtásához',
@@ -236,7 +234,6 @@ export default {
           service_id: resignedServiceId,
           user_email: Base64.encode(this.$store.state.loggedInUserEmail),
           start: reservationDate,
-          resign_message: resignMessage,
         });
         await this.fetchReservations();
         this.$store.dispatch('openSnackbar', {
@@ -254,7 +251,7 @@ export default {
       this.$router.push(`/about/${reservation.id}`);
     },
     async confirmResign() {
-      await this.resignReservation(this.operationDate, this.resignedServiceId, this.resignMessage);
+      await this.resignReservation(this.operationDate, this.resignedServiceId);
       this.endOperation();
     },
     initResign(reservation) {
@@ -263,7 +260,6 @@ export default {
       this.resignDialogVisible = true;
     },
     endOperation() {
-      this.resignMessage = '';
       this.operationDate = '';
       this.resignedServiceId = '';
       this.resignDialogVisible = false;

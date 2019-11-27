@@ -19,6 +19,7 @@
 
   Vue.use(VueScrollTo, { duration: 950 });
 
+  const SUCCESSFULLY_ACTIVATED = 'successfully-activated';
   const HOME = 'home';
   const ABOUT = 'about';
   const LANDING_PAGES = ['register'];
@@ -42,11 +43,20 @@
     watch: {
       $route(to, from) {
         this.refreshAboutPageIfServiceChange(to, from);
+        this.showActivationSuccessfull(to, from);
         this.routerViewHasMargin();
         this.routerViewIsLandingPage();
       },
     },
     methods: {
+      showActivationSuccessfull(to: any, from: any) {
+        if (to.name === HOME && from.name === SUCCESSFULLY_ACTIVATED) {
+          this.$store.dispatch('openSnackbar', {
+            message: 'Sikeres művelet',
+            type: 'success',
+          });
+        }
+      },
       routerViewHasMargin() {
         this.viewHasMargin = this.$route.name !== HOME;
       },

@@ -35,6 +35,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -42,11 +45,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var http2_1 = require("http2");
+var constants_1 = __importDefault(require("../utils/constants"));
+var emailService_1 = require("../email/emailService");
 var js_base64_1 = require("js-base64");
 var Services_1 = require("../models/Services");
 var Reservations_1 = require("../models/Reservations");
@@ -54,6 +56,9 @@ var _ = __importStar(require("lodash"));
 var dateUtil_1 = __importDefault(require("../utils/dateUtil"));
 var Leaves_1 = require("../models/Leaves");
 var AdminUsers_1 = require("../models/AdminUsers");
+var path_1 = __importDefault(require("path"));
+var apiUrl = process.env.API_URL || 'http://localhost:8081';
+var homeUrl = process.env.HOME_URL || 'http://localhost:8080';
 exports.getUsersReservations = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var email;
     return __generator(this, function (_a) {
@@ -102,7 +107,7 @@ exports.postGetReservations = function (req, res, next) { return __awaiter(void 
                     })];
             case 2:
                 _a.sent();
-                Reservations_1.Reservation.find({ service_id: serviceId }, '-_id start createdAt lastName email firstName status')
+                Reservations_1.Reservation.find({ service_id: serviceId }, '-_id start createdAt lastName comment email firstName status')
                     .then(function (dbReservation) {
                     if (!dbReservation) {
                         return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
@@ -113,12 +118,15 @@ exports.postGetReservations = function (req, res, next) { return __awaiter(void 
                     _.forEach(result, function (current) {
                         if (!email) {
                             current.status = '';
+                            current.comment = '';
                         }
                         if (!isAdmin && current.email !== email) {
                             current.status = '';
+                            current.comment = '';
                         }
                         else if (isAdmin && !isOwnService && current.email !== email) {
                             current.status = '';
+                            current.comment = '';
                         }
                         current.email = '';
                     });
@@ -131,6 +139,11 @@ exports.postGetReservations = function (req, res, next) { return __awaiter(void 
 exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
+        if (!req.body.start) {
+            return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                    error: 'Start must exist',
+                })];
+        }
         serviceId = js_base64_1.Base64.decode(req.body.serviceId);
         Services_1.Service.findOne({ service_id: serviceId })
             .then(function (dbService) {
@@ -164,8 +177,88 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                         });
                     }
                 });
+                if (reservation.status === constants_1.default.reservationStatuses[2]) {
+                    var emailDetails = {
+                        to: reservation.email,
+                        subject: 'Időpontfoglalás megerősítése',
+                        replacements: {
+                            invocation: reservation.lastName + " " + reservation.firstName,
+                            serviceName: dbService.name,
+                            startTime: reservation.start,
+                            activateUrl: apiUrl + "/api/activate/" + req.body.serviceId + "/" + js_base64_1.Base64.encode(reservation.start),
+                            resignUrl: apiUrl + "/api/resign-by-email/" + req.body.serviceId + "/" + js_base64_1.Base64.encode(reservation.start) +
+                                ("/" + js_base64_1.Base64.encode(reservation.email)),
+                        },
+                    };
+                    emailService_1.sendMail(constants_1.default.mailTypes.activate, emailDetails);
+                    console.log("activation link: " + emailDetails.replacements.activateUrl);
+                }
                 res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
             });
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.activateReservation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId, start;
+    return __generator(this, function (_a) {
+        serviceId = js_base64_1.Base64.decode(req.params.service_id);
+        start = js_base64_1.Base64.decode(req.params.start);
+        Reservations_1.Reservation.findOne({ service_id: serviceId, start: start })
+            .then(function (dbReservation) {
+            if (dbReservation && dbReservation.status === constants_1.default.reservationStatuses[2]) {
+                dbReservation.status = constants_1.default.reservationStatuses[1];
+                dbReservation.save(function (err) {
+                    if (err) {
+                        return res.sendFile(path_1.default.join(__dirname + '/views/linkError.html'));
+                    }
+                    return res.redirect(homeUrl + '/successfully-activated');
+                });
+            }
+            else {
+                return res.sendFile(path_1.default.join(__dirname + '/views/linkError.html'));
+            }
+        });
+        return [2 /*return*/];
+    });
+}); };
+exports.resignByEmail = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var serviceId, start, email;
+    return __generator(this, function (_a) {
+        serviceId = js_base64_1.Base64.decode(req.params.service_id);
+        start = js_base64_1.Base64.decode(req.params.start);
+        email = js_base64_1.Base64.decode(req.params.email);
+        Reservations_1.Reservation.findOne({ email: email, service_id: serviceId, start: start })
+            .then(function (dbReservation) {
+            if (dbReservation) {
+                Services_1.Service.findOne({ service_id: serviceId })
+                    .then(function (dbService) {
+                    if (dbService) {
+                        dbReservation.remove(function (err) {
+                            if (err) {
+                                return res.sendFile(path_1.default.join(__dirname + '/views/linkError.html'));
+                            }
+                        });
+                        var emailDetails = {
+                            to: dbService.user_email,
+                            subject: 'Időpont lemondásra került',
+                            replacements: {
+                                invocation: 'Szolgáltató',
+                                serviceName: dbService.name,
+                                startTime: dbReservation.start,
+                            },
+                        };
+                        emailService_1.sendMail(constants_1.default.mailTypes.reservationResigned, emailDetails);
+                        return res.redirect(homeUrl + '/successfully-activated');
+                    }
+                    else {
+                        return res.sendFile(path_1.default.join(__dirname + '/views/linkError.html'));
+                    }
+                });
+            }
+            else {
+                return res.sendFile(path_1.default.join(__dirname + '/views/linkError.html'));
+            }
         });
         return [2 /*return*/];
     });
@@ -180,16 +273,38 @@ exports.postAcceptReservation = function (req, res, next) { return __awaiter(voi
             if (dbUser) {
                 Reservations_1.Reservation.findOne({ service_id: serviceId, start: req.body.start })
                     .then(function (dbReservation) {
-                    if (dbReservation) {
-                        dbReservation.status = 'Elfogadott';
-                        dbReservation.save(function (err) {
-                            if (err) {
-                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                                    error: 'Error occured during trying to save reservation',
+                    if (dbReservation && dbReservation.status === constants_1.default.reservationStatuses[1]) {
+                        Services_1.Service.findOne({ service_id: serviceId })
+                            .then(function (dbService) {
+                            if (dbService) {
+                                dbReservation.status = constants_1.default.reservationStatuses[0];
+                                dbReservation.save(function (err) {
+                                    if (err) {
+                                        return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                                            error: 'Error occured during trying to save reservation',
+                                        });
+                                    }
+                                });
+                                var emailDetails = {
+                                    to: dbReservation.email,
+                                    subject: 'Időpont elfogadva',
+                                    replacements: {
+                                        invocation: dbReservation.lastName + " " + dbReservation.firstName,
+                                        serviceName: dbService.name,
+                                        startTime: dbReservation.start,
+                                        resignUrl: apiUrl + "/api/resign-by-email/" + req.body.service_id + "/" + js_base64_1.Base64.encode(dbReservation.start) +
+                                            ("/" + js_base64_1.Base64.encode(dbReservation.email)),
+                                    },
+                                };
+                                emailService_1.sendMail(constants_1.default.mailTypes.reservationAccepted, emailDetails);
+                                return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                            }
+                            else {
+                                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                                    error: 'Service does not exist'
                                 });
                             }
                         });
-                        return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
                     }
                     else {
                         return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
@@ -215,18 +330,34 @@ exports.postResignReservation = function (req, res, next) { return __awaiter(voi
         Reservations_1.Reservation.findOne({ email: email, service_id: serviceId, start: req.body.start })
             .then(function (dbReservation) {
             if (dbReservation) {
-                dbReservation.remove(function (err) {
-                    if (err) {
-                        return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                            error: 'Error occured during trying to remove reservation',
+                Services_1.Service.findOne({ service_id: serviceId })
+                    .then(function (dbService) {
+                    if (dbService) {
+                        dbReservation.remove(function (err) {
+                            if (err) {
+                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                                    error: 'Error occured during trying to remove reservation',
+                                });
+                            }
+                        });
+                        var emailDetails = {
+                            to: dbService.user_email,
+                            subject: 'Időpont lemondásra került',
+                            replacements: {
+                                invocation: 'Szolgáltató',
+                                serviceName: dbService.name,
+                                startTime: dbReservation.start,
+                            },
+                        };
+                        emailService_1.sendMail(constants_1.default.mailTypes.reservationResigned, emailDetails);
+                        return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                    }
+                    else {
+                        return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                            error: 'Service does not exist'
                         });
                     }
                 });
-                if (req.body.resign_message) {
-                    console.log('lemondó email küldése, az üzenet:');
-                    console.log(req.body.resign_message);
-                }
-                return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
             }
             else {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
@@ -248,22 +379,39 @@ exports.postDeleteReservation = function (req, res, next) { return __awaiter(voi
                 Reservations_1.Reservation.findOne({ service_id: serviceId, start: req.body.start })
                     .then(function (dbReservation) {
                     if (dbReservation) {
-                        dbReservation.remove(function (err) {
-                            if (err) {
-                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                                    error: 'Error occured during trying to remove reservation',
+                        Services_1.Service.findOne({ service_id: serviceId })
+                            .then(function (dbService) {
+                            if (dbService) {
+                                dbReservation.remove(function (err) {
+                                    if (err) {
+                                        return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                                            error: 'Error occured during trying to remove reservation',
+                                        });
+                                    }
+                                });
+                                var refuse_message = '';
+                                if (req.body.refuse_message) {
+                                    refuse_message = "Elutas\u00EDt\u00E1s oka: " + req.body.refuse_message;
+                                }
+                                var emailDetails = {
+                                    to: dbReservation.email,
+                                    subject: 'Időpont elutasításra került',
+                                    replacements: {
+                                        invocation: dbReservation.lastName + " " + dbReservation.firstName,
+                                        serviceName: dbService.name,
+                                        startTime: dbReservation.start,
+                                        refuseMessage: refuse_message,
+                                    },
+                                };
+                                emailService_1.sendMail(constants_1.default.mailTypes.reservationDeleted, emailDetails);
+                                return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
+                            }
+                            else {
+                                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                                    error: 'Service does not exist'
                                 });
                             }
                         });
-                        if (req.body.refuse_message) {
-                            console.log('elutasító email küldése, az üzenet:');
-                            console.log(req.body.refuse_message);
-                        }
-                        if (req.body.resign_message) {
-                            console.log('lemondó email küldése, az üzenet:');
-                            console.log(req.body.resign_message);
-                        }
-                        return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
                     }
                     else {
                         return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
@@ -350,6 +498,7 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                                         occupiedTimes.push(constructedDate);
                                         reservation.start = constructedDate;
                                         count--;
+                                        return;
                                     }
                                     reservationTimeInMinutes += bookTime.bookDuration;
                                 }
@@ -364,7 +513,27 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                             });
                         });
                         // save modified reservations
-                        _.forEach(dbReservation, function (reservation) { return reservation.save(); });
+                        Services_1.Service.findOne({ service_id: bookTime.service_id })
+                            .then(function (dbService) {
+                            if (dbService) {
+                                _.forEach(dbReservation, function (reservation) {
+                                    var emailDetails = {
+                                        to: reservation.email,
+                                        subject: 'Időpont módosításra került',
+                                        replacements: {
+                                            invocation: reservation.lastName + " " + reservation.firstName,
+                                            serviceName: dbService.name,
+                                            startTime: reservation.start,
+                                        },
+                                    };
+                                    emailService_1.sendMail(constants_1.default.mailTypes.reservationModified, emailDetails);
+                                    reservation.save();
+                                });
+                            }
+                            else {
+                                throw new Error('Service does not exist');
+                            }
+                        });
                         return [2 /*return*/];
                 }
             });

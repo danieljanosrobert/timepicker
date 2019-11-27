@@ -2,32 +2,15 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var cors_1 = __importDefault(require("cors"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var mongoose_1 = __importDefault(require("mongoose"));
-var userController = __importStar(require("./controllers/user"));
-var validator = __importStar(require("./utils/validators"));
 var middleware_1 = require("./utils/middleware");
 var passport_1 = __importDefault(require("passport"));
 var passport_config_1 = __importDefault(require("./passport-config"));
-var adminUserController = __importStar(require("./controllers/adminUser"));
-var serviceController = __importStar(require("./controllers/service"));
-var contactController = __importStar(require("./controllers/contact"));
-var bookController = __importStar(require("./controllers/book"));
-var messageController = __importStar(require("./controllers/messages"));
-var reservationController = __importStar(require("./controllers/reservation"));
-var flagController = __importStar(require("./controllers/flag"));
 var multer_1 = __importDefault(require("multer"));
-var http2_1 = require("http2");
 var upload = multer_1.default({
     storage: multer_1.default.memoryStorage(),
 });
@@ -46,45 +29,13 @@ mongoose_1.default.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: t
 var db = mongoose_1.default.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
-    router.post('/login', validator.credentialValidator, userController.postLogin);
-    router.post('/register', validator.registerValidator, userController.postRegister);
-    router.post('/service/obtain-id', serviceController.postObtainServiceId);
-    router.get('/available-services', serviceController.getAvailableServices);
-    router.get('/serviceName/:service_id', serviceController.getServiceName);
-    router.get('/contact/:service_id', contactController.getContact);
-    router.get('/messages/:service_id', messageController.getMessages);
-    router.get('/book/book-time/:service_id', bookController.getBookTime);
-    router.get('/book/breaks/:service_id', bookController.getBreaks);
-    router.get('/book/leaves/:service_id', bookController.getLeaves);
-    router.post('/reserve', reservationController.postReserve);
-    router.post('/reservations', reservationController.postGetReservations);
-    router.get('/my-reservations/:user_email', middleware_1.middleware.isAuthenticatedAsUser, reservationController.getUsersReservations);
-    router.post('/reservations/resign', reservationController.postResignReservation);
-    router.post('/reservations/accept', middleware_1.middleware.isAuthenticatedAsAdmin, reservationController.postAcceptReservation);
-    router.post('/reservations/delete', middleware_1.middleware.isAuthenticatedAsAdmin, reservationController.postDeleteReservation);
-    router.post('/flag', middleware_1.middleware.isAuthenticatedAsUser, flagController.postToggleFlagService);
-    router.get('/flag/:user_email', middleware_1.middleware.isAuthenticatedAsUser, flagController.getUsersFlags);
-    router.post('/user/auth', middleware_1.middleware.isAuthenticatedAsUser, function (req, res) { return res.sendStatus(http2_1.constants.HTTP_STATUS_OK); });
-    router.post('/admin/auth', middleware_1.middleware.isAuthenticatedAsAdmin, function (req, res) { return res.sendStatus(http2_1.constants.HTTP_STATUS_OK); });
-    router.post('/admin/login', validator.credentialValidator, adminUserController.postLogin);
-    router.post('/admin/register', validator.registerValidator, adminUserController.postRegister);
-    router.post('/settings/change-password', middleware_1.middleware.isAuthenticatedAsUser, validator.passwordChangeValidator, userController.postChangePassword);
-    router.post('/settings/get-user-data', middleware_1.middleware.isAuthenticatedAsUser, userController.postGetUserData);
-    router.post('/settings/modify-user', middleware_1.middleware.isAuthenticatedAsUser, userController.updateUserData);
-    router.post('/settings/change-password/admin', middleware_1.middleware.isAuthenticatedAsAdmin, validator.passwordChangeValidator, adminUserController.postChangePassword);
-    router.post('/settings/service', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), serviceController.postUpdateService);
-    router.get('/settings/service/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, serviceController.getServiceSettings);
-    router.post('/settings/contact', middleware_1.middleware.isAuthenticatedAsAdmin, upload.single('image'), contactController.postSaveContact);
-    router.get('/settings/contact/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, contactController.getContact);
-    router.post('/settings/book', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postSaveBookTime);
-    router.get('/settings/book/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.getBookTime);
-    router.post('/settings/breaks', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postSaveBreaks);
-    router.get('/settings/breaks/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.getBreaks);
-    router.post('/settings/leaves', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.postSaveLeaves);
-    router.get('/settings/leaves/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, bookController.getLeaves);
-    router.post('/settings/messages', middleware_1.middleware.isAuthenticatedAsAdmin, messageController.postSaveMessages);
-    router.get('/settings/messages/:service_id', middleware_1.middleware.isAuthenticatedAsAdmin, messageController.getMessages);
     app.use('/api', router);
+    require('./routes/reservationsRoute')(router);
+    require('./routes/contactsRoute')(router, upload);
+    require('./routes/messagesRoute')(router);
+    require('./routes/servicesRoute')(router, upload);
+    require('./routes/usersRoute')(router);
+    require('./routes/booksRoute')(router);
     if (app.listen(port)) {
         // tslint:disable-next-line
         console.log("Listening on port " + port);

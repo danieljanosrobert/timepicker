@@ -37,6 +37,22 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="detailsDialogVisible" max-width="460">
+      <v-card>
+        <v-card-title class="headline" style="word-break: normal">
+          Foglalás adatai
+        </v-card-title>
+          <v-text-field class="mx-6" v-if="expanded[0]" readonly label="Foglaló neve" v-model="expanded[0].name"></v-text-field>
+          <v-text-field class="mx-6" v-if="expanded[0]" readonly label="Foglalt időpont" v-model="expanded[0].date"></v-text-field>
+          <v-text-field class="mx-6" v-if="expanded[0]" readonly label="Foglalás állapota" v-model="expanded[0].status"></v-text-field>
+          <v-textarea class="mx-6" v-if="expanded[0]" readonly label="Megjegyzés" v-model="expanded[0].comment"></v-textarea>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn dark color="brown darken-1" @click="detailsDialogVisible = false">OK</v-btn>
+          </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-container class="pa-0 mt-8 bg-color-white" :style="setToFullScreen">
       <v-card>
         <v-col cols="12" class="pa-0">
@@ -119,6 +135,9 @@
           </template>
           <template v-slot:expanded-item="{ headers }">
             <td class="text-right" :colspan="headers.length">
+              <v-btn dark class="mr-2" color="brown lighten-1" @click.stop="detailsDialogVisible = true">
+                Megtekintés
+              </v-btn>
               <v-btn class="mr-2" dark outlined color="success" v-if="expandedAndStatusIsNotAccepted"
                 @click.stop="initAccept(expanded[0])" :disabled="disableIfBeforeToday">Elfogadás
               </v-btn>
@@ -128,7 +147,6 @@
               <v-btn v-if="expandedAndStatusIsAccepted" dark outlined color="red darken-4" @click.stop="initDelete(expanded[0])"
                 :disabled="disableIfBeforeToday">Törlés
               </v-btn>
-              <span v-if="disableIfBeforeToday">Múltbeli foglalásokon nem hajtható végre művelet.</span>
             </td>
           </template>
         </v-data-table>
@@ -158,6 +176,7 @@ export default {
       acceptDialogVisible: false,
       refuseDialogVisible: false,
       deleteDialogVisible: false,
+      detailsDialogVisible: false,
       refuseMessage: '',
       expanded: [],
       reservations: [],
@@ -258,6 +277,7 @@ export default {
                 name: `${reservation.lastName} ${reservation.firstName}`,
                 date: reservation.start,
                 status: reservation.status,
+                comment: reservation.comment,
               });
             });
             this.reservations = fetchedReservations;

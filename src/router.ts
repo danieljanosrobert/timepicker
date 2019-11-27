@@ -17,6 +17,7 @@ import Contact from '@/views/admin/settings/ContactSettings.vue';
 import Book from '@/views/admin/settings/BookSettings.vue';
 import MessageBoard from '@/views/admin/settings/MessageBoard.vue';
 import PasswordSettings from '@/views/admin/settings/PasswordSettings.vue';
+import SuccessfullyActivated from '@/components/SuccessfullyActivated.vue';
 
 Vue.use(Router);
 
@@ -28,6 +29,11 @@ const router = new Router({
       path: '/',
       name: 'home',
       component: Home,
+    },
+    {
+      path: '/successfully-activated',
+      name: 'successfully-activated',
+      component: SuccessfullyActivated,
     },
     {
       path: '/about/:service_id',

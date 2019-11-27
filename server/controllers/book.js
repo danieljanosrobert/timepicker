@@ -120,7 +120,14 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
                                     if (originalBookTime.startTime !== bookTime.startTime
                                         || originalBookTime.bookDuration !== bookTime.bookDuration
                                         || originalBookTime.endTime !== bookTime.endTime) {
-                                        reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
+                                        try {
+                                            reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
+                                        }
+                                        catch (err) {
+                                            return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
+                                                error: err
+                                            });
+                                        }
                                     }
                                 }
                                 Breaks_1.Break.deleteOne({ service_id: dbService.service_id }, function (err) {
