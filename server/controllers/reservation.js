@@ -524,6 +524,8 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                                             invocation: reservation.lastName + " " + reservation.firstName,
                                             serviceName: dbService.name,
                                             startTime: reservation.start,
+                                            resignUrl: apiUrl + "/api/resign-by-email/" + bookTime.service_id + "/" + js_base64_1.Base64.encode(reservation.start) +
+                                                ("/" + js_base64_1.Base64.encode(reservation.email)),
                                         },
                                     };
                                     emailService_1.sendMail(constants_1.default.mailTypes.reservationModified, emailDetails);

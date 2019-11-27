@@ -435,6 +435,8 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
                   invocation: `${reservation.lastName} ${reservation.firstName}`,
                   serviceName: dbService.name,
                   startTime: reservation.start,
+                  resignUrl: `${apiUrl}/api/resign-by-email/${bookTime.service_id}/${Base64.encode(reservation.start)}` +
+                          `/${Base64.encode(reservation.email)}`,
                 },
               }
               sendMail(appConstants.mailTypes.reservationModified, emailDetails);
