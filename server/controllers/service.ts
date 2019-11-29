@@ -6,6 +6,10 @@ import { AdminUser } from '../models/AdminUsers';
 import bcrypt from 'bcrypt';
 import { Base64 } from 'js-base64';
 
+/**
+ * POST /service/obtain-id
+ * Returns the AdminUser's Service's service_id
+ */
 export const postObtainServiceId = async (req: Request, res: Response, next: NextFunction) => {
   Service.findOne({ user_email: req.body.user_email })
     .then((dbService) => {
@@ -21,6 +25,10 @@ export const postObtainServiceId = async (req: Request, res: Response, next: Nex
     });
 };
 
+/**
+ * GET /serviceName/:service_id
+ * Returns name of Service with given service_id
+ */
 export const getServiceName = async (req: Request, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   Service.findOne({ service_id: serviceId })
@@ -34,6 +42,10 @@ export const getServiceName = async (req: Request, res: Response, next: NextFunc
     });
 };
 
+/**
+ * GET /available-services
+ * Returns array of Services where hidden is false
+ */
 export const getAvailableServices = async (req: Request, res: Response, next: NextFunction) => {
   Service.find({ hidden: false }, 'service_id name image description')
     .then((dbServices) => {
@@ -49,6 +61,10 @@ export const getAvailableServices = async (req: Request, res: Response, next: Ne
     });
 };
 
+/**
+ * GET /settings/service/:service_id
+ * Returns the search setting details of Service with given service_id
+ */
 export const getServiceSettings = async (req: Request, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   Service.findOne({ service_id: serviceId })
@@ -68,11 +84,15 @@ export const getServiceSettings = async (req: Request, res: Response, next: Next
     });
 };
 
+/**
+ * Creates a service on AdminUser creation.
+ * @param service_id string of generated UUID that joins AdminUser with Service
+ */
 export const saveService = async (req: any, res: Response, next: NextFunction, service_id: string) => {
   const service = new Service({
     user_email: req.body.email,
     service_id: service_id,
-    name: req.body.servicename,
+    name: req.body.serviceName,
     description: '',
     hidden: true,
   });
@@ -84,6 +104,11 @@ export const saveService = async (req: any, res: Response, next: NextFunction, s
   });
 };
 
+
+/**
+ * POST /settings/service
+ * Updates Service
+ */
 export const postUpdateService = async (req: any, res: Response, next: NextFunction) => {
 
   AdminUser.findOne({ email: req.body.user_email })

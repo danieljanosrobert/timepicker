@@ -8,7 +8,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn dark color="brown darken-1 pa-2" @click="warnDialog = false">Mégsem</v-btn>
-          <v-btn dark color="error darken-4" @click="save()">Mentés</v-btn>
+          <v-btn dark color="error darken-4" :disabled="buttonDisabled" @click="save()">Mentés</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -54,7 +54,14 @@
           min-width="290px"
         >
           <template v-slot:activator="{ on }">
-            <v-text-field v-model="startTime" label="Munkaidő kezdete" readonly v-on="on"></v-text-field>
+            <v-text-field v-model="startTime"
+              label="Munkaidő kezdete"
+              readonly
+              v-on="on"
+              :error-messages="startTimeErrors"
+              @input="$v.startTime.$touch()"
+              @blur="$v.startTime.$touch()"
+            ></v-text-field>
           </template>
           <v-time-picker
             :allowed-minutes="allowedMinutes"
@@ -80,7 +87,14 @@
           min-width="290px"
         >
           <template v-slot:activator="{ on }">
-            <v-text-field v-model="endTime" label="Munkaidő vége" readonly v-on="on"></v-text-field>
+            <v-text-field v-model="endTime" 
+              label="Munkaidő vége"
+              :error-messages="endTimeErrors"
+              @input="$v.endTime.$touch()"
+              @blur="$v.endTime.$touch()" 
+              readonly 
+              v-on="on">
+            </v-text-field>
           </template>
           <v-time-picker
             :allowed-minutes="allowedMinutes"
@@ -98,7 +112,9 @@
           v-model="bookDuration"
           type="number"
           suffix="perc"
-          min="0"
+          :error-messages="bookDurationErrors"
+          @input="$v.bookDuration.$touch()"
+          min="5"
           max="120"
           step="5"
           @blur="setBookDuration"
@@ -109,6 +125,9 @@
       <v-col cols="12" sm="8" md="12" class="pb-0">
         <v-autocomplete
           v-model="selectedWeekdays"
+          :error-messages="selectedWeekdaysErrors"
+          @input="$v.selectedWeekdays.$touch()"
+          @blur="$v.selectedWeekdays.$touch()"
           :items="weekdays"
           filled
           chips
@@ -138,7 +157,7 @@
       </v-col>
     </v-row>
 
-    <v-form class="pa-6" @submit.prevent="warnDialog = true">
+    <v-form class="pa-6" @submit.prevent="openWarnDialog">
       <v-divider class="pb-2"></v-divider>
       <v-text-field
         id="password"
@@ -146,109 +165,198 @@
         v-model="password"
         name="password"
         type="password"
+        required
+        :error-messages="passwordErrors"
+        @input="$v.password.$touch()"
+        @blur="$v.password.$touch()"
       ></v-text-field>
 
-      <v-btn class="mr-4" @click="warnDialog = true">Mentés</v-btn>
+      <v-btn class="mr-4" @click="openWarnDialog">Mentés</v-btn>
     </v-form>
   </v-card>
 </template>
 
 <script>
-import bookService from '@/service/bookService';
+  import bookService from '@/service/bookService';
+  import { required, minLength } from 'vuelidate/lib/validators';
+  import constants from '@/utils/constants';
 
-export default {
-name: 'SetBookTimes',
-  data: () => ({
-    warnDialog: false,
-    password: '',
-    lastMonth: '',
-    dateMotnhsMenu: false,
-    startTime: '',
-    startTimeMenu: false,
-    endTime: '',
-    endTimeMenu: false,
-    selectedWeekdays: '',
-    bookDuration: '',
-    weekdays: [
-      'Hétfő',
-      'Kedd',
-      'Szerda',
-      'Csütörtök',
-      'Péntek',
-      'Szombat',
-      'Vasárnap',
-    ],
-  }),
-  async mounted() {
-    this.lastMonth = `${new Date().getFullYear() + 1}-12`;
-    await this.fetchBookSettings();
-  },
-  computed: {
-    monthOfToday() {
-      const dateOfToday = new Date();
-      return `${dateOfToday.getFullYear()}-${dateOfToday.getMonth() + 1}`;
+  export default {
+    name: 'SetBookTimes',
+    data: () => ({
+      warnDialog: false,
+      password: '',
+      lastMonth: '',
+      dateMotnhsMenu: false,
+      startTime: '',
+      startTimeMenu: false,
+      endTime: '',
+      endTimeMenu: false,
+      selectedWeekdays: '',
+      bookDuration: '',
+      weekdays: [
+        'Hétfő',
+        'Kedd',
+        'Szerda',
+        'Csütörtök',
+        'Péntek',
+        'Szombat',
+        'Vasárnap',
+      ],
+      buttonDisabled: false,
+    }),
+    validations: {
+      password: {
+        required,
+        minLength: minLength(6),
+      },
+      selectedWeekdays: {
+        required,
+        minLength: minLength(1),
+      },
+      startTime: {
+        required,
+      },
+      endTime: {
+        required,
+      },
+      bookDuration: {
+        required,
+      },
     },
-    endOfNextYear() {
-      const dateOfToday = new Date();
-      return `${dateOfToday.getFullYear() + 1}-12`;
+    async mounted() {
+      this.lastMonth = `${new Date().getFullYear() + 1}-12`;
+      await this.fetchBookSettings();
     },
-    allowedMinutes() {
-      return (mod) => mod % 5 === 0;
+    computed: {
+      passwordErrors() {
+        const errors = [];
+        if (!this.$v.password.$dirty) {
+          return errors;
+        }
+        !this.$v.password.minLength && errors.push(constants.validationErrorMessages.passwordMinLength);
+        !this.$v.password.required && errors.push(constants.validationErrorMessages.required);
+        return errors;
+      },
+      selectedWeekdaysErrors() {
+        const errors = [];
+        if (!this.$v.selectedWeekdays.$dirty) {
+          return errors;
+        }
+        !this.$v.selectedWeekdays.minLength && errors.push(constants.validationErrorMessages.selectedWeekdays);
+        !this.$v.selectedWeekdays.required && errors.push(constants.validationErrorMessages.required);
+        return errors;
+      },
+      startTimeErrors() {
+        const errors = [];
+        if (!this.$v.startTime.$dirty) {
+          return errors;
+        }
+        !this.$v.startTime.required && errors.push(constants.validationErrorMessages.required);
+        return errors;
+      },
+      endTimeErrors() {
+        const errors = [];
+        if (!this.$v.endTime.$dirty) {
+          return errors;
+        }
+        !this.$v.endTime.required && errors.push(constants.validationErrorMessages.required);
+        return errors;
+      },
+      bookDurationErrors() {
+        const errors = [];
+        if (!this.$v.bookDuration.$dirty) {
+          return errors;
+        }
+        !this.$v.bookDuration.required && errors.push(constants.validationErrorMessages.required);
+        return errors;
+      },
+      monthOfToday() {
+        const dateOfToday = new Date();
+        return `${dateOfToday.getFullYear()}-${dateOfToday.getMonth() + 1}`;
+      },
+      endOfNextYear() {
+        const dateOfToday = new Date();
+        return `${dateOfToday.getFullYear() + 1}-12`;
+      },
+      allowedMinutes() {
+        return (mod) => mod % 5 === 0;
+      },
     },
-  },
-  methods: {
-    async fetchBookSettings() {
-      this.password = '';
-      await bookService.getBookSettings(this.$store.state.ownServiceId)
-        .then( (book) => {
-          this.lastMonth = book.data.lastMonth;
-          this.startTime = book.data.startTime;
-          this.endTime = book.data.endTime;
-          this.bookDuration = book.data.bookDuration;
-          this.selectedWeekdays = book.data.selectedWeekdays;
-        });
-    },
-    async save() {
-      try {
-        await bookService.saveBook({
-          user_email: this.$store.state.loggedInUserEmail,
-          password: this.password,
-          lastMonth: this.lastMonth,
-          startTime: this.startTime,
-          endTime: this.endTime,
-          bookDuration: this.bookDuration,
-          selectedWeekdays: this.selectedWeekdays,
-        });
-        this.fetchBookSettings();
+    methods: {
+      openWarnDialog() {
+        this.$v.$touch();
+        if (this.$v.$invalid) {
+          return;
+        }
+        this.warnDialog = true;
+      },
+      async fetchBookSettings() {
+        this.password = '';
+        this.$root.$emit('startLoading');
+        try {
+          await bookService.getBookSettings(this.$store.state.ownServiceId)
+            .then( (book) => {
+              this.lastMonth = book.data.lastMonth;
+              this.startTime = book.data.startTime;
+              this.endTime = book.data.endTime;
+              this.bookDuration = book.data.bookDuration;
+              this.selectedWeekdays = book.data.selectedWeekdays;
+            });
+        } catch {
+        } finally {
+          this.$root.$emit('stopLoading');
+        }
+      },
+      async save() {
+        this.buttonDisabled = true;
         this.warnDialog = false;
-        this.$store.dispatch('openSnackbar', {
-          message: 'Időpontok beállításai mentésre kerültek',
-          type: 'success',
-        });
-        this.$root.$emit('breaksDeleted');
-      } catch {
-        this.$store.dispatch('openSnackbar', {
-          message: 'Hiba történt a mentés során!',
-          type: 'error',
-        });
-      }
+        this.$root.$emit('startLoading');
+        try {
+          await bookService.saveBook({
+            user_email: this.$store.state.loggedInUserEmail,
+            password: this.password,
+            lastMonth: this.lastMonth,
+            startTime: this.startTime,
+            endTime: this.endTime,
+            bookDuration: this.bookDuration,
+            selectedWeekdays: this.selectedWeekdays,
+          });
+          this.fetchBookSettings();
+          this.$store.dispatch('openSnackbar', {
+            message: 'Időpontok beállításai mentésre kerültek',
+            type: 'success',
+          });
+          this.$root.$emit('breaksDeleted');
+          this.$v.$reset();
+        } catch (err) {
+          this.$store.dispatch('openSnackbar', {
+            message: err.response && _.get(constants.apiValidationMessages, err.response.data.error)
+              || 'Hiba történt a mentés során!',
+            type: 'error',
+          });
+        } finally {
+          this.buttonDisabled = false;
+          this.$root.$emit('stopLoading');
+        }
+      },
+      remove(item) {
+        const index = this.selectedWeekdays.indexOf(item);
+        if (index >= 0) {
+          this.selectedWeekdays.splice(index, 1);
+        }
+      },
+      setBookDuration() {
+        if (this.bookDuration > 120) {
+          this.bookDuration = 120;
+        } else if (this.bookDuration < 0) {
+          this.bookDuration = 0;
+        }
+        this.bookDuration -= this.bookDuration % 5;
+        this.$v.bookDuration.$touch();
+      },
     },
-    remove(item) {
-      const index = this.selectedWeekdays.indexOf(item);
-      if (index >= 0) {
-        this.selectedWeekdays.splice(index, 1);
-      }
-    },
-    setBookDuration() {
-      if (this.bookDuration > 120) {
-        this.bookDuration = 120;
-      } else if (this.bookDuration < 0) {
-        this.bookDuration = 0;
-      }
-      this.bookDuration -= this.bookDuration % 5;
-    },
-  },
-};
+  };
 </script>
 
 <style lang="scss" scoped>

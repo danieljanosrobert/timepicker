@@ -94,10 +94,16 @@
     },
     methods: {
       async getServiceName() {
-        await serviceService.getServiceName(this.$route.params.service_id)
+        this.$root.$emit('startLoading');
+        try {
+          await serviceService.getServiceName(this.$route.params.service_id)
             .then((serviceName) => {
               this.serviceName = serviceName.data;
             });
+        } catch {
+        } finally {
+          this.$root.$emit('stopLoading');
+        }
       },
       aboutEvent(event) {
         this.mobileMenu = false;

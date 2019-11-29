@@ -7,7 +7,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
-          <v-btn dark color="error darken-4" @click="confirmResign">Lemondás</v-btn>
+          <v-btn dark color="error darken-4" :disabled="buttonsDisabled" @click="confirmResign">Lemondás</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -98,7 +98,8 @@
                 Szolgáltatás megnyitása
               </v-btn>
               <v-btn dark outlined color="red darken-4" @click.stop="initResign(expanded[0])"
-                :disabled="disableIfBeforeToday">Lemondás
+                :disabled="disableIfBeforeToday || buttonsDisabled">
+                Lemondás
               </v-btn>
             </td>
           </template>
@@ -127,6 +128,7 @@ export default {
       },
       operationDate: '',
       resignDialogVisible: false,
+      buttonsDisabled: false,
       resignedServiceId: '',
       expanded: [],
       reservations: [],
@@ -204,6 +206,7 @@ export default {
   },
   methods: {
     async fetchReservations() {
+      this.$root.$emit('startLoading');
       try {
         await reservationService
           .getUsersReservations(Base64.encode(this.$store.state.loggedInUserEmail))
@@ -219,7 +222,10 @@ export default {
             });
             this.reservations = fetchedReservations;
           });
-      } catch {}
+      } catch {
+      } finally {
+        this.$root.$emit('stopLoading');
+      }
     },
     async resignReservation(reservationDate, resignedServiceId) {
       if (!this.operationDate) {
@@ -229,6 +235,8 @@ export default {
         });
         return;
       }
+      this.buttonsDisabled = true;
+      this.$root.$emit('startLoading');
       try {
         await reservationService.resignReservation({
           service_id: resignedServiceId,
@@ -245,12 +253,16 @@ export default {
           message: 'Sikertelen lemondás. Kérem próbálja újra később',
           type: 'error',
         });
+      } finally {
+        this.buttonsDisabled = false;
+        this.$root.$emit('stopLoading');
       }
     },
     goToService(reservation) {
       this.$router.push(`/about/${reservation.id}`);
     },
     async confirmResign() {
+      this.resignDialogVisible = false;
       await this.resignReservation(this.operationDate, this.resignedServiceId);
       this.endOperation();
     },
@@ -262,7 +274,6 @@ export default {
     endOperation() {
       this.operationDate = '';
       this.resignedServiceId = '';
-      this.resignDialogVisible = false;
     },
     validateIntervalAndUpdateLabel() {
       if (this.filters.intervall[1] < this.filters.intervall[0]) {

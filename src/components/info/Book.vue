@@ -6,8 +6,8 @@
         <v-card-text>A művelet nem visszavonható</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
-          <v-btn dark color="success" @click="confirmAccept">Elfogadás</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="acceptDialogVisible = false">Mégsem</v-btn>
+          <v-btn dark color="success" :disabled="buttonsDisabled" @click="confirmAccept">Elfogadás</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -19,8 +19,8 @@
         <v-textarea class="mx-6" v-model="refuseMessage" label="Elutasítás oka (opcionális)"> </v-textarea>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
-          <v-btn dark color="error darken-4" @click="confirmRefuse">Elutasítás</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="refuseDialogVisible = false">Mégsem</v-btn>
+          <v-btn dark color="error darken-4" :disabled="buttonsDisabled" @click="confirmRefuse">Elutasítás</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -31,8 +31,8 @@
         <v-card-text>A művelet nem visszavonható</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
-          <v-btn dark color="error darken-4" @click="confirmResign">Lemondás</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="resignDialogVisible = false">Mégsem</v-btn>
+          <v-btn dark color="error darken-4" :disabled="buttonsDisabled" @click="confirmResign">Lemondás</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -43,8 +43,8 @@
         <v-card-text>A művelet nem visszavonható</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
-          <v-btn dark color="error darken-4" @click="confirmDelete">Törlés</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="deleteDialogVisible = false">Mégsem</v-btn>
+          <v-btn dark color="error darken-4" :disabled="buttonsDisabled" @click="confirmDelete">Törlés</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -113,18 +113,6 @@
             <v-toolbar :color="selectedEvent.color" dark>
               <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
               <v-spacer></v-spacer>
-              <v-menu v-if="canReSendEmail(selectedEvent)">
-                <template v-slot:activator="{ on }">
-                  <v-btn icon v-on="on">
-                    <v-icon>mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-                 <v-list>
-                  <v-list-item link>
-                     <v-list-item-title>Email újraküldése</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
             </v-toolbar>
             <v-card-text>
               <span v-html="selectedEvent.details"></span>
@@ -135,19 +123,24 @@
                 Mégsem
               </v-btn>
               <v-spacer></v-spacer>
-              <v-btn v-if="canBookOnEvent(selectedEvent)" text color="secondary" @click="openBookingDialog(selectedEvent)">
+              <v-btn v-if="canBookOnEvent(selectedEvent)" text color="secondary"
+                     @click="openBookingDialog(selectedEvent)" :disabled="buttonsDisabled">
                 Foglalás
               </v-btn>
-              <v-btn v-if="canAcceptEvent(selectedEvent)" text color="success darken-2" @click="initAccept(selectedEvent)">
+              <v-btn v-if="canAcceptEvent(selectedEvent)" text color="success darken-2"
+                     @click="initAccept(selectedEvent)" :disabled="buttonsDisabled">
                 Elfogadás
               </v-btn>
-              <v-btn v-if="canRefuseEvent(selectedEvent)" text color="error" @click="initRefuse(selectedEvent)">
+              <v-btn v-if="canRefuseEvent(selectedEvent)" text color="error"
+                     @click="initRefuse(selectedEvent)" :disabled="buttonsDisabled">
                 Elutasítás
               </v-btn>
-              <v-btn v-if="canResignEvent(selectedEvent)" text color="error" @click="initResign(selectedEvent)">
+              <v-btn v-if="canResignEvent(selectedEvent)" text color="error"
+                     @click="initResign(selectedEvent)" :disabled="buttonsDisabled">
                 Lemondás
               </v-btn>
-              <v-btn v-if="canDeleteEvent(selectedEvent)" text color="error" @click="initDelete(selectedEvent)">
+              <v-btn v-if="canDeleteEvent(selectedEvent)" text color="error"
+                     @click="initDelete(selectedEvent)" :disabled="buttonsDisabled">
                 Törlés
               </v-btn>
             </v-card-actions>
@@ -180,6 +173,7 @@ export default {
     refuseDialogVisible: false,
     resignDialogVisible: false,
     deleteDialogVisible: false,
+    buttonsDisabled: false,
     refuseMessage: '',
 
     // BOOK
@@ -282,6 +276,7 @@ export default {
     },
     // API CALLS
     async fetchBook() {
+      this.$root.$emit('startLoading');
       try {
         await bookService.getBooktime(this.$route.params.service_id)
           .then( (book) => {
@@ -304,18 +299,19 @@ export default {
             this.bookLeaves = leaves.data.leaves;
           });
       } catch {}
-      try {
-        await this.fetchReservations();
-      } catch {}
+      await this.fetchReservations();
       this.generateEventsFromBook();
+      this.$root.$emit('stopLoading');
     },
     async fetchReservations() {
-      await reservationService.getReservations({
-        service_id: this.$route.params.service_id,
-        user_email: Base64.encode(this.$store.state.loggedInUserEmail),
-      }).then( (reservations) => {
-          this.reservations = reservations.data;
-        });
+      try {
+        await reservationService.getReservations({
+          service_id: this.$route.params.service_id,
+          user_email: Base64.encode(this.$store.state.loggedInUserEmail),
+        }).then( (reservations) => {
+            this.reservations = reservations.data;
+          });
+      } catch {}
     },
     async acceptReservation(reservationDate) {
       if (!this.operationDate) {
@@ -325,6 +321,8 @@ export default {
         });
         return;
       }
+      this.buttonsDisabled = true;
+      this.$root.$emit('startLoading');
       try {
         await reservationService.acceptReservation({
           service_id: this.$store.state.ownServiceId,
@@ -342,6 +340,8 @@ export default {
           type: 'error',
         });
       }
+      this.buttonsDisabled = false;
+      this.$root.$emit('stopLoading');
     },
     async resignReservation(reservationDate) {
       if (!this.operationDate) {
@@ -351,6 +351,8 @@ export default {
         });
         return;
       }
+      this.buttonsDisabled = true;
+      this.$root.emit('startLoading');
       try {
         await reservationService.resignReservation({
           service_id: this.$route.params.service_id,
@@ -368,6 +370,8 @@ export default {
           type: 'error',
         });
       }
+      this.buttonsDisabled = false;
+      this.$root.$emit('stopLoading');
     },
     async deleteReservation(reservationDate, refuseMessage = '') {
       if (!this.operationDate) {
@@ -377,6 +381,8 @@ export default {
         });
         return;
       }
+      this.buttonsDisabled = true;
+      this.$root.$emit('startLoading');
       try {
         await reservationService.deleteReservation({
           service_id: this.$store.state.ownServiceId,
@@ -395,6 +401,8 @@ export default {
           type: 'error',
         });
       }
+      this.buttonsDisabled = false;
+      this.$root.$emit('stopLoading');
     },
 
     // BUTTONS
@@ -421,19 +429,23 @@ export default {
 
     // DIALOGS
     async confirmAccept() {
+      this.acceptDialogVisible = false;
       await this.acceptReservation(this.operationDate);
       this.endOperation();
     },
     async confirmRefuse() {
+      this.refuseDialogVisible = false;
       await this.deleteReservation(this.operationDate, this.refuseMessage);
       this.refuseMessage = '';
       this.endOperation();
     },
     async confirmResign() {
+      this.resignDialogVisible = false;
       await this.resignReservation(this.operationDate);
       this.endOperation();
     },
     async confirmDelete() {
+      this.deleteDialogVisible = false;
       await this.deleteReservation(this.operationDate);
       this.endOperation();
     },
@@ -455,10 +467,6 @@ export default {
     },
     endOperation() {
       this.operationDate = '';
-      this.acceptDialogVisible = false;
-      this.refuseDialogVisible = false;
-      this.resignDialogVisible = false;
-      this.deleteDialogVisible = false;
     },
 
     // GENERATING

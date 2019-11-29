@@ -81,10 +81,16 @@
     },
     methods: {
       async fetchMessages() {
-        await messageService.getMessagesSettings(this.$store.state.ownServiceId)
-        .then( (messages) => {
-          this.messages = messages.data.messages;
-        });
+        this.$root.$emit('startLoading');
+        try {
+          await messageService.getMessagesSettings(this.$store.state.ownServiceId)
+            .then( (messages) => {
+              this.messages = messages.data.messages;
+            });
+        } catch {
+        } finally {
+          this.$root.$emit('stopLoading');
+        }
       },
       openEditor(index) {
         this.$root.$emit('editMessage', {message: this.messages[index], index, new: false});
@@ -108,6 +114,7 @@
         this.deleteDialogVisible = false;
       },
       async save() {
+        this.$root.$emit('startLoading');
         try {
           await messageService.saveMessages({
             user_email: this.$store.state.loggedInUserEmail,
@@ -123,6 +130,9 @@
             message: 'Hiba történt az üzenőfal változtatása során!',
             type: 'error',
           });
+        } finally {
+          this.$root.$emit('enableMessageBoardSaveButton');
+          this.$root.$emit('stopLoading');
         }
       },
     },

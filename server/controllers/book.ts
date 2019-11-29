@@ -10,6 +10,11 @@ import { Service } from '../models/Services';
 import dateUtil from '../utils/dateUtil';
 import * as _ from 'lodash';
 
+/**
+ * GET /book/book-time/:service_id
+ * GET /settings/book/:service_id
+ * Returns the book-times of Service with given service_id
+ */
 export const getBookTime = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   BookTime.findOne({ service_id: serviceId })
@@ -30,6 +35,10 @@ export const getBookTime = async (req: any, res: Response, next: NextFunction) =
     });
 };
 
+/**
+ * POST /settings/book
+ * Updates book-time. If book-time does not exist create one
+ */
 export const postSaveBookTime = async (req: any, res: Response, next: NextFunction) => {
   AdminUser.findOne({ email: req.body.user_email })
     .then((dbUser) => {
@@ -69,7 +78,8 @@ export const postSaveBookTime = async (req: any, res: Response, next: NextFuncti
                     if (originalBookTime && originalBookTime.startTime) {
                       if (originalBookTime.startTime !== bookTime.startTime
                         || originalBookTime.bookDuration !== bookTime.bookDuration
-                        || originalBookTime.endTime !== bookTime.endTime) {
+                        || originalBookTime.endTime !== bookTime.endTime
+                        || !_.isEqual(_.sortBy(originalBookTime.selectedWeekdays), _.sortBy(bookTime.selectedWeekdays))) {
                         try {
                           reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
                         } catch (err) {
@@ -98,6 +108,11 @@ export const postSaveBookTime = async (req: any, res: Response, next: NextFuncti
     });
 };
 
+/**
+ * GET /book/breaks/:service_id
+ * GET /settings/breaks/:service_id
+ * Returns the breaks of Service with given service_id
+ */
 export const getBreaks = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   Break.findOne({ service_id: serviceId })
@@ -114,6 +129,10 @@ export const getBreaks = async (req: any, res: Response, next: NextFunction) => 
     });
 };
 
+/**
+ * POST /settings/breaks
+ * Updates breaks. If breaks does not exist create one
+ */
 export const postSaveBreaks = async (req: any, res: Response, next: NextFunction) => {
   AdminUser.findOne({ email: req.body.user_email })
     .then((dbUser) => {
@@ -171,6 +190,11 @@ export const postSaveBreaks = async (req: any, res: Response, next: NextFunction
     });
 };
 
+/**
+ * GET /book/leaves/:service_id
+ * GET /settings/leaves/:service_id
+ * Returns the leaves of Service with given service_id
+ */
 export const getLeaves = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   Leave.findOne({ service_id: serviceId })
@@ -187,6 +211,10 @@ export const getLeaves = async (req: any, res: Response, next: NextFunction) => 
     });
 };
 
+/**
+ * POST /settings/leaves
+ * Updates leaves. If leaves does not exist create one
+ */
 export const postSaveLeaves = async (req: any, res: Response, next: NextFunction) => {
   AdminUser.findOne({ email: req.body.user_email })
     .then((dbUser) => {

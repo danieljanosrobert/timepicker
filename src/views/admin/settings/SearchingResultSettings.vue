@@ -15,6 +15,10 @@
             <v-text-field
                     v-model="name"
                     label="Név"
+                    required
+                    :error-messages="nameErrors"
+                    @input="$v.name.$touch()"
+                    @blur="$v.name.$touch()"
             ></v-text-field>
             <v-file-input v-model="image" accept="image/*" prepend-icon="" label="Kép"></v-file-input>
             <v-checkbox class="no-hover"
@@ -36,10 +40,12 @@
             <v-divider class="pb-2"></v-divider>
 
             <v-form @submit.prevent="save">
-              <v-text-field id="password" label="Mentéshez szükséges jelszó" v-model="password" name="password"
-                            type="password"></v-text-field>
+              <v-text-field id="password" label="Mentéshez szükséges jelszó" v-model="password" 
+                            name="password" type="password" required :error-messages="passwordErrors"
+                            @input="$v.password.$touch()" @blur="$v.password.$touch()">
+              </v-text-field>
 
-              <v-btn class="mr-4" @click="save">Mentés</v-btn>
+              <v-btn class="mr-4" :disabled="buttonDisabled" @click="save">Mentés</v-btn>
             </v-form>
           </form>
 
@@ -87,6 +93,9 @@
 
 <script>
   import serviceService from '@/service/serviceService';
+  import { required, minLength } from 'vuelidate/lib/validators';
+  import { serviceNameRegex } from '@/utils/customValidators';
+  import constants from '@/utils/constants';
 
   const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/timepicker/image/upload/v1573508434/services/default_service_j961rq.jpg';
 
@@ -101,7 +110,18 @@
       password: null,
       deleteImage: false,
       imageUrl: DEFAULT_IMAGE_URL,
+      buttonDisabled: false,
     }),
+    validations: {
+      name: {
+        required,
+        serviceNameRegex,
+      },
+      password: {
+        required,
+        minLength: minLength(6),
+      },
+    },
     watch: {
       image(img) {
         if (img) {
@@ -113,6 +133,24 @@
       await this.fetchServiceSettings();
     },
     computed: {
+      nameErrors() {
+        const errors = [];
+        if (!this.$v.name.$dirty) {
+          return errors;
+        }
+        !this.$v.name.required && errors.push(constants.validationErrorMessages.required);
+        !this.$v.name.serviceNameRegex && errors.push(constants.validationErrorMessages.serviceNameRegex);
+        return errors;
+      },
+      passwordErrors() {
+        const errors = [];
+        if (!this.$v.password.$dirty) {
+          return errors;
+        }
+        !this.$v.password.minLength && errors.push(constants.validationErrorMessages.passwordMinLength);
+        !this.$v.password.required && errors.push(constants.validationErrorMessages.required);
+        return errors;
+      },
       setToFullScreen() {
         return {
           'min-height': `${window.innerHeight}px`,
@@ -123,17 +161,29 @@
       async fetchServiceSettings() {
         this.password = '';
         this.imageUrl = DEFAULT_IMAGE_URL;
-        await serviceService.getServiceSettings(this.$store.state.ownServiceId).
-        then( (service) => {
-          this.name = service.data.name;
-          this.description = service.data.description;
-          this.serviceHidden = service.data.hidden;
-          if (service.data.image_url) {
-            this.imageUrl = service.data.image_url;
-          }
-        });
+        this.$root.$emit('startLoading');
+        try {
+          await serviceService.getServiceSettings(this.$store.state.ownServiceId).
+            then( (service) => {
+              this.name = service.data.name;
+              this.description = service.data.description;
+              this.serviceHidden = service.data.hidden;
+              if (service.data.image_url) {
+                this.imageUrl = service.data.image_url;
+              }
+            });
+        } catch {
+        } finally {
+          this.$root.$emit('stopLoading');
+        }
       },
       async save() {
+        this.$v.$touch();
+        if (this.$v.$invalid) {
+          return;
+        }
+        this.buttonDisabled = true;
+        this.$root.$emit('startLoading');
         const formData = new FormData();
 
         formData.append('user_email', this.$store.state.loggedInUserEmail);
@@ -147,16 +197,21 @@
         }
         try {
           await serviceService.saveService(formData);
+          this.$v.$reset();
           this.fetchServiceSettings();
           this.$store.dispatch('openSnackbar', {
             message: 'Szolgáltatás beállításai mentésre kerültek',
             type: 'success',
           });
-        } catch {
+        } catch (err) {
           this.$store.dispatch('openSnackbar', {
-          message: 'Hiba történt a mentés során!',
-          type: 'error',
-        });
+            message: err.response && _.get(constants.apiValidationMessages, err.response.data.error)
+              || 'Hiba történt a mentés során!',
+            type: 'error',
+          });
+        } finally {
+          this.buttonDisabled = false;
+          this.$root.$emit('stopLoading');
         }
       },
     },

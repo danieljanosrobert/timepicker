@@ -14,7 +14,7 @@
             <v-img :src="getImageForService(item.image)" class="white--text align-end" gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
                     height="200px">
                     <v-col v-if="$store.state.loggedInAsUser" cols="12">
-                      <v-btn absolute top right icon @click.stop="toggleFlagged(item)">
+                      <v-btn :disabled="flagsDisabled" absolute top right icon @click.stop="toggleFlagged(item)">
                         <v-icon dark :color="item.flagged? 'warning lighten-4' : ''">mdi-flag</v-icon>
                       </v-btn>
                     </v-col>
@@ -63,6 +63,7 @@
       search: '',
       isThereSearchingResult: false,
       services: [],
+      flagsDisabled: false,
     }),
     async mounted() {
       this.$root.$on('reFetchContent', () => {
@@ -84,22 +85,36 @@
         this.$router.push({name: 'about', params: { service_id: serviceId }});
       },
       async fetchServices() {
-        await serviceService.getAvailableServices()
+        this.$root.$emit('startLoading');
+        try {
+          await serviceService.getAvailableServices()
             .then((services) => {
               this.services = services.data;
               this.services.forEach((service) => this.$set(service, 'show', false));
             });
+        } catch {
+        } finally {
+          this.$root.$emit('stopLoading');
+        }
       },
       async fetchUserFlags() {
-        await flagService.getUsersFlags(Base64.encode(this.$store.state.loggedInUserEmail))
-        .then( (flags) => {
-          _.forEach(flags.data, (flag) => {
-            const flaggedService = _.find(this.services, {service_id: flag.service_id});
-            this.$set(flaggedService, 'flagged', true);
+        this.$root.$emit('startLoading');
+        try {
+          await flagService.getUsersFlags(Base64.encode(this.$store.state.loggedInUserEmail))
+            .then( (flags) => {
+              _.forEach(flags.data, (flag) => {
+                const flaggedService = _.find(this.services, {service_id: flag.service_id});
+                this.$set(flaggedService, 'flagged', true);
+              });
           });
-        });
+        } catch {
+        } finally {
+          this.$root.$emit('stopLoading');
+        }
       },
       async toggleFlagged(service) {
+        this.flagsDisabled = true;
+        this.$root.$emit('startLoading');
         try {
           await flagService.toggleFlagService({
             user_email: this.$store.state.loggedInUserEmail,
@@ -116,6 +131,9 @@
             message: 'Hiba történt mentés során. Kérem próbálja újra később',
             type: 'error',
           });
+        } finally {
+          this.flagsDisabled = false;
+          this.$root.$emit('stopLoading');
         }
       },
     },

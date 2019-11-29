@@ -45,6 +45,10 @@ var Services_1 = require("../models/Services");
 var AdminUsers_1 = require("../models/AdminUsers");
 var bcrypt_1 = __importDefault(require("bcrypt"));
 var js_base64_1 = require("js-base64");
+/**
+ * POST /service/obtain-id
+ * Returns the AdminUser's Service's service_id
+ */
 exports.postObtainServiceId = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         Services_1.Service.findOne({ user_email: req.body.user_email })
@@ -62,6 +66,10 @@ exports.postObtainServiceId = function (req, res, next) { return __awaiter(void 
         return [2 /*return*/];
     });
 }); };
+/**
+ * GET /serviceName/:service_id
+ * Returns name of Service with given service_id
+ */
 exports.getServiceName = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
@@ -78,6 +86,10 @@ exports.getServiceName = function (req, res, next) { return __awaiter(void 0, vo
         return [2 /*return*/];
     });
 }); };
+/**
+ * GET /available-services
+ * Returns array of Services where hidden is false
+ */
 exports.getAvailableServices = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         Services_1.Service.find({ hidden: false }, 'service_id name image description')
@@ -95,6 +107,10 @@ exports.getAvailableServices = function (req, res, next) { return __awaiter(void
         return [2 /*return*/];
     });
 }); };
+/**
+ * GET /settings/service/:service_id
+ * Returns the search setting details of Service with given service_id
+ */
 exports.getServiceSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
@@ -117,13 +133,17 @@ exports.getServiceSettings = function (req, res, next) { return __awaiter(void 0
         return [2 /*return*/];
     });
 }); };
+/**
+ * Creates a service on AdminUser creation.
+ * @param service_id string of generated UUID that joins AdminUser with Service
+ */
 exports.saveService = function (req, res, next, service_id) { return __awaiter(void 0, void 0, void 0, function () {
     var service;
     return __generator(this, function (_a) {
         service = new Services_1.Service({
             user_email: req.body.email,
             service_id: service_id,
-            name: req.body.servicename,
+            name: req.body.serviceName,
             description: '',
             hidden: true,
         });
@@ -136,6 +156,10 @@ exports.saveService = function (req, res, next, service_id) { return __awaiter(v
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /settings/service
+ * Updates Service
+ */
 exports.postUpdateService = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })

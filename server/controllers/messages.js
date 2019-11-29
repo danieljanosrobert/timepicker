@@ -41,6 +41,11 @@ var http2_1 = require("http2");
 var Messages_1 = require("../models/Messages");
 var js_base64_1 = require("js-base64");
 var Services_1 = require("../models/Services");
+/**
+ * GET /messages/:service_id
+ * GET /settings/messages/:service_id
+ * Returns the messages of Service with given service_id
+ */
 exports.getMessages = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
@@ -60,6 +65,10 @@ exports.getMessages = function (req, res, next) { return __awaiter(void 0, void 
         return [2 /*return*/];
     });
 }); };
+/**
+ * Creates empty message board on AdminUser creation.
+ * @param serviceId string of generated UUID that joins AdminUser with Service
+ */
 exports.createMessage = function (req, res, next, serviceId) { return __awaiter(void 0, void 0, void 0, function () {
     var message;
     return __generator(this, function (_a) {
@@ -76,6 +85,10 @@ exports.createMessage = function (req, res, next, serviceId) { return __awaiter(
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /settings/messages
+ * Updates Service's messages
+ */
 exports.postSaveMessages = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })

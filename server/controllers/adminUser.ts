@@ -25,7 +25,7 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
     email: req.body.email,
     password: req.body.password,
     name: req.body.name,
-    servicename: req.body.servicename,
+    serviceName: req.body.serviceName,
   });
   AdminUser.findOne({ email: user.email }, (err, existingUser) => {
     if (err) {
@@ -70,7 +70,7 @@ export const postLogin = async (req: Request, res: Response) => {
   AdminUser.findOne({ email: user.email })
     .then((dbUser) => {
       if (!dbUser) {
-        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'User not found' });
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
       }
       bcrypt.compare(user.password, dbUser.password)
         .then((isMatch) => {
@@ -99,7 +99,7 @@ console.log(req.body)
   AdminUser.findOne({ email: req.body.user_email })
     .then((dbUser) => {
       if (!dbUser) {
-        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
       }
       bcrypt.compare(req.body.oldPassword, dbUser.password)
         .then((isMatch) => {

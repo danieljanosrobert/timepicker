@@ -46,6 +46,11 @@ var Contacts_1 = require("../models/Contacts");
 var image_1 = require("../utils/image");
 var js_base64_1 = require("js-base64");
 var Services_1 = require("../models/Services");
+/**
+ * GET /contact/:service_id
+ * GET /settings/contact/:service_id
+ * Returns the contact info of Service with given service_id
+ */
 exports.getContact = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
@@ -69,6 +74,10 @@ exports.getContact = function (req, res, next) { return __awaiter(void 0, void 0
         return [2 /*return*/];
     });
 }); };
+/**
+ * Creates contact info on AdminUser creation.
+ * @param serviceId string of generated UUID that joins AdminUser with Service
+ */
 exports.saveContact = function (req, res, next, serviceId) { return __awaiter(void 0, void 0, void 0, function () {
     var contact;
     return __generator(this, function (_a) {
@@ -88,6 +97,10 @@ exports.saveContact = function (req, res, next, serviceId) { return __awaiter(vo
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /settings/contact
+ * Updates Service's contact info.
+ */
 exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })

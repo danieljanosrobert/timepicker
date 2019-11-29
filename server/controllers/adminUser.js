@@ -71,7 +71,7 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
             email: req.body.email,
             password: req.body.password,
             name: req.body.name,
-            servicename: req.body.servicename,
+            serviceName: req.body.serviceName,
         });
         AdminUsers_1.AdminUser.findOne({ email: user.email }, function (err, existingUser) {
             if (err) {
@@ -118,7 +118,7 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
         AdminUsers_1.AdminUser.findOne({ email: user.email })
             .then(function (dbUser) {
             if (!dbUser) {
-                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'User not found' });
+                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
             }
             bcrypt_1.default.compare(user.password, dbUser.password)
                 .then(function (isMatch) {
@@ -149,7 +149,7 @@ exports.postChangePassword = function (req, res) { return __awaiter(void 0, void
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
             .then(function (dbUser) {
             if (!dbUser) {
-                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
             }
             bcrypt_1.default.compare(req.body.oldPassword, dbUser.password)
                 .then(function (isMatch) {

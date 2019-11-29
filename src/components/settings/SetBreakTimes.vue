@@ -43,7 +43,7 @@
                     ref="startTimeRef"
                   >
                     <template v-slot:activator="{ on }">
-                      <v-text-field v-model="item.startTime" label="Szünet kezdete" readonly v-on="on"></v-text-field>
+                      <v-text-field v-model="item.startTime" required label="Szünet kezdete" readonly v-on="on"></v-text-field>
                     </template>
                     <v-time-picker
                       :allowed-minutes="allowedMinutes"
@@ -61,7 +61,7 @@
                     type="number"
                     suffix="perc"
                     step="5"
-                    min="0"
+                    min="5"
                     max="120"
                     @blur="setDuration(index)"
                     label="Szünet időtartama">
@@ -94,89 +94,130 @@
         v-model="password"
         name="password"
         type="password"
+        required
+        :error-messages="passwordErrors"
+        @input="$v.password.$touch()"
+        @blur="$v.password.$touch()"
       ></v-text-field>
-      <v-btn class="mr-4" @click="save">Mentés</v-btn>
+      <v-btn class="mr-4" @click="save" :disabled="buttonDisabled">Mentés</v-btn>
     </v-form>
   </v-card>
 </template>
 
 <script>
-import bookService from '@/service/bookService';
+  import bookService from '@/service/bookService';
+  import { required, minLength } from 'vuelidate/lib/validators';
+  import constants from '@/utils/constants';
 
-export default {
-name: 'SetBreakTimes',
-  data: () => ({
-    password: '',
-    breaks: [],
-    breakMinuteFlag: [],
-  }),
-  async mounted() {
-    this.$root.$on('breaksDeleted', async () => {
-      Object.assign(this.$data, this.$options.data());
-    });
-    await this.fetchBreakSettings();
+  export default {
+    name: 'SetBreakTimes',
+    data: () => ({
+      password: '',
+      breaks: [],
+      breakMinuteFlag: [],
+      buttonDisabled: false,
+    }),
+    async mounted() {
+      this.$root.$on('breaksDeleted', async () => {
+        this.password = '';
+        this.breaks = [];
+        this.breakMinuteFlag = [];
+      });
+      await this.fetchBreakSettings();
 
-    this.breaks.forEach((actualBreak, index) => {
-      this.breakMinuteFlag.push('breakNr' + index);
-    });
-  },
-  computed: {
-    today() {
-      return new Date().toISOString();
+      this.breaks.forEach((actualBreak, index) => {
+        this.breakMinuteFlag.push('breakNr' + index);
+      });
     },
-    endOfNextYear() {
-      const dateOfToday = new Date();
-      return `${dateOfToday.getFullYear() + 1}-12-31`;
+    validations: {
+      password: {
+        required,
+        minLength: minLength(6),
+      },
     },
-    allowedMinutes() {
-      return (mod) => mod % 5 === 0;
+    computed: {
+      passwordErrors() {
+        const errors = [];
+        if (!this.$v.password.$dirty) {
+          return errors;
+        }
+        !this.$v.password.minLength && errors.push(constants.validationErrorMessages.passwordMinLength);
+        !this.$v.password.required && errors.push(constants.validationErrorMessages.required);
+        return errors;
+      },
+      today() {
+        return new Date().toISOString();
+      },
+      endOfNextYear() {
+        const dateOfToday = new Date();
+        return `${dateOfToday.getFullYear() + 1}-12-31`;
+      },
+      allowedMinutes() {
+        return (mod) => mod % 5 === 0;
+      },
     },
-  },
-  methods: {
-    async fetchBreakSettings() {
-      this.password = '';
-      await bookService.getBreakSettings(this.$store.state.ownServiceId)
-        .then( (breaks) => {
-          this.breaks = breaks.data.breaks;
-        });
+    methods: {
+      async fetchBreakSettings() {
+        this.password = '';
+        this.$root.$emit('startLoading');
+        try {
+          await bookService.getBreakSettings(this.$store.state.ownServiceId)
+            .then( (breaks) => {
+              this.breaks = breaks.data.breaks;
+            });
+        } catch {
+        } finally {
+          this.$root.$emit('stopLoading');
+        }
+      },
+      async save() {
+        this.$v.$touch();
+        if (this.$v.$invalid) {
+          return;
+        }
+        this.buttonDisabled = true;
+        this.$root.$emit('startLoading');
+        try {
+          await bookService.saveBreaks({
+            user_email: this.$store.state.loggedInUserEmail,
+            password: this.password,
+            breaks: JSON.stringify(this.breaks),
+          });
+          this.$store.dispatch('openSnackbar', {
+            message: 'Szünetek beállításai mentésre kerültek',
+            type: 'success',
+          });
+          this.$v.$reset();
+          this.fetchBreakSettings();
+        } catch (err) {
+          this.$store.dispatch('openSnackbar', {
+            message: err.response && _.get(constants.apiValidationMessages, err.response.data.error)
+              || 'Hiba történt a mentés során!',
+            type: 'error',
+          });
+        } finally {
+          this.buttonDisabled = false;
+          this.$root.$emit('stopLoading');
+        }
+      },
+      addBreak() {
+        this.breaks.push({date: '', startTime: '', duration: '', always: false});
+        this.breakMinuteFlag.push('breakNr' + (this.breaks.length - 1));
+      },
+      deleteBreak(index) {
+        this.breaks.splice(index, 1);
+        this.breakMinuteFlag.splice(index, 1);
+      },
+      setDuration(index) {
+        if (this.breaks[index].duration > 120) {
+          this.breaks[index].duration = 120;
+        } else if (this.breaks[index].duration < 0) {
+          this.breaks[index].duration = 0;
+        }
+        this.breaks[index].duration -= this.breaks[index].duration % 5;
+      },
     },
-    async save() {
-      try {
-        await bookService.saveBreaks({
-          user_email: this.$store.state.loggedInUserEmail,
-          password: this.password,
-          breaks: JSON.stringify(this.breaks),
-        });
-        this.$store.dispatch('openSnackbar', {
-          message: 'Szünetek beállításai mentésre kerültek',
-          type: 'success',
-        });
-        this.fetchBreakSettings();
-      } catch {
-        this.$store.dispatch('openSnackbar', {
-          message: 'Hiba történt a mentés során!',
-          type: 'error',
-        });
-      }
-    },
-    addBreak() {
-      this.breaks.push({date: '', startTime: '', duration: '', always: false});
-      this.breakMinuteFlag.push('breakNr' + (this.breaks.length - 1));
-    },
-    deleteBreak(index) {
-      this.breaks.splice(index, 1);
-      this.breakMinuteFlag.splice(index, 1);
-    },
-    setDuration(index) {
-      if (this.breaks[index].duration > 120) {
-        this.breaks[index].duration = 120;
-      } else if (this.breaks[index].duration < 0) {
-        this.breaks[index].duration = 0;
-      }
-      this.breaks[index].duration -= this.breaks[index].duration % 5;
-    },
-  },
-};
+  };
 </script>
 
 <style lang="scss" scoped>

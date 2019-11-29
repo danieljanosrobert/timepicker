@@ -48,6 +48,10 @@ var Flags_1 = require("../models/Flags");
 var js_base64_1 = require("js-base64");
 var Services_1 = require("../models/Services");
 var _ = __importStar(require("lodash"));
+/**
+ * GET /flag/:user_email
+ * Returns User's flagged Services
+ */
 exports.getUsersFlags = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var userEmail;
     return __generator(this, function (_a) {
@@ -71,6 +75,10 @@ exports.getUsersFlags = function (req, res) { return __awaiter(void 0, void 0, v
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /flag
+ * Saves or deletes a Flag to given Service for User
+ */
 exports.postToggleFlagService = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {

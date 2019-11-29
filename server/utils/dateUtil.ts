@@ -1,6 +1,9 @@
 import * as _ from 'lodash';
 
+const WEEKDAYS = ['Vasárnap', 'Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat'];
+
 const dateUtil = {
+
   minuteFromHour(hour: string): number {
     const [h, m] = _.split(hour, ':', 2);
     return 60 * parseInt(h, 10) + parseInt(m, 10);
@@ -11,6 +14,18 @@ const dateUtil = {
     const h = ('00' + Math.floor(minute / 60)).slice(-2);
     const m = ('00' + minute % 60).slice(-2);
     return `${h}:${m}`;
+  },
+
+  isDateInSelectedWeekday(date: string | Date, selectedDays: string[]): boolean {
+    if (typeof date === 'string') {
+      date = new Date(date);
+    }
+    const selectedDaysIndexes: number[] = [];
+    _.forEach(selectedDays, (day) => {
+      const indexOfDay = WEEKDAYS.indexOf(day);
+      if (indexOfDay >= 0) { selectedDaysIndexes.push(indexOfDay); }
+    });
+    return _.includes(selectedDaysIndexes, date.getDay());
   },
 
   getStringArrayBetweenTwoDates(firstDate: any, secondDate: any): string[] {

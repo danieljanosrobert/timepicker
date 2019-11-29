@@ -9,7 +9,7 @@
           <v-toolbar-title>Felhasználó regisztrálása</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="register()">Regisztráció</v-btn>
+            <v-btn text :disabled="registerButtonDisabled" @click="register()">Regisztráció</v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card-title>Új felhasználó regisztrálása a rendszerbe</v-card-title>
@@ -18,22 +18,32 @@
             <v-form id="register-form" @submit.prevent="register">
               <v-row>
                 <v-col cols="12" sm="6" md="4">
-                  <v-text-field v-model="lastName" label="Vezetéknév*" required></v-text-field>
+                  <v-text-field v-model="lastName" label="Vezetéknév*" required :error-messages="lastNameErrors" 
+                                @input="$v.lastName.$touch()" @blur="$v.lastName.$touch()">
+                  </v-text-field>
                 </v-col>
                 <v-col cols="12" sm="6" md="4">
-                  <v-text-field v-model="firstName" label="Keresztnév*" required ></v-text-field>
+                  <v-text-field v-model="firstName" label="Keresztnév*" required :error-messages="firstNameErrors"
+                                @input="$v.firstName.$touch()" @blur="$v.firstName.$touch()">
+                  </v-text-field>
                 </v-col>
                 <v-col cols="12" sm="6" md="4">
                   <v-text-field v-model="city" label="Város"></v-text-field>
                 </v-col>
                 <v-col cols="12">
-                  <v-text-field v-model="email" label="Email cím*" required></v-text-field>
+                  <v-text-field v-model="email" label="Email cím*" required :error-messages="emailErrors"
+                                @input="$v.email.$touch()" @blur="$v.email.$touch()">
+                  </v-text-field>
                 </v-col>
                 <v-col cols="12">
-                  <v-text-field v-model="password" label="Jelszó*" type="password" required></v-text-field>
+                  <v-text-field v-model="password" label="Jelszó*" type="password" :error-messages="passwordErrors"
+                                @input="$v.password.$touch()" @blur="$v.password.$touch()" required>
+                  </v-text-field>
                 </v-col>
                 <v-col cols="12">
-                  <v-text-field v-model="confirmPassword" label="Jelszó újra*" type="password" required></v-text-field>
+                  <v-text-field v-model="confirmPassword" label="Jelszó újra*" type="password" :error-messages="confirmPasswordErrors"
+                                @input="$v.confirmPassword.$touch()" @blur="$v.confirmPassword.$touch()" required>
+                  </v-text-field>
                 </v-col>
                 <v-col cols="12" sm="6">
                   <v-select v-model="age"
@@ -55,7 +65,10 @@
           <small>*Kitöltés kötelező</small>
           <v-col>
             <v-divider/>
-            <v-btn type="submit" class="text-right pa-2 my-2" form="register-form" color="brown lighten-4" block>Regisztráció</v-btn>
+            <v-btn type="submit" class="text-right pa-2 my-2" form="register-form" color="brown lighten-4"
+                   block :disabled="registerButtonDisabled">
+                   Regisztráció
+            </v-btn>
           </v-col>
         </v-card-text>
 
@@ -67,6 +80,8 @@
 <script>
 import constants from '@/utils/constants';
 import userService from '@/service/userService';
+import { required, email, minLength, sameAs } from 'vuelidate/lib/validators';
+import { nameRegex } from '@/utils/customValidators';
 
 export default {
   name: 'UserRegister',
@@ -80,13 +95,83 @@ export default {
     confirmPassword: '',
     age: '',
     selectedServiceTags: [],
+    registerButtonDisabled: false,
   }),
+  validations: {
+    firstName: {
+      required,
+      nameRegex,
+    },
+    lastName: {
+      required,
+      nameRegex,
+    },
+    email: {
+      required,
+      email,
+    },
+    password: {
+      required,
+      minLength: minLength(6),
+    },
+    confirmPassword: {
+      required,
+      minLength: minLength(6),
+      sameAs: sameAs('password'),
+    },
+  },
   watch: {
     dialog(val) {
       document.querySelector('html').classList.toggle('application--dialog-opened', val);
     },
   },
   computed: {
+    lastNameErrors() {
+      const errors = [];
+      if (!this.$v.lastName.$dirty) {
+        return errors;
+      }
+      !this.$v.lastName.required && errors.push(constants.validationErrorMessages.required);
+      !this.$v.lastName.nameRegex && errors.push(constants.validationErrorMessages.nameRegex);
+      return errors;
+    },
+    firstNameErrors() {
+      const errors = [];
+      if (!this.$v.firstName.$dirty) {
+        return errors;
+      }
+      !this.$v.firstName.required && errors.push(constants.validationErrorMessages.required);
+      !this.$v.firstName.nameRegex && errors.push(constants.validationErrorMessages.nameRegex);
+      return errors;
+    },
+    emailErrors() {
+      const errors = [];
+      if (!this.$v.email.$dirty) {
+        return errors;
+      }
+      !this.$v.email.email && errors.push(constants.validationErrorMessages.email);
+      !this.$v.email.required && errors.push(constants.validationErrorMessages.required);
+      return errors;
+    },
+    passwordErrors() {
+      const errors = [];
+      if (!this.$v.password.$dirty) {
+        return errors;
+      }
+      !this.$v.password.minLength && errors.push(constants.validationErrorMessages.passwordMinLength);
+      !this.$v.password.required && errors.push(constants.validationErrorMessages.required);
+      return errors;
+    },
+    confirmPasswordErrors() {
+      const errors = [];
+      if (!this.$v.confirmPassword.$dirty) {
+        return errors;
+      }
+      !this.$v.confirmPassword.minLength && errors.push(constants.validationErrorMessages.passwordMinLength);
+      !this.$v.confirmPassword.sameAs && errors.push(constants.validationErrorMessages.passwordSameAs);
+      !this.$v.confirmPassword.required && errors.push(constants.validationErrorMessages.required);
+      return errors;
+    },
     serviceTags() {
       return constants.serviceTags;
     },
@@ -101,7 +186,13 @@ export default {
   },
   methods: {
     async register() {
-        try {
+      this.$v.$touch();
+      if (this.$v.$invalid) {
+        return;
+      }
+      this.registerButtonDisabled = true;
+      this.$root.$emit('startLoading');
+      try {
         const response = await userService.register({
           email: this.email,
           password: this.password,
@@ -117,13 +208,29 @@ export default {
           type: 'success',
         });
         this.dialog = false;
-        Object.assign(this.$data, this.$options.data());
-      } catch {
+        this.$v.$reset();
+        this.resetFields();
+      } catch (err) {
         this.$store.dispatch('openSnackbar', {
-          message: 'Hiba történt az adatok feldolgozása során. Kérem próbálja újra később',
+          message: err.response && _.get(constants.apiValidationMessages, err.response.data.error)
+              || 'Hiba történt az adatok feldolgozása során. Kérem próbálja újra később',
           type: 'error',
         });
+      } finally {
+        this.registerButtonDisabled = false;
+        this.$root.$emit('stopLoading');
       }
+    },
+    resetFields() {
+      this.dialog = false ;
+      this.lastName = '' ;
+      this.firstName = '' ;
+      this.city = '' ;
+      this.email = '' ;
+      this.password = '' ;
+      this.confirmPassword = '' ;
+      this.age = '' ;
+      this.selectedServiceTags = [] ;
     },
   },
 };

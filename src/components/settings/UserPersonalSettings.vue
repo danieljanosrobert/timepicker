@@ -8,10 +8,14 @@
     <v-form class="pa-0" id="register-form" @submit.prevent="register">
       <v-row class="pb-4 ma-0">
         <v-col class="pa-6 pb-0 pr-3" cols="12" sm="6" md="4">
-          <v-text-field v-model="lastName" label="Vezetéknév" required></v-text-field>
+          <v-text-field v-model="lastName" label="Vezetéknév" required :error-messages="lastNameErrors"
+                        @input="$v.lastName.touch()" @blur="$v.lastName.touch()">
+          </v-text-field>
         </v-col>
         <v-col class="pa-6 pb-0 pl-3" cols="12" sm="6" md="4">
-          <v-text-field v-model="firstName" label="Keresztnév" required></v-text-field>
+          <v-text-field v-model="firstName" label="Keresztnév" required :error-messages="firstNameErrors"
+                        @input="$v.firstName.touch()" @blur="$v.firstName.touch()">
+          </v-text-field>
         </v-col>
         <v-col class="pa-6 pb-0 pr-3" cols="12" sm="6" md="4">
           <v-text-field v-model="city" label="Város"></v-text-field>
@@ -37,8 +41,12 @@
         v-model="password"
         name="password"
         type="password"
+        required
+        :error-messages="passwordErrors"
+        @input="$v.password.$touch()"
+        @blur="$v.password.$touch()"
       ></v-text-field>
-      <v-btn class="mr-4" @click="save">Mentés</v-btn>
+      <v-btn class="mr-4" :disabled="buttonDisabled" @click="save">Mentés</v-btn>
     </v-form>
   </v-card>
 </template>
@@ -46,6 +54,8 @@
 <script>
 import constants from '@/utils/constants';
 import userService from '@/service/userService';
+import { required, minLength } from 'vuelidate/lib/validators';
+import { nameRegex } from '@/utils/customValidators';
 
 export default {
   name: 'UserPersonalSettings',
@@ -56,8 +66,50 @@ export default {
     age: '',
     selectedServiceTags: [],
     password: '',
+    buttonDisabled: false,
   }),
+  validations: {
+    firstName: {
+      required,
+      nameRegex,
+    },
+    lastName: {
+      required,
+      nameRegex,
+    },
+    password: {
+      required,
+      minLength: minLength(6),
+    },
+  },
   computed: {
+    lastNameErrors() {
+      const errors = [];
+      if (!this.$v.lastName.$dirty) {
+        return errors;
+      }
+      !this.$v.lastName.required && errors.push(constants.validationErrorMessages.required);
+      !this.$v.lastName.nameRegex && errors.push(constants.validationErrorMessages.nameRegex);
+      return errors;
+    },
+    firstNameErrors() {
+      const errors = [];
+      if (!this.$v.firstName.$dirty) {
+        return errors;
+      }
+      !this.$v.firstName.required && errors.push(constants.validationErrorMessages.required);
+      !this.$v.firstName.nameRegex && errors.push(constants.validationErrorMessages.nameRegex);
+      return errors;
+    },
+    passwordErrors() {
+      const errors = [];
+      if (!this.$v.password.$dirty) {
+        return errors;
+      }
+      !this.$v.password.minLength && errors.push(constants.validationErrorMessages.passwordMinLength);
+      !this.$v.password.required && errors.push(constants.validationErrorMessages.required);
+      return errors;
+    },
     serviceTags() {
       return constants.serviceTags;
     },
@@ -71,16 +123,28 @@ export default {
   methods: {
     async fetchUserData() {
       this.password = '';
-      await userService.fetchUserData({user_email: this.$store.state.loggedInUserEmail})
-        .then( (user) => {
-          this.lastName = user.data.lastName;
-          this.firstName = user.data.firstName;
-          this.city = user.data.city;
-          this.age = user.data.age;
-          this.selectedServiceTags = user.data.selectedServiceTags;
-        });
+      this.$root.$emit('startLoading');
+      try {
+        await userService.fetchUserData({user_email: this.$store.state.loggedInUserEmail})
+          .then( (user) => {
+            this.lastName = user.data.lastName;
+            this.firstName = user.data.firstName;
+            this.city = user.data.city;
+            this.age = user.data.age;
+            this.selectedServiceTags = user.data.selectedServiceTags;
+          });
+      } catch {
+      } finally {
+        this.$root.$emit('stopLoading');
+      }
     },
     async save() {
+      this.$v.$touch();
+      if (this.$v.$invalid) {
+        return;
+      }
+      this.buttonDisabled = true;
+      this.$root.$emit('startLoading');
       try {
         await userService.modifyUser({
           user_email: this.$store.state.loggedInUserEmail,
@@ -95,12 +159,17 @@ export default {
           message: 'Személyes beállítások mentésre kerültek',
           type: 'success',
         });
+        this.$v.$reset();
         this.fetchUserData();
-      } catch {
+      } catch (err) {
         this.$store.dispatch('openSnackbar', {
-          message: 'Hiba történt a mentés során!',
+          message: err.response && _.get(constants.apiValidationMessages, err.response.data.error)
+            || 'Hiba történt a mentés során!',
           type: 'error',
         });
+      } finally {
+        this.buttonDisabled = false;
+        this.$root.$emit('stopLoading');
       }
     },
   },

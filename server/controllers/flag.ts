@@ -5,6 +5,10 @@ import { Base64 } from 'js-base64';
 import { Service } from '../models/Services';
 import * as _ from 'lodash';
 
+/**
+ * GET /flag/:user_email
+ * Returns User's flagged Services
+ */
 export const getUsersFlags = async (req: any, res: Response) => {
 	const userEmail = Base64.decode(req.params.user_email);
 	Flag.find({user_email: userEmail}, 'service_id', {sort: 'createdAt'})
@@ -24,6 +28,10 @@ export const getUsersFlags = async (req: any, res: Response) => {
 		});
 };
 
+/**
+ * POST /flag
+ * Saves or deletes a Flag to given Service for User
+ */
 export const postToggleFlagService = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.body.service_id)
   Service.findOne({ service_id: serviceId })

@@ -8,7 +8,7 @@
   import { mapState } from 'vuex';
 
   export default {
-    name: 'Snackbar.vue',
+    name: 'Snackbar',
     data: () => ({
       show: false,
     }),

@@ -60,7 +60,7 @@ export const postLogin = async (req: Request, res: Response) => {
   User.findOne({ email: user.email })
     .then((dbUser) => {
       if (!dbUser) {
-        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'User not found' });
+        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
       }
       bcrypt.compare(user.password, dbUser.password)
         .then((isMatch) => {
@@ -89,7 +89,7 @@ export const postChangePassword = async (req: Request, res: Response) => {
   User.findOne({ email: req.body.user_email })
     .then((dbUser) => {
       if (!dbUser) {
-        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
       }
       bcrypt.compare(req.body.oldPassword, dbUser.password)
         .then((isMatch) => {
@@ -106,13 +106,13 @@ export const postChangePassword = async (req: Request, res: Response) => {
 
 /**
  * POST /settings/get-user-data
- * Get actual user's data
+ * Get currently logged in user's data
  */
 export const postGetUserData = async (req: Request, res: Response) => {
   User.findOne({ email: req.body.user_email })
     .then((dbUser) => {
       if (!dbUser) {
-        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
       }
       const result = {
         lastName: dbUser.lastName,
@@ -133,7 +133,7 @@ export const updateUserData = async (req: Request, res: Response) => {
   User.findOne({ email: req.body.user_email })
     .then((dbUser) => {
       if (!dbUser) {
-        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
       }
       bcrypt.compare(req.body.password, dbUser.password)
         .then((isMatch) => {

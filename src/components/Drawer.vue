@@ -173,7 +173,6 @@
               {title: 'Jelszó megváltoztatása', icon: 'mdi-lock', url: '/settings/change-password'},
             ],
           },
-          {title: 'Galléria', icon: 'mdi-image-album', url: '/about'},
         ],
     }),
     computed: {

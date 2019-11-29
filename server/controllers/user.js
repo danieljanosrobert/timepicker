@@ -100,7 +100,7 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
         Users_1.User.findOne({ email: user.email })
             .then(function (dbUser) {
             if (!dbUser) {
-                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'User not found' });
+                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
             }
             bcrypt_1.default.compare(user.password, dbUser.password)
                 .then(function (isMatch) {
@@ -131,7 +131,7 @@ exports.postChangePassword = function (req, res) { return __awaiter(void 0, void
         Users_1.User.findOne({ email: req.body.user_email })
             .then(function (dbUser) {
             if (!dbUser) {
-                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
             }
             bcrypt_1.default.compare(req.body.oldPassword, dbUser.password)
                 .then(function (isMatch) {
@@ -150,14 +150,14 @@ exports.postChangePassword = function (req, res) { return __awaiter(void 0, void
 }); };
 /**
  * POST /settings/get-user-data
- * Get actual user's data
+ * Get currently logged in user's data
  */
 exports.postGetUserData = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         Users_1.User.findOne({ email: req.body.user_email })
             .then(function (dbUser) {
             if (!dbUser) {
-                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
             }
             var result = {
                 lastName: dbUser.lastName,
@@ -180,7 +180,7 @@ exports.updateUserData = function (req, res) { return __awaiter(void 0, void 0, 
         Users_1.User.findOne({ email: req.body.user_email })
             .then(function (dbUser) {
             if (!dbUser) {
-                return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)
                 .then(function (isMatch) {

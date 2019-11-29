@@ -8,6 +8,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __importStar(require("lodash"));
+var WEEKDAYS = ['Vasárnap', 'Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat'];
 var dateUtil = {
     minuteFromHour: function (hour) {
         var _a = _.split(hour, ':', 2), h = _a[0], m = _a[1];
@@ -18,6 +19,19 @@ var dateUtil = {
         var h = ('00' + Math.floor(minute / 60)).slice(-2);
         var m = ('00' + minute % 60).slice(-2);
         return h + ":" + m;
+    },
+    isDateInSelectedWeekday: function (date, selectedDays) {
+        if (typeof date === 'string') {
+            date = new Date(date);
+        }
+        var selectedDaysIndexes = [];
+        _.forEach(selectedDays, function (day) {
+            var indexOfDay = WEEKDAYS.indexOf(day);
+            if (indexOfDay >= 0) {
+                selectedDaysIndexes.push(indexOfDay);
+            }
+        });
+        return _.includes(selectedDaysIndexes, date.getDay());
     },
     getStringArrayBetweenTwoDates: function (firstDate, secondDate) {
         var result = [];

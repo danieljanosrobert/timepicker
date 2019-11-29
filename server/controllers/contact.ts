@@ -7,6 +7,11 @@ import { destroyImage, uploadImage } from '../utils/image';
 import { Base64 } from 'js-base64';
 import { Service } from '../models/Services';
 
+/**
+ * GET /contact/:service_id
+ * GET /settings/contact/:service_id
+ * Returns the contact info of Service with given service_id
+ */
 export const getContact = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   Contact.findOne({ service_id: serviceId })
@@ -27,6 +32,10 @@ export const getContact = async (req: any, res: Response, next: NextFunction) =>
     });
 };
 
+/**
+ * Creates contact info on AdminUser creation.
+ * @param serviceId string of generated UUID that joins AdminUser with Service
+ */
 export const saveContact = async (req: any, res: Response, next: NextFunction, serviceId: string) => {
   const contact = new Contact({
     service_id: serviceId,
@@ -43,6 +52,10 @@ export const saveContact = async (req: any, res: Response, next: NextFunction, s
   });
 };
 
+/**
+ * POST /settings/contact
+ * Updates Service's contact info.
+ */
 export const postSaveContact = async (req: any, res: Response, next: NextFunction) => {
   AdminUser.findOne({ email: req.body.user_email })
     .then((dbUser) => {

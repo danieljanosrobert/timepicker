@@ -15,6 +15,8 @@
     "object-literal-sort-keys": false,
     "ordered-imports": false,
     "no-bitwise": false,
-    "quotemark": [true, "single"]
+    "quotemark": [true, "single"],
+    "no-empty": [true, "allow-empty-catch"],
+    "no-unused-expression": [true, "allow-fast-null-checks"]
   }
 }

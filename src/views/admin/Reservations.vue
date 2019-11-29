@@ -7,7 +7,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
-          <v-btn dark color="success" @click="confirmAccept">Elfogadás</v-btn>
+          <v-btn dark color="success" :disabled="buttonsDisabled" @click="confirmAccept">Elfogadás</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -20,7 +20,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
-          <v-btn dark color="error darken-4" @click="confirmRefuse">Elutasítás</v-btn>
+          <v-btn dark color="error darken-4" :disabled="buttonsDisabled" @click="confirmRefuse">Elutasítás</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -32,7 +32,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
-          <v-btn dark color="error darken-4" @click="confirmDelete">Törlés</v-btn>
+          <v-btn dark color="error darken-4" :disabled="buttonsDisabled" @click="confirmDelete">Törlés</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -139,13 +139,13 @@
                 Megtekintés
               </v-btn>
               <v-btn class="mr-2" dark outlined color="success" v-if="expandedAndStatusIsNotAccepted"
-                @click.stop="initAccept(expanded[0])" :disabled="disableIfBeforeToday">Elfogadás
+                @click.stop="initAccept(expanded[0])" :disabled="disableIfBeforeToday || buttonsDisabled">Elfogadás
               </v-btn>
               <v-btn v-if="expandedAndStatusIsRefusable" dark outlined color="red darken-4" @click.stop="initRefuse(expanded[0])"
-                :disabled="disableIfBeforeToday">Elutasítás
+                :disabled="disableIfBeforeToday || buttonsDisabled">Elutasítás
                 </v-btn>
               <v-btn v-if="expandedAndStatusIsAccepted" dark outlined color="red darken-4" @click.stop="initDelete(expanded[0])"
-                :disabled="disableIfBeforeToday">Törlés
+                :disabled="disableIfBeforeToday || buttonsDisabled">Törlés
               </v-btn>
             </td>
           </template>
@@ -177,6 +177,7 @@ export default {
       refuseDialogVisible: false,
       deleteDialogVisible: false,
       detailsDialogVisible: false,
+      buttonsDisabled: false,
       refuseMessage: '',
       expanded: [],
       reservations: [],
@@ -264,6 +265,7 @@ export default {
   },
   methods: {
     async fetchReservations() {
+      this.$root.$emit('startLoading');
       try {
         await reservationService
           .getReservations({
@@ -282,7 +284,10 @@ export default {
             });
             this.reservations = fetchedReservations;
           });
-      } catch {}
+      } catch {
+      } finally {
+        this.$root.$emit('stopLoading');
+      }
     },
     async acceptReservation(reservationDate) {
       if (!this.operationDate) {
@@ -292,6 +297,8 @@ export default {
         });
         return;
       }
+      this.buttonsDisabled = true;
+      this.$root.$emit('startLoading');
       try {
         await reservationService.acceptReservation({
           service_id: this.$store.state.ownServiceId,
@@ -309,6 +316,9 @@ export default {
           message: 'Sikertelen módosítás. Kérem próbálja újra később',
           type: 'error',
         });
+      } finally {
+        this.buttonsDisabled = false;
+        this.$root.$emit('stopLoading');
       }
     },
     async deleteReservation(reservationDate, refuseMessage = '') {
@@ -319,6 +329,8 @@ export default {
         });
         return;
       }
+      this.buttonsDisabled = true;
+      this.$root.$emit('startLoading');
       try {
         await reservationService.deleteReservation({
           service_id: this.$store.state.ownServiceId,
@@ -336,21 +348,27 @@ export default {
           message: 'Sikertelen törlés. Kérem próbálja újra később',
           type: 'error',
         });
+      } finally {
+        this.buttonsDisabled = false;
+        this.$root.$emit('stopLoading');
       }
     },
     refreshExpandedStatus(status) {
       this.expanded[0].status = status;
     },
     async confirmAccept() {
+      this.acceptDialogVisible = false;
       await this.acceptReservation(this.operationDate);
       this.endOperation();
     },
     async confirmRefuse() {
+      this.refuseDialogVisible = false;
       await this.deleteReservation(this.operationDate, this.refuseMessage);
       this.refuseMessage = '';
       this.endOperation();
     },
     async confirmDelete() {
+      this.deleteDialogVisible = false;
       await this.deleteReservation(this.operationDate);
       this.endOperation();
     },
@@ -368,9 +386,6 @@ export default {
     },
     endOperation() {
       this.operationDate = '';
-      this.acceptDialogVisible = false;
-      this.refuseDialogVisible = false;
-      this.deleteDialogVisible = false;
     },
     validateIntervalAndUpdateLabel() {
       if (this.filters.intervall[1] < this.filters.intervall[0]) {

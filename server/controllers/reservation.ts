@@ -14,6 +14,11 @@ import path from 'path';
 const apiUrl = process.env.API_URL || 'http://localhost:8081';
 const homeUrl = process.env.HOME_URL || 'http://localhost:8080';
 
+
+/**
+ * GET /my-reservations/:user_email
+ * Return User's reservations
+ */
 export const getUsersReservations = async (req: any, res: Response, next: NextFunction) => {
   const email = Base64.decode(req.params.user_email);
   Reservation.find({ email: email }, '-_id start createdAt status service_id').lean()
@@ -36,6 +41,14 @@ export const getUsersReservations = async (req: any, res: Response, next: NextFu
     });
 };
 
+/**
+ * POST /reservations
+ * Returns reservations of Service with given service_id.
+ *  - if no email is provided returns reservations with empty status, meaning they are occupied
+ *  - if email is provided returns reservations reserved by user's email with their status,
+ *     other reservations with empty status
+ *  - if email is provided and user is admin and user is the owner of Service returns reservations with their status
+ */
 export const postGetReservations = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.body.service_id);
   const email = Base64.decode(req.body.user_email);
@@ -75,6 +88,10 @@ export const postGetReservations = async (req: any, res: Response, next: NextFun
     });
 };
 
+/**
+ * POST /reserve
+ * Saves reservation on a book-time-generated event
+ */
 export const postReserve = async (req: any, res: Response, next: NextFunction) => {
   if (!req.body.start) {
     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
@@ -135,6 +152,10 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
     });
 };
 
+/**
+ * GET /activate/:service_id/:start
+ * Activates reservation of Service with given service_id that starts at start via link from email.
+ */
 export const activateReservation = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   const start = Base64.decode(req.params.start);
@@ -154,6 +175,10 @@ export const activateReservation = async (req: any, res: Response, next: NextFun
     });
 };
 
+/**
+ * GET /resign-by-email/:service_id/:start/:email
+ * Resigns reservation of Service with given service_id that starts at start and was reserved by given email via email.
+ */
 export const resignByEmail = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   const start = Base64.decode(req.params.start);
@@ -190,6 +215,10 @@ export const resignByEmail = async (req: any, res: Response, next: NextFunction)
     });
 };
 
+/**
+ * POST /reservations/accept
+ * Accepts selected reservation
+ */
 export const postAcceptReservation = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.body.service_id);
   const email = Base64.decode(req.body.user_email);
@@ -243,6 +272,10 @@ export const postAcceptReservation = async (req: any, res: Response, next: NextF
     });
 };
 
+/**
+ * POST /reservations/resign
+ * Resigns selected reservation
+ */
 export const postResignReservation = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.body.service_id);
   const email = Base64.decode(req.body.user_email);
@@ -284,6 +317,10 @@ export const postResignReservation = async (req: any, res: Response, next: NextF
     });
 }
 
+/**
+ * POST /reservations/delete
+ * Deletes selected reservation
+ */
 export const postDeleteReservation = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.body.service_id);
   const email = Base64.decode(req.body.user_email);
@@ -339,6 +376,12 @@ export const postDeleteReservation = async (req: any, res: Response, next: NextF
     });
 };
 
+/**
+ * If starting time, ending time, or duration changed during updating a book-time
+ *   moves forward the reservations that are affected by the update to a valid book-time. 
+ * @param bookTime The book-time that is in update progress
+ * @param originalBookTime The book-time that was originally saved
+ */
 export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime: any) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -398,13 +441,29 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
         const filteredReservations = _.filter(dbReservation, (res) => res.start === date);
         _.forEach(filteredReservations, (reservation) => {
           let [reservationDate, reservationTime] = _.split(reservation.start, ' ');
+          // if actual day is not a selected weekday increase the date by 1 day
+          if (!dateUtil.isDateInSelectedWeekday(reservation.start, bookTime.selectedWeekdays)) {
+            reservationDate = dateUtil.addDaysToDate(reservationDate, 1);
+            const constructedDate = `${reservationDate} ${reservationTime}`;
+            reservation.start = constructedDate;
+            if (_.includes(occupiedTimes, constructedDate)) {
+              countByTime[constructedDate]++;
+            } else {
+              countByTime[constructedDate] = 1;
+            }
+            return;
+          }
           let reservationTimeInMinutes = dateUtil.minuteFromHour(reservationTime);
+          // if there is more than one reservations on a date moves reservation to a free date-time 
           while (count > 1) {
             if (reservationTimeInMinutes >= newEndTime) {
               reservationTimeInMinutes = newStartTime;
               reservationDate = dateUtil.addDaysToDate(reservationDate, 1);
             }
             const constructedDate = `${reservationDate} ${dateUtil.hourFromMinute(reservationTimeInMinutes)}`;
+            if (!dateUtil.isDateInSelectedWeekday(constructedDate, bookTime.selectedWeekdays)) {
+              continue;
+            }
             if (!_.includes(occupiedTimes, constructedDate)) {
               occupiedTimes.push(constructedDate);
               reservation.start = constructedDate;
@@ -413,9 +472,13 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
             }
             reservationTimeInMinutes += bookTime.bookDuration;
           }
+          // while the shifted reservation's date is on leave-time increase the date by 1 day
           while (_.includes(occupiedDates, reservationDate)) {
             reservationDate = dateUtil.addDaysToDate(reservationDate, 1);
             const constructedDate = `${reservationDate} ${reservationTime}`;
+            if (!dateUtil.isDateInSelectedWeekday(constructedDate, bookTime.selectedWeekdays)) {
+              continue;
+            }
             reservation.start = constructedDate;
             if (_.includes(occupiedTimes, constructedDate)) {
               countByTime[constructedDate]++;

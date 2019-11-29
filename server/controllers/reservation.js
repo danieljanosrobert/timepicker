@@ -59,6 +59,10 @@ var AdminUsers_1 = require("../models/AdminUsers");
 var path_1 = __importDefault(require("path"));
 var apiUrl = process.env.API_URL || 'http://localhost:8081';
 var homeUrl = process.env.HOME_URL || 'http://localhost:8080';
+/**
+ * GET /my-reservations/:user_email
+ * Return User's reservations
+ */
 exports.getUsersReservations = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var email;
     return __generator(this, function (_a) {
@@ -84,6 +88,14 @@ exports.getUsersReservations = function (req, res, next) { return __awaiter(void
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /reservations
+ * Returns reservations of Service with given service_id.
+ *  - if no email is provided returns reservations with empty status, meaning they are occupied
+ *  - if email is provided returns reservations reserved by user's email with their status,
+ *     other reservations with empty status
+ *  - if email is provided and user is admin and user is the owner of Service returns reservations with their status
+ */
 exports.postGetReservations = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId, email, isAdmin, isOwnService;
     return __generator(this, function (_a) {
@@ -136,6 +148,10 @@ exports.postGetReservations = function (req, res, next) { return __awaiter(void 
         }
     });
 }); };
+/**
+ * POST /reserve
+ * Saves reservation on a book-time-generated event
+ */
 exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
@@ -199,6 +215,10 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
         return [2 /*return*/];
     });
 }); };
+/**
+ * GET /activate/:service_id/:start
+ * Activates reservation of Service with given service_id that starts at start via link from email.
+ */
 exports.activateReservation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId, start;
     return __generator(this, function (_a) {
@@ -222,6 +242,10 @@ exports.activateReservation = function (req, res, next) { return __awaiter(void 
         return [2 /*return*/];
     });
 }); };
+/**
+ * GET /resign-by-email/:service_id/:start/:email
+ * Resigns reservation of Service with given service_id that starts at start and was reserved by given email via email.
+ */
 exports.resignByEmail = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId, start, email;
     return __generator(this, function (_a) {
@@ -263,6 +287,10 @@ exports.resignByEmail = function (req, res, next) { return __awaiter(void 0, voi
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /reservations/accept
+ * Accepts selected reservation
+ */
 exports.postAcceptReservation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId, email;
     return __generator(this, function (_a) {
@@ -322,6 +350,10 @@ exports.postAcceptReservation = function (req, res, next) { return __awaiter(voi
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /reservations/resign
+ * Resigns selected reservation
+ */
 exports.postResignReservation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId, email;
     return __generator(this, function (_a) {
@@ -368,6 +400,10 @@ exports.postResignReservation = function (req, res, next) { return __awaiter(voi
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /reservations/delete
+ * Deletes selected reservation
+ */
 exports.postDeleteReservation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId, email;
     return __generator(this, function (_a) {
@@ -429,6 +465,12 @@ exports.postDeleteReservation = function (req, res, next) { return __awaiter(voi
         return [2 /*return*/];
     });
 }); };
+/**
+ * If starting time, ending time, or duration changed during updating a book-time
+ *   moves forward the reservations that are affected by the update to a valid book-time.
+ * @param bookTime The book-time that is in update progress
+ * @param originalBookTime The book-time that was originally saved
+ */
 exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { return __awaiter(void 0, void 0, void 0, function () {
     var today;
     return __generator(this, function (_a) {
@@ -487,13 +529,30 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                             var filteredReservations = _.filter(dbReservation, function (res) { return res.start === date; });
                             _.forEach(filteredReservations, function (reservation) {
                                 var _a = _.split(reservation.start, ' '), reservationDate = _a[0], reservationTime = _a[1];
+                                // if actual day is not a selected weekday increase the date by 1 day
+                                if (!dateUtil_1.default.isDateInSelectedWeekday(reservation.start, bookTime.selectedWeekdays)) {
+                                    reservationDate = dateUtil_1.default.addDaysToDate(reservationDate, 1);
+                                    var constructedDate = reservationDate + " " + reservationTime;
+                                    reservation.start = constructedDate;
+                                    if (_.includes(occupiedTimes, constructedDate)) {
+                                        countByTime[constructedDate]++;
+                                    }
+                                    else {
+                                        countByTime[constructedDate] = 1;
+                                    }
+                                    return;
+                                }
                                 var reservationTimeInMinutes = dateUtil_1.default.minuteFromHour(reservationTime);
+                                // if there is more than one reservations on a date moves reservation to a free date-time 
                                 while (count > 1) {
                                     if (reservationTimeInMinutes >= newEndTime) {
                                         reservationTimeInMinutes = newStartTime;
                                         reservationDate = dateUtil_1.default.addDaysToDate(reservationDate, 1);
                                     }
                                     var constructedDate = reservationDate + " " + dateUtil_1.default.hourFromMinute(reservationTimeInMinutes);
+                                    if (!dateUtil_1.default.isDateInSelectedWeekday(constructedDate, bookTime.selectedWeekdays)) {
+                                        continue;
+                                    }
                                     if (!_.includes(occupiedTimes, constructedDate)) {
                                         occupiedTimes.push(constructedDate);
                                         reservation.start = constructedDate;
@@ -502,9 +561,13 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                                     }
                                     reservationTimeInMinutes += bookTime.bookDuration;
                                 }
+                                // while the shifted reservation's date is on leave-time increase the date by 1 day
                                 while (_.includes(occupiedDates, reservationDate)) {
                                     reservationDate = dateUtil_1.default.addDaysToDate(reservationDate, 1);
                                     var constructedDate = reservationDate + " " + reservationTime;
+                                    if (!dateUtil_1.default.isDateInSelectedWeekday(constructedDate, bookTime.selectedWeekdays)) {
+                                        continue;
+                                    }
                                     reservation.start = constructedDate;
                                     if (_.includes(occupiedTimes, constructedDate)) {
                                         countByTime[constructedDate]++;

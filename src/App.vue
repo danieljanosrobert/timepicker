@@ -1,22 +1,26 @@
 <template>
   <v-app class="brown darken-4">
-    <Snackbar/>
-    <MenuBar v-if="!isLandingPage"></MenuBar>
-    <Drawer v-if="!isLandingPage"></Drawer>
+    <progress-component/>
+    <snackbar-component/>
+    <menu-bar-component v-if="!isLandingPage"></menu-bar-component>
+    <drawer-component v-if="!isLandingPage"></drawer-component>
     <router-view :class="viewHasMargin ? 'pt-12' : ''"></router-view>
-    <Footer v-if="!isLandingPage"></Footer>
+    <footer-component v-if="!isLandingPage"></footer-component>
   </v-app>
 </template>
 
 <script lang="ts">
-  import Drawer from './components/Drawer.vue';
-  import Footer from './components/Footer.vue';
-  import MenuBar from './components/MenuBar.vue';
-  import Snackbar from './components/Snackbar.vue';
+  import DrawerComponent from './components/Drawer.vue';
+  import FooterComponent from './components/Footer.vue';
+  import MenuBarComponent from './components/MenuBar.vue';
+  import SnackbarComponent from './components/Snackbar.vue';
+  import ProgressComponent from './components/Progress.vue';
   import Vue from 'vue';
   import VueScrollTo from 'vue-scrollto';
+  import Vuelidate from 'vuelidate';
   import * as _ from 'lodash';
 
+  Vue.use(Vuelidate);
   Vue.use(VueScrollTo, { duration: 950 });
 
   const SUCCESSFULLY_ACTIVATED = 'successfully-activated';
@@ -31,10 +35,11 @@
       isLandingPage: false,
     }),
     components: {
-      Drawer,
-      Footer,
-      MenuBar,
-      Snackbar,
+      DrawerComponent,
+      FooterComponent,
+      MenuBarComponent,
+      SnackbarComponent,
+      ProgressComponent,
     },
     mounted() {
       this.routerViewHasMargin();

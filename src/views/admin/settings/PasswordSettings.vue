@@ -11,15 +11,24 @@
           <v-form @submit.prevent="save" class="pa-0">
             <v-row class="pb-4 ma-0">
                 <v-col cols="12" class="pa-6 pb-0">
-                  <v-text-field type="password" v-model="oldPassword" label="Régi jelszó"></v-text-field>
+                  <v-text-field type="password" v-model="oldPassword" label="Régi jelszó" required
+                                :error-messages="oldPasswordErrors" @input="$v.oldPassword.$touch()"
+                                @blur="$v.oldPassword.$touch()">
+                  </v-text-field>
                 </v-col>
                 <v-col cols="12" class="pa-6 pb-0">
-                  <v-text-field type="password" v-model="newPassword" label="Új jelszó"></v-text-field>
+                  <v-text-field type="password" v-model="newPassword" label="Új jelszó" required
+                                :error-messages="newPasswordErrors" @input="$v.newPassword.$touch()"
+                                @blur="$v.newPassword.$touch()">
+                  </v-text-field>
                 </v-col>
                 <v-col cols="12" class="pa-6 pb-0">
-                  <v-text-field type="password" v-model="confirmPassword" label="Új jelszó újra"></v-text-field>
+                  <v-text-field type="password" v-model="confirmPassword" label="Új jelszó újra" required
+                                :error-messages="confirmPasswordErrors" @input="$v.confirmPassword.$touch()"
+                                @blur="$v.confirmPassword.$touch()">
+                  </v-text-field>
                 </v-col>
-                <v-btn type="submit" class="ml-6 ma-4">Mentés</v-btn>
+                <v-btn type="submit" :disabled="buttonDisabled" class="ml-6 ma-4">Mentés</v-btn>
             </v-row>
           </v-form>
         </v-card>
@@ -29,44 +38,103 @@
 </template>
 
 <script>
-import adminUserService from '@/service/adminUserService';
-export default {
-  name: 'PasswordSettings',
-  data: () => ({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  }),
-  computed: {
-    setToFullScreen() {
-      return {
-          'min-height': `${window.innerHeight}px`,
-      };
+  import adminUserService from '@/service/adminUserService';
+  import { required, minLength, sameAs } from 'vuelidate/lib/validators';
+  import constants from '@/utils/constants';
+
+  export default {
+    name: 'PasswordSettings',
+    data: () => ({
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      buttonDisabled: false,
+    }),
+    validations: {
+      oldPassword: {
+        required,
+        minLength: minLength(6),
+      },
+      newPassword: {
+        required,
+        minLength: minLength(6),
+      },
+      confirmPassword: {
+        required,
+        minLength: minLength(6),
+        sameAs: sameAs('newPassword'),
+      },
     },
-  },
-  methods: {
-    async save() {
-      try {
-        await adminUserService.changePassword({
-          user_email: this.$store.state.loggedInUserEmail,
-          oldPassword: this.oldPassword,
-          password: this.newPassword,
-          confirmPassword: this.confirmPassword,
-        });
-        this.$store.dispatch('openSnackbar', {
-          message: 'Jelszó sikeresen megváltoztatva.',
-          type: 'success',
-        });
-        Object.assign(this.$data, this.$options.data());
-      } catch {
-        this.$store.dispatch('openSnackbar', {
-          message: 'Hiba történt a jelszó megváltoztatása során!',
-          type: 'error',
-        });
-      }
+    computed: {
+      oldPasswordErrors() {
+        const errors = [];
+        if (!this.$v.oldPassword.$dirty) {
+          return errors;
+        }
+        !this.$v.oldPassword.minLength && errors.push(constants.validationErrorMessages.passwordMinLength);
+        !this.$v.oldPassword.required && errors.push(constants.validationErrorMessages.required);
+        return errors;
+      },
+      newPasswordErrors() {
+        const errors = [];
+        if (!this.$v.newPassword.$dirty) {
+          return errors;
+        }
+        !this.$v.newPassword.minLength && errors.push(constants.validationErrorMessages.passwordMinLength);
+        !this.$v.newPassword.required && errors.push(constants.validationErrorMessages.required);
+        return errors;
+      },
+      confirmPasswordErrors() {
+        const errors = [];
+        if (!this.$v.confirmPassword.$dirty) {
+          return errors;
+        }
+        !this.$v.confirmPassword.minLength && errors.push(constants.validationErrorMessages.passwordMinLength);
+        !this.$v.confirmPassword.sameAs && errors.push(constants.validationErrorMessages.passwordSameAs);
+        !this.$v.confirmPassword.required && errors.push(constants.validationErrorMessages.required);
+        return errors;
+      },
+      setToFullScreen() {
+        return {
+            'min-height': `${window.innerHeight}px`,
+        };
+      },
     },
-  },
-};
+    methods: {
+      async save() {
+        this.buttonDisabled = true;
+        this.$root.$emit('startLoading');
+        try {
+          await adminUserService.changePassword({
+            user_email: this.$store.state.loggedInUserEmail,
+            oldPassword: this.oldPassword,
+            password: this.newPassword,
+            confirmPassword: this.confirmPassword,
+          });
+          this.$store.dispatch('openSnackbar', {
+            message: 'Jelszó sikeresen megváltoztatva.',
+            type: 'success',
+          });
+          this.$v.$reset();
+          this.resetFields();
+        } catch (err) {
+          this.$store.dispatch('openSnackbar', {
+            message: err.response && _.get(constants.apiValidationMessages, err.response.data.error)
+              || 'Hiba történt a jelszó megváltoztatása során!',
+            type: 'error',
+          });
+        } finally {
+          this.buttonDisabled = false;
+          this.$root.$emit('stopLoading');
+        }
+      },
+      resetFields() {
+        oldPassword = '';
+        newPassword = '';
+        confirmPassword = '';
+      },
+    },
+  };
 </script>
 
 <style lang="scss" scoped>

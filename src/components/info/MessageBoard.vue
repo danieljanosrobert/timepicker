@@ -47,8 +47,14 @@
     },
     methods: {
       async fetchMessages() {
+        this.$root.$emit('startLoading');
+        try {
         await messageService.getMessages(this.$route.params.service_id)
             .then((messages) => { this.messages = messages.data.messages; });
+        } catch {
+        } finally {
+          this.$root.$emit('stopLoading');
+        }
       },
       isUserServiceOwner() {
         return this.$store.state.loggedInAsAdmin && this.$store.state.ownServiceId === this.$route.params.service_id;

@@ -93,15 +93,21 @@
     },
     methods: {
       async fetchContact() {
-        await contactService.getContact(this.$route.params.service_id).then((contact) => {
-          this.name = contact.data.name;
-          this.phoneNumbers = contact.data.phoneNumbers;
-          this.emails = contact.data.emails;
-          this.addresses = contact.data.addresses;
-          if (contact.data.image_url) {
-            this.imageUrl = contact.data.image_url;
-          }
-        });
+        this.$root.$emit('startLoading');
+        try {
+          await contactService.getContact(this.$route.params.service_id).then((contact) => {
+            this.name = contact.data.name;
+            this.phoneNumbers = contact.data.phoneNumbers;
+            this.emails = contact.data.emails;
+            this.addresses = contact.data.addresses;
+            if (contact.data.image_url) {
+              this.imageUrl = contact.data.image_url;
+            }
+          });
+        } catch {
+        } finally {
+          this.$root.$emit('stopLoading');
+        }
       },
       isUserServiceOwner() {
         return this.$store.state.loggedInAsAdmin && this.$store.state.ownServiceId === this.$route.params.service_id;

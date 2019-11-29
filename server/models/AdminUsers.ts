@@ -5,14 +5,14 @@ export type AdminUserDocument = mongoose.Document & {
   email: string;
   password: string;
   name: string;
-  servicename: string;
+  serviceName: string;
 };
 
 const adminUserSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String,
   name: String,
-  servicename: String,
+  serviceName: String,
 }, { timestamps: true });
 
 adminUserSchema.pre('save', function save(next) {

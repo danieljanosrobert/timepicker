@@ -5,6 +5,11 @@ import { Messages } from '../models/Messages';
 import { Base64 } from 'js-base64';
 import { Service } from '../models/Services';
 
+/**
+ * GET /messages/:service_id
+ * GET /settings/messages/:service_id
+ * Returns the messages of Service with given service_id
+ */
 export const getMessages = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   Messages.findOne({ service_id: serviceId })
@@ -21,6 +26,10 @@ export const getMessages = async (req: any, res: Response, next: NextFunction) =
     });
 };
 
+/**
+ * Creates empty message board on AdminUser creation.
+ * @param serviceId string of generated UUID that joins AdminUser with Service
+ */
 export const createMessage = async (req: any, res: Response, next: NextFunction, serviceId: string) => {
   const message = new Messages({
     service_id: serviceId,
@@ -34,6 +43,10 @@ export const createMessage = async (req: any, res: Response, next: NextFunction,
   });
 };
 
+/**
+ * POST /settings/messages
+ * Updates Service's messages
+ */
 export const postSaveMessages = async (req: any, res: Response, next: NextFunction) => {
   AdminUser.findOne({ email: req.body.user_email })
     .then((dbUser) => {

@@ -30,7 +30,7 @@
           <v-btn @click.stop="editorVisible = false" dark color="brown darken-2" class="mx-2">
             Mégsem
           </v-btn>
-          <v-btn autofocus @click.stop="saveMessage" dark color="brown" class="mx-2">
+          <v-btn autofocus @click.stop="saveMessage" :disabled="buttonDisabled" dark color="brown" class="mx-2">
             Mentés
           </v-btn>
         </v-col>
@@ -53,6 +53,7 @@
         content: '',
       },
       index: null,
+      buttonDisabled: false,
     }),
     mounted() {
       this.$root.$on('editMessage', (data) => {
@@ -68,9 +69,13 @@
           this.index = null;
         }
       });
+      this.$root.$on('enableMessageBoardSaveButton', () => {
+        this.buttonDisabled = false;
+      });
     },
     methods: {
       saveMessage() {
+        this.buttonDisabled = true;
         this.editorVisible = false;
         this.$root.$emit('saveEditedMessage', {message: this.message, index: this.index, new: this.newMessage });
       },

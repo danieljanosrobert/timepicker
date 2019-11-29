@@ -56,6 +56,11 @@ var bcrypt_1 = __importDefault(require("bcrypt"));
 var Services_1 = require("../models/Services");
 var dateUtil_1 = __importDefault(require("../utils/dateUtil"));
 var _ = __importStar(require("lodash"));
+/**
+ * GET /book/book-time/:service_id
+ * GET /settings/book/:service_id
+ * Returns the book-times of Service with given service_id
+ */
 exports.getBookTime = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
@@ -79,6 +84,10 @@ exports.getBookTime = function (req, res, next) { return __awaiter(void 0, void 
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /settings/book
+ * Updates book-time. If book-time does not exist create one
+ */
 exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
@@ -119,7 +128,8 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
                                 if (originalBookTime && originalBookTime.startTime) {
                                     if (originalBookTime.startTime !== bookTime.startTime
                                         || originalBookTime.bookDuration !== bookTime.bookDuration
-                                        || originalBookTime.endTime !== bookTime.endTime) {
+                                        || originalBookTime.endTime !== bookTime.endTime
+                                        || !_.isEqual(_.sortBy(originalBookTime.selectedWeekdays), _.sortBy(bookTime.selectedWeekdays))) {
                                         try {
                                             reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
                                         }
@@ -153,6 +163,11 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
         return [2 /*return*/];
     });
 }); };
+/**
+ * GET /book/breaks/:service_id
+ * GET /settings/breaks/:service_id
+ * Returns the breaks of Service with given service_id
+ */
 exports.getBreaks = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
@@ -172,6 +187,10 @@ exports.getBreaks = function (req, res, next) { return __awaiter(void 0, void 0,
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /settings/breaks
+ * Updates breaks. If breaks does not exist create one
+ */
 exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
@@ -234,6 +253,11 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
         return [2 /*return*/];
     });
 }); };
+/**
+ * GET /book/leaves/:service_id
+ * GET /settings/leaves/:service_id
+ * Returns the leaves of Service with given service_id
+ */
 exports.getLeaves = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
@@ -253,6 +277,10 @@ exports.getLeaves = function (req, res, next) { return __awaiter(void 0, void 0,
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /settings/leaves
+ * Updates leaves. If leaves does not exist create one
+ */
 exports.postSaveLeaves = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
