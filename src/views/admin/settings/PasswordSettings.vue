@@ -102,6 +102,10 @@
     },
     methods: {
       async save() {
+        this.$v.$touch();
+        if (this.$v.$invalid) {
+          return;
+        }
         this.buttonDisabled = true;
         this.$root.$emit('startLoading');
         try {
@@ -129,9 +133,9 @@
         }
       },
       resetFields() {
-        oldPassword = '';
-        newPassword = '';
-        confirmPassword = '';
+        this.oldPassword = '';
+        this.newPassword = '';
+        this.confirmPassword = '';
       },
     },
   };

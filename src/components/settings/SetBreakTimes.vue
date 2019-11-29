@@ -99,7 +99,7 @@
         @input="$v.password.$touch()"
         @blur="$v.password.$touch()"
       ></v-text-field>
-      <v-btn class="mr-4" @click="save" :disabled="buttonDisabled">Mentés</v-btn>
+      <v-btn class="mr-4" type="submit" :disabled="buttonDisabled">Mentés</v-btn>
     </v-form>
   </v-card>
 </template>

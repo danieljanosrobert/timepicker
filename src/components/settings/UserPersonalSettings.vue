@@ -9,12 +9,12 @@
       <v-row class="pb-4 ma-0">
         <v-col class="pa-6 pb-0 pr-3" cols="12" sm="6" md="4">
           <v-text-field v-model="lastName" label="Vezetéknév" required :error-messages="lastNameErrors"
-                        @input="$v.lastName.touch()" @blur="$v.lastName.touch()">
+                        @input="$v.lastName.$touch()" @blur="$v.lastName.$touch()">
           </v-text-field>
         </v-col>
         <v-col class="pa-6 pb-0 pl-3" cols="12" sm="6" md="4">
           <v-text-field v-model="firstName" label="Keresztnév" required :error-messages="firstNameErrors"
-                        @input="$v.firstName.touch()" @blur="$v.firstName.touch()">
+                        @input="$v.firstName.$touch()" @blur="$v.firstName.$touch()">
           </v-text-field>
         </v-col>
         <v-col class="pa-6 pb-0 pr-3" cols="12" sm="6" md="4">
@@ -46,7 +46,7 @@
         @input="$v.password.$touch()"
         @blur="$v.password.$touch()"
       ></v-text-field>
-      <v-btn class="mr-4" :disabled="buttonDisabled" @click="save">Mentés</v-btn>
+      <v-btn class="mr-4" :disabled="buttonDisabled" type="submit">Mentés</v-btn>
     </v-form>
   </v-card>
 </template>

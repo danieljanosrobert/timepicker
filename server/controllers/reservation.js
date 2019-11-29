@@ -209,8 +209,24 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                         },
                     };
                     emailService_1.sendMail(constants_1.default.mailTypes.activate, emailDetails);
-                    // tslint:disable-next-line:no-console
-                    console.log("activation link: " + emailDetails.replacements.activateUrl);
+                    if (process.env.TEST) {
+                        // tslint:disable-next-line:no-console
+                        console.log("activation link: " + emailDetails.replacements.activateUrl);
+                    }
+                }
+                else if (reservation.status === constants_1.default.reservationStatuses[0]) {
+                    var emailDetails = {
+                        to: reservation.email,
+                        subject: 'Időpont elfogadva',
+                        replacements: {
+                            invocation: reservation.lastName + " " + reservation.firstName,
+                            serviceName: dbService.name,
+                            startTime: reservation.start,
+                            resignUrl: apiUrl + "/api/resign-by-email/" + req.body.serviceId + "/" + js_base64_1.Base64.encode(reservation.start) +
+                                ("/" + js_base64_1.Base64.encode(reservation.email)),
+                        },
+                    };
+                    emailService_1.sendMail(constants_1.default.mailTypes.reservationAccepted, emailDetails);
                 }
                 res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
             });
