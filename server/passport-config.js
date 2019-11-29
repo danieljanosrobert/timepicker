@@ -18,6 +18,7 @@ exports.default = (function (passport) {
                 });
             }
             return done(null, false);
+            // tslint:disable-next-line:no-console
         }).catch(function (err) { return console.error(err); });
     }));
 });

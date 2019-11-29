@@ -2,13 +2,12 @@ import nodemailer from 'nodemailer';
 import handlebars from 'handlebars';
 import fs from 'fs';
 
-const readHTMLFile = function (path: any, callback: any) {
-  fs.readFile(path, { encoding: 'utf-8' }, function (err, html) {
+const readHTMLFile = (path: any, callback: any) => {
+  fs.readFile(path, { encoding: 'utf-8' }, (err, html) => {
     if (err) {
       throw err;
       callback(err);
-    }
-    else {
+    } else {
       callback(null, html);
     }
   });
@@ -19,7 +18,7 @@ export const sendMail = (type: string, emailDetails: any) => {
     return;
   }
 
-  let transporter = nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
       user: 'pickatimeidopontfoglalas@gmail.com',
@@ -27,27 +26,31 @@ export const sendMail = (type: string, emailDetails: any) => {
     },
   });
 
-  readHTMLFile(__dirname + '/templates/' + type, function (err: any, html: any) {
-    var template = handlebars.compile(html);
-    var replacements = emailDetails.replacements;
+  readHTMLFile(__dirname + '/templates/' + type, (err: any, html: any) => {
+    const template = handlebars.compile(html);
+    const replacements = emailDetails.replacements;
     replacements.homeUrl = process.env.API_URL || 'http://localhost:8081';
-    var htmlToSend = template(replacements);
+    const htmlToSend = template(replacements);
 
-    var mailOptions = {
+    const mailOptions = {
       from: 'pickatimeidopontfoglalas@gmail.com',
       to: emailDetails.to,
       subject: emailDetails.subject,
-      html: htmlToSend
+      html: htmlToSend,
     };
     if (mailOptions.to) {
-      transporter.sendMail(mailOptions, function (err, info) {
-        if (err)
-          console.log(err);
-        else
+      transporter.sendMail(mailOptions, (mailErr, info) => {
+        if (mailErr) {
+          // tslint:disable-next-line:no-console
+          console.log(mailErr);
+        } else {
+          // tslint:disable-next-line:no-console
           console.log(info);
+        }
       });
     } else {
-      console.log('Mailing address not provided.');
+      // tslint:disable-next-line:no-console
+      console.error('Mailing address not provided.');
     }
   });
 

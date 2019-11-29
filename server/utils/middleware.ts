@@ -1,7 +1,8 @@
+// tslint:disable:no-console
+
 import {constants} from 'http2';
 import * as _ from 'lodash';
 import jwt from 'jsonwebtoken';
-import {AdminUser} from '../models/AdminUsers';
 
 const adminSecret = process.env.ADMIN_SECRET || 'adminsecretkey';
 const secret = process.env.SECRET || 'secret';

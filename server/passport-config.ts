@@ -20,6 +20,7 @@ export default (passport: any) => {
                 });
               }
               return done(null, false);
+            // tslint:disable-next-line:no-console
             }).catch((err) => console.error(err));
       }),
   );

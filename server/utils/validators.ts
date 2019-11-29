@@ -23,13 +23,13 @@ export const passwordValidator = [
 
 export const registerValidator = credentialValidator.concat(passwordValidator);
 
-export const passwordChangeValidator =[
+export const passwordChangeValidator = [
   check('oldPassword', 'OldPassword must exist').exists(),
   check('oldPassword', 'Password and OldPassword should not be equal')
     .custom((value, { req }) => {
       if (value === req.body.password) {
         throw new Error('Passwords match');
       } else { return value; }
-    })
+    }),
 ].concat(passwordValidator);
 

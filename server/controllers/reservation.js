@@ -78,7 +78,7 @@ exports.getUsersReservations = function (req, res, next) { return __awaiter(void
             Services_1.Service.find({ service_id: { $in: serviceIds } }, '-_id service_id name')
                 .then(function (dbServices) {
                 _.forEach(dbReservations, function (reservation) {
-                    var reservationsService = _.find(dbServices, { 'service_id': reservation.service_id });
+                    var reservationsService = _.find(dbServices, { service_id: reservation.service_id });
                     reservation.serviceName = reservationsService ? reservationsService.name : '';
                     reservation.service_id = js_base64_1.Base64.encode(reservation.service_id);
                 });
@@ -107,15 +107,17 @@ exports.postGetReservations = function (req, res, next) { return __awaiter(void 
                 isOwnService = false;
                 return [4 /*yield*/, AdminUsers_1.AdminUser.findOne({ email: email })
                         .then(function (dbUserAdmin) {
-                        if (dbUserAdmin)
+                        if (dbUserAdmin) {
                             isAdmin = true;
+                        }
                     })];
             case 1:
                 _a.sent();
                 return [4 /*yield*/, Services_1.Service.findOne({ service_id: serviceId, user_email: email })
                         .then(function (dbService) {
-                        if (dbService)
+                        if (dbService) {
                             isOwnService = true;
+                        }
                     })];
             case 2:
                 _a.sent();
@@ -189,7 +191,7 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                 reservation.save(function (saveError) {
                     if (saveError) {
                         return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                            error: 'Error occured during save'
+                            error: 'Error occured during save',
                         });
                     }
                 });
@@ -207,6 +209,7 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                         },
                     };
                     emailService_1.sendMail(constants_1.default.mailTypes.activate, emailDetails);
+                    // tslint:disable-next-line:no-console
                     console.log("activation link: " + emailDetails.replacements.activateUrl);
                 }
                 res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
@@ -329,21 +332,21 @@ exports.postAcceptReservation = function (req, res, next) { return __awaiter(voi
                             }
                             else {
                                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                                    error: 'Service does not exist'
+                                    error: 'Service does not exist',
                                 });
                             }
                         });
                     }
                     else {
                         return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                            error: 'Reservation does not exist'
+                            error: 'Reservation does not exist',
                         });
                     }
                 });
             }
             else {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                    error: 'User does not exist'
+                    error: 'User does not exist',
                 });
             }
         });
@@ -386,14 +389,14 @@ exports.postResignReservation = function (req, res, next) { return __awaiter(voi
                     }
                     else {
                         return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                            error: 'Service does not exist'
+                            error: 'Service does not exist',
                         });
                     }
                 });
             }
             else {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                    error: 'Reservation does not exist'
+                    error: 'Reservation does not exist',
                 });
             }
         });
@@ -425,9 +428,9 @@ exports.postDeleteReservation = function (req, res, next) { return __awaiter(voi
                                         });
                                     }
                                 });
-                                var refuse_message = '';
+                                var refuseMessage = '';
                                 if (req.body.refuse_message) {
-                                    refuse_message = "Elutas\u00EDt\u00E1s oka: " + req.body.refuse_message;
+                                    refuseMessage = "Elutas\u00EDt\u00E1s oka: " + req.body.refuse_message;
                                 }
                                 var emailDetails = {
                                     to: dbReservation.email,
@@ -436,7 +439,7 @@ exports.postDeleteReservation = function (req, res, next) { return __awaiter(voi
                                         invocation: dbReservation.lastName + " " + dbReservation.firstName,
                                         serviceName: dbService.name,
                                         startTime: dbReservation.start,
-                                        refuseMessage: refuse_message,
+                                        refuseMessage: refuseMessage,
                                     },
                                 };
                                 emailService_1.sendMail(constants_1.default.mailTypes.reservationDeleted, emailDetails);
@@ -444,21 +447,21 @@ exports.postDeleteReservation = function (req, res, next) { return __awaiter(voi
                             }
                             else {
                                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                                    error: 'Service does not exist'
+                                    error: 'Service does not exist',
                                 });
                             }
                         });
                     }
                     else {
                         return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                            error: 'Reservation does not exist'
+                            error: 'Reservation does not exist',
                         });
                     }
                 });
             }
             else {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                    error: 'User does not exist'
+                    error: 'User does not exist',
                 });
             }
         });
@@ -491,6 +494,7 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                         newEndTime = dateUtil_1.default.minuteFromHour(bookTime.endTime);
                         dbReservation = _.filter(dbReservation, function (reservation) { return dateUtil_1.default.isAfterEquals(reservation.start, today); });
                         _.forEach(dbReservation, function (reservation) {
+                            // tslint:disable-next-line:prefer-const
                             var _a = _.split(reservation.start, ' '), reservationDate = _a[0], reservationTime = _a[1];
                             // check if reservation was shifted by break. If so, put the reservation on the next point based on duration
                             reservationTime = shiftReservation(reservationTime, originalBookTime.bookDuration, oldStartTime);
@@ -528,6 +532,7 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                         _.forEach(countByTime, function (count, date) {
                             var filteredReservations = _.filter(dbReservation, function (res) { return res.start === date; });
                             _.forEach(filteredReservations, function (reservation) {
+                                // tslint:disable-next-line:prefer-const
                                 var _a = _.split(reservation.start, ' '), reservationDate = _a[0], reservationTime = _a[1];
                                 // if actual day is not a selected weekday increase the date by 1 day
                                 if (!dateUtil_1.default.isDateInSelectedWeekday(reservation.start, bookTime.selectedWeekdays)) {
@@ -543,7 +548,7 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                                     return;
                                 }
                                 var reservationTimeInMinutes = dateUtil_1.default.minuteFromHour(reservationTime);
-                                // if there is more than one reservations on a date moves reservation to a free date-time 
+                                // if there is more than one reservations on a date moves reservation to a free date-time
                                 while (count > 1) {
                                     if (reservationTimeInMinutes >= newEndTime) {
                                         reservationTimeInMinutes = newStartTime;
@@ -587,8 +592,8 @@ exports.updateReservationsIfNeeded = function (bookTime, originalBookTime) { ret
                                             invocation: reservation.lastName + " " + reservation.firstName,
                                             serviceName: dbService.name,
                                             startTime: reservation.start,
-                                            resignUrl: apiUrl + "/api/resign-by-email/" + bookTime.service_id + "/" + js_base64_1.Base64.encode(reservation.start) +
-                                                ("/" + js_base64_1.Base64.encode(reservation.email)),
+                                            resignUrl: apiUrl + "/api/resign-by-email/" + bookTime.service_id + "/" + js_base64_1.Base64.encode(reservation.start)
+                                                + ("/" + js_base64_1.Base64.encode(reservation.email)),
                                         },
                                     };
                                     emailService_1.sendMail(constants_1.default.mailTypes.reservationModified, emailDetails);

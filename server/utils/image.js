@@ -71,11 +71,11 @@ function uploadImage(folder, req, res, next) {
     });
 }
 exports.uploadImage = uploadImage;
-function destroyImage(public_id) {
+function destroyImage(publicId) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, cloudinary.v2.uploader.destroy(public_id)];
+                case 0: return [4 /*yield*/, cloudinary.v2.uploader.destroy(publicId)];
                 case 1:
                     _a.sent();
                     return [2 /*return*/];

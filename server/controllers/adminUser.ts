@@ -18,7 +18,6 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
   const validationErrorResult = validationResult(req);
 
   if (!validationErrorResult.isEmpty()) {
-    console.log(validationErrorResult.mapped());
     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Validation error' });
   }
   const user = new AdminUser({
@@ -32,7 +31,9 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
       return next(err);
     }
     if (existingUser) {
-      return res.status(constants.HTTP_STATUS_CONFLICT).send({ error: 'Account with that email address already exists.' });
+      return res.status(constants.HTTP_STATUS_CONFLICT).send({
+        error: 'Account with that email address already exists.',
+      });
     }
     user.save((saveError) => {
       if (saveError) {
@@ -60,7 +61,6 @@ export const postLogin = async (req: Request, res: Response) => {
   const validationErrorResult = validationResult(req);
 
   if (!validationErrorResult.isEmpty()) {
-    console.log(validationErrorResult.mapped());
     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send('Validation error');
   }
   const user = new AdminUser({
@@ -88,12 +88,10 @@ export const postLogin = async (req: Request, res: Response) => {
  * Change password
  */
 export const postChangePassword = async (req: Request, res: Response) => {
-console.log(req.body)
 
   const validationErrorResult = validationResult(req);
 
   if (!validationErrorResult.isEmpty()) {
-    console.log(validationErrorResult.mapped());
     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send('Validation error');
   }
   AdminUser.findOne({ email: req.body.user_email })

@@ -7,6 +7,6 @@ const constatnts = {
     reservationDeleted: 'reservationDeleted.html',
     reservationModified: 'reservationModified.html',
   },
-}
+};
 
 export default constatnts;

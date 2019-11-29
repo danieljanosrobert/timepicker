@@ -52,7 +52,7 @@ export const postSaveMessages = async (req: any, res: Response, next: NextFuncti
     .then((dbUser) => {
       if (!dbUser) {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          error: 'User does not exist'
+          error: 'User does not exist',
         });
       }
       Service.findOne({ user_email: req.body.user_email }, 'service_id')
@@ -71,7 +71,6 @@ export const postSaveMessages = async (req: any, res: Response, next: NextFuncti
           Messages.findOneAndUpdate({ service_id: messages.service_id }, messagesAsObject, { upsert: true },
             (updateError, no) => {
               if (updateError) {
-                console.log(updateError);
                 return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                   error: 'Error occured during updating user\'s messages.',
                 });

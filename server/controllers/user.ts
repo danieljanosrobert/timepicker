@@ -30,7 +30,9 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
       return next(err);
     }
     if (existingUser) {
-      return res.status(constants.HTTP_STATUS_CONFLICT).send({ error: 'Account with that email address already exists.' });
+      return res.status(constants.HTTP_STATUS_CONFLICT).send({
+        error: 'Account with that email address already exists.',
+      });
     }
     user.save((saveError) => {
       if (saveError) {
@@ -50,7 +52,6 @@ export const postLogin = async (req: Request, res: Response) => {
   const validationErrorResult = validationResult(req);
 
   if (!validationErrorResult.isEmpty()) {
-    console.log(validationErrorResult.mapped());
     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Validation error' });
   }
   const user = new User({
@@ -78,12 +79,10 @@ export const postLogin = async (req: Request, res: Response) => {
  * Change password
  */
 export const postChangePassword = async (req: Request, res: Response) => {
-  console.log(req.body)
 
   const validationErrorResult = validationResult(req);
 
   if (!validationErrorResult.isEmpty()) {
-    console.log(validationErrorResult.mapped());
     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send('Validation error');
   }
   User.findOne({ email: req.body.user_email })
@@ -123,7 +122,7 @@ export const postGetUserData = async (req: Request, res: Response) => {
       };
       return res.status(constants.HTTP_STATUS_OK).send(result);
     });
-}
+};
 
 /**
  * POST /settings/modify-user
@@ -150,4 +149,4 @@ export const updateUserData = async (req: Request, res: Response) => {
           }
         });
     });
-}
+};

@@ -36,5 +36,5 @@ exports.passwordChangeValidator = [
         else {
             return value;
         }
-    })
+    }),
 ].concat(exports.passwordValidator);

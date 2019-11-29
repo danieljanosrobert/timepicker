@@ -137,12 +137,12 @@ exports.getServiceSettings = function (req, res, next) { return __awaiter(void 0
  * Creates a service on AdminUser creation.
  * @param service_id string of generated UUID that joins AdminUser with Service
  */
-exports.saveService = function (req, res, next, service_id) { return __awaiter(void 0, void 0, void 0, function () {
+exports.saveService = function (req, res, next, serviceId) { return __awaiter(void 0, void 0, void 0, function () {
     var service;
     return __generator(this, function (_a) {
         service = new Services_1.Service({
             user_email: req.body.email,
-            service_id: service_id,
+            service_id: serviceId,
             name: req.body.serviceName,
             description: '',
             hidden: true,
@@ -166,7 +166,7 @@ exports.postUpdateService = function (req, res, next) { return __awaiter(void 0,
             .then(function (dbUser) {
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                    error: 'User does not exist'
+                    error: 'User does not exist',
                 });
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)
@@ -211,7 +211,6 @@ exports.postUpdateService = function (req, res, next) { return __awaiter(void 0,
                                     if (imageId_1) {
                                         image_1.destroyImage(imageId_1);
                                     }
-                                    console.log(updateError);
                                     return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                                         error: 'Error occured during updating service.',
                                     });

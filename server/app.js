@@ -27,6 +27,7 @@ var dbUrl = process.env.DB_URL || 'localhost';
 var port = process.env.PORT || 8081;
 mongoose_1.default.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 var db = mongoose_1.default.connection;
+// tslint:disable-next-line:no-console
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
     app.use('/api', router);
@@ -37,7 +38,7 @@ db.once('open', function () {
     require('./routes/usersRoute')(router);
     require('./routes/booksRoute')(router);
     if (app.listen(port)) {
-        // tslint:disable-next-line
+        // tslint:disable-next-line:no-console
         console.log("Listening on port " + port);
     }
 });

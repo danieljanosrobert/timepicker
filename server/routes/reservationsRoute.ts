@@ -4,44 +4,44 @@ import { middleware } from '../utils/middleware';
 module.exports = (router: any) => {
   router.post(
     '/reserve',
-    reservationController.postReserve
+    reservationController.postReserve,
   );
 
   router.post(
     '/reservations',
-    reservationController.postGetReservations
+    reservationController.postGetReservations,
   );
 
   router.get(
     '/my-reservations/:user_email',
     middleware.isAuthenticatedAsUser,
-    reservationController.getUsersReservations
+    reservationController.getUsersReservations,
   );
 
   router.get(
     '/activate/:service_id/:start',
-    reservationController.activateReservation
+    reservationController.activateReservation,
   );
 
   router.get(
     '/resign-by-email/:service_id/:start/:email',
-    reservationController.resignByEmail
-  )
+    reservationController.resignByEmail,
+  );
 
   router.post(
     '/reservations/resign',
-    reservationController.postResignReservation
+    reservationController.postResignReservation,
   );
 
   router.post(
     '/reservations/accept',
     middleware.isAuthenticatedAsAdmin,
-    reservationController.postAcceptReservation
+    reservationController.postAcceptReservation,
   );
 
   router.post(
     '/reservations/delete',
     middleware.isAuthenticatedAsAdmin,
-    reservationController.postDeleteReservation
+    reservationController.postDeleteReservation,
   );
 };

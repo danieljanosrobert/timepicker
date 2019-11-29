@@ -160,7 +160,6 @@ exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, v
                                             if (imageId) {
                                                 image_1.destroyImage(imageId);
                                             }
-                                            console.log(updateError);
                                             return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                                                 error: 'Error occured during updating contact.',
                                             });

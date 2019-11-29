@@ -95,7 +95,7 @@ exports.postSaveMessages = function (req, res, next) { return __awaiter(void 0, 
             .then(function (dbUser) {
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                    error: 'User does not exist'
+                    error: 'User does not exist',
                 });
             }
             Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
@@ -113,7 +113,6 @@ exports.postSaveMessages = function (req, res, next) { return __awaiter(void 0, 
                 delete messagesAsObject._id;
                 Messages_1.Messages.findOneAndUpdate({ service_id: messages.service_id }, messagesAsObject, { upsert: true }, function (updateError, no) {
                     if (updateError) {
-                        console.log(updateError);
                         return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                             error: 'Error occured during updating user\'s messages.',
                         });

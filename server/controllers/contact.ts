@@ -108,7 +108,6 @@ export const postSaveContact = async (req: any, res: Response, next: NextFunctio
                       if (imageId) {
                         destroyImage(imageId);
                       }
-                      console.log(updateError);
                       return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                         error: 'Error occured during updating contact.',
                       });

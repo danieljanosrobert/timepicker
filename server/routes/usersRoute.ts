@@ -9,62 +9,62 @@ module.exports = (router: any) => {
   router.post(
     '/user/auth',
     middleware.isAuthenticatedAsUser,
-    (req: any, res: any) => res.sendStatus(constants.HTTP_STATUS_OK)
+    (req: any, res: any) => res.sendStatus(constants.HTTP_STATUS_OK),
   );
 
   router.post(
     '/admin/auth',
     middleware.isAuthenticatedAsAdmin,
-    (req: any, res: any) => res.sendStatus(constants.HTTP_STATUS_OK)
+    (req: any, res: any) => res.sendStatus(constants.HTTP_STATUS_OK),
   );
 
   router.post(
     '/login',
     validator.credentialValidator,
-    userController.postLogin
+    userController.postLogin,
   );
 
   router.post(
     '/register',
     validator.registerValidator,
-    userController.postRegister
+    userController.postRegister,
   );
 
   router.post(
     '/admin/login',
     validator.credentialValidator,
-    adminUserController.postLogin
+    adminUserController.postLogin,
   );
 
   router.post(
     '/admin/register',
     validator.registerValidator,
-    adminUserController.postRegister
+    adminUserController.postRegister,
   );
 
   router.post(
     '/settings/change-password',
     middleware.isAuthenticatedAsUser,
     validator.passwordChangeValidator,
-    userController.postChangePassword
+    userController.postChangePassword,
   );
 
   router.post(
     '/settings/get-user-data',
     middleware.isAuthenticatedAsUser,
-    userController.postGetUserData
+    userController.postGetUserData,
   );
 
   router.post(
     '/settings/modify-user',
     middleware.isAuthenticatedAsUser,
-    userController.updateUserData
+    userController.updateUserData,
   );
 
   router.post(
     '/settings/change-password/admin',
     middleware.isAuthenticatedAsAdmin,
     validator.passwordChangeValidator,
-    adminUserController.postChangePassword
+    adminUserController.postChangePassword,
   );
 };

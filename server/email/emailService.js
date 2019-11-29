@@ -37,18 +37,23 @@ exports.sendMail = function (type, emailDetails) {
             from: 'pickatimeidopontfoglalas@gmail.com',
             to: emailDetails.to,
             subject: emailDetails.subject,
-            html: htmlToSend
+            html: htmlToSend,
         };
         if (mailOptions.to) {
-            transporter.sendMail(mailOptions, function (err, info) {
-                if (err)
-                    console.log(err);
-                else
+            transporter.sendMail(mailOptions, function (mailErr, info) {
+                if (mailErr) {
+                    // tslint:disable-next-line:no-console
+                    console.log(mailErr);
+                }
+                else {
+                    // tslint:disable-next-line:no-console
                     console.log(info);
+                }
             });
         }
         else {
-            console.log('Mailing address not provided.');
+            // tslint:disable-next-line:no-console
+            console.error('Mailing address not provided.');
         }
     });
 };

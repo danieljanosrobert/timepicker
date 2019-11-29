@@ -15,6 +15,6 @@ export async function uploadImage(folder: string, req: any, res: any, next: any)
   return result;
 }
 
-export async function destroyImage(public_id: string) {
-  await cloudinary.v2.uploader.destroy(public_id);
+export async function destroyImage(publicId: string) {
+  await cloudinary.v2.uploader.destroy(publicId);
 }

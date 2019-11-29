@@ -69,7 +69,9 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
                 return next(err);
             }
             if (existingUser) {
-                return res.status(http2_1.constants.HTTP_STATUS_CONFLICT).send({ error: 'Account with that email address already exists.' });
+                return res.status(http2_1.constants.HTTP_STATUS_CONFLICT).send({
+                    error: 'Account with that email address already exists.',
+                });
             }
             user.save(function (saveError) {
                 if (saveError) {
@@ -90,7 +92,6 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
     return __generator(this, function (_a) {
         validationErrorResult = express_validator_1.validationResult(req);
         if (!validationErrorResult.isEmpty()) {
-            console.log(validationErrorResult.mapped());
             return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Validation error' })];
         }
         user = new Users_1.User({
@@ -122,10 +123,8 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
 exports.postChangePassword = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var validationErrorResult;
     return __generator(this, function (_a) {
-        console.log(req.body);
         validationErrorResult = express_validator_1.validationResult(req);
         if (!validationErrorResult.isEmpty()) {
-            console.log(validationErrorResult.mapped());
             return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send('Validation error')];
         }
         Users_1.User.findOne({ email: req.body.user_email })

@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 import * as reservationController from './reservation';
 import { AdminUser } from '../models/AdminUsers';
-import { constants } from "http2";
+import { constants } from 'http2';
 import { BookTime } from '../models/BookTimes';
 import { Break } from '../models/Breaks';
 import { Leave } from '../models/Leaves';
@@ -44,7 +44,7 @@ export const postSaveBookTime = async (req: any, res: Response, next: NextFuncti
     .then((dbUser) => {
       if (!dbUser) {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          error: 'User does not exist'
+          error: 'User does not exist',
         });
       }
       bcrypt.compare(req.body.password, dbUser.password)
@@ -70,7 +70,6 @@ export const postSaveBookTime = async (req: any, res: Response, next: NextFuncti
                 BookTime.findOneAndUpdate({ service_id: bookTime.service_id }, bookTimeAsObject, { upsert: true },
                   (updateError, originalBookTime) => {
                     if (updateError) {
-                      console.log(updateError);
                       return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                         error: 'Error occured during updating bookTime.',
                       });
@@ -79,13 +78,13 @@ export const postSaveBookTime = async (req: any, res: Response, next: NextFuncti
                       if (originalBookTime.startTime !== bookTime.startTime
                         || originalBookTime.bookDuration !== bookTime.bookDuration
                         || originalBookTime.endTime !== bookTime.endTime
-                        || !_.isEqual(_.sortBy(originalBookTime.selectedWeekdays), _.sortBy(bookTime.selectedWeekdays))) {
+                        || !areArreysEquals(originalBookTime.selectedWeekdays, bookTime.selectedWeekdays)) {
                         try {
                           reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
                         } catch (err) {
                           return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-                            error: err
-                          })
+                            error: err,
+                          });
                         }
                       }
                     }
@@ -138,7 +137,7 @@ export const postSaveBreaks = async (req: any, res: Response, next: NextFunction
     .then((dbUser) => {
       if (!dbUser) {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          error: 'User does not exist'
+          error: 'User does not exist',
         });
       }
       bcrypt.compare(req.body.password, dbUser.password)
@@ -157,7 +156,6 @@ export const postSaveBreaks = async (req: any, res: Response, next: NextFunction
                 });
                 const breakAsObject = breaks.toObject();
                 delete breakAsObject._id;
-                console.log(JSON.stringify(breakAsObject.breaks));
                 _.forEach(breakAsObject.breaks, (currBreak) => {
                   const totalTime = dateUtil.minuteFromHour(currBreak.startTime) + currBreak.duration;
                   if (totalTime > 1440) {
@@ -167,13 +165,12 @@ export const postSaveBreaks = async (req: any, res: Response, next: NextFunction
                       startTime: '00:00',
                       duration: totalTime % 1440,
                       always: currBreak.always,
-                    })
+                    });
                   }
-                })
+                });
                 Break.findOneAndUpdate({ service_id: breaks.service_id }, breakAsObject, { upsert: true },
-                  (updateError, no) => {
+                  (updateError) => {
                     if (updateError) {
-                      console.log(updateError);
                       return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                         error: 'Error occured during updating breaks.',
                       });
@@ -220,7 +217,7 @@ export const postSaveLeaves = async (req: any, res: Response, next: NextFunction
     .then((dbUser) => {
       if (!dbUser) {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          error: 'User does not exist'
+          error: 'User does not exist',
         });
       }
       bcrypt.compare(req.body.password, dbUser.password)
@@ -240,9 +237,8 @@ export const postSaveLeaves = async (req: any, res: Response, next: NextFunction
                 const leavesAsObject = leaves.toObject();
                 delete leavesAsObject._id;
                 Leave.findOneAndUpdate({ service_id: leaves.service_id }, leavesAsObject, { upsert: true },
-                  (updateError, no) => {
+                  (updateError) => {
                     if (updateError) {
-                      console.log(updateError);
                       return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                         error: 'Error occured during updating leaves.',
                       });
@@ -257,4 +253,8 @@ export const postSaveLeaves = async (req: any, res: Response, next: NextFunction
           }
         });
     });
+};
+
+const areArreysEquals = (firstArray: any[], secondArray: any[]) => {
+  return _.isEqual(_.sortBy(firstArray), _.sortBy(secondArray));
 };

@@ -105,6 +105,6 @@ const dateUtil = {
     }
     return firstDate.getTime() === secondDate.getTime();
   },
-}
+};
 
 export default dateUtil;

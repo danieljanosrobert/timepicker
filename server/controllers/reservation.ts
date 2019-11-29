@@ -21,7 +21,7 @@ const homeUrl = process.env.HOME_URL || 'http://localhost:8080';
  */
 export const getUsersReservations = async (req: any, res: Response, next: NextFunction) => {
   const email = Base64.decode(req.params.user_email);
-  Reservation.find({ email: email }, '-_id start createdAt status service_id').lean()
+  Reservation.find({ email }, '-_id start createdAt status service_id').lean()
     .then((dbReservations) => {
       if (!dbReservations) {
         return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
@@ -32,7 +32,7 @@ export const getUsersReservations = async (req: any, res: Response, next: NextFu
       Service.find({ service_id: { $in: serviceIds } }, '-_id service_id name')
         .then((dbServices) => {
           _.forEach(dbReservations, (reservation) => {
-            const reservationsService = _.find(dbServices, { 'service_id': reservation.service_id })
+            const reservationsService = _.find(dbServices, { service_id: reservation.service_id });
             reservation.serviceName = reservationsService ? reservationsService.name : '';
             reservation.service_id = Base64.encode(reservation.service_id);
           });
@@ -54,14 +54,18 @@ export const postGetReservations = async (req: any, res: Response, next: NextFun
   const email = Base64.decode(req.body.user_email);
   let isAdmin = false;
   let isOwnService = false;
-  await AdminUser.findOne({ email: email })
+  await AdminUser.findOne({ email })
     .then((dbUserAdmin) => {
-      if (dbUserAdmin) isAdmin = true;
-    })
+      if (dbUserAdmin) {
+        isAdmin = true;
+      }
+    });
   await Service.findOne({ service_id: serviceId, user_email: email })
     .then((dbService) => {
-      if (dbService) isOwnService = true;
-    })
+      if (dbService) {
+        isOwnService = true;
+      }
+    });
   Reservation.find({ service_id: serviceId }, '-_id start createdAt lastName comment email firstName status')
     .then((dbReservation) => {
       if (!dbReservation) {
@@ -83,7 +87,7 @@ export const postGetReservations = async (req: any, res: Response, next: NextFun
           current.comment = '';
         }
         current.email = '';
-      })
+      });
       return res.status(constants.HTTP_STATUS_OK).send(result);
     });
 };
@@ -98,7 +102,7 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
       error: 'Start must exist',
     });
   }
-  const serviceId = Base64.decode(req.body.serviceId)
+  const serviceId = Base64.decode(req.body.serviceId);
   Service.findOne({ service_id: serviceId })
     .then((dbService) => {
       if (!dbService) {
@@ -127,7 +131,7 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
           reservation.save((saveError) => {
             if (saveError) {
               return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                error: 'Error occured during save'
+                error: 'Error occured during save',
               });
             }
           });
@@ -143,8 +147,9 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
                 resignUrl: `${apiUrl}/api/resign-by-email/${req.body.serviceId}/${Base64.encode(reservation.start)}` +
                   `/${Base64.encode(reservation.email)}`,
               },
-            }
+            };
             sendMail(appConstants.mailTypes.activate, emailDetails);
+            // tslint:disable-next-line:no-console
             console.log(`activation link: ${emailDetails.replacements.activateUrl}`);
           }
           res.sendStatus(constants.HTTP_STATUS_OK);
@@ -159,7 +164,7 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
 export const activateReservation = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.params.service_id);
   const start = Base64.decode(req.params.start);
-  Reservation.findOne({ service_id: serviceId, start: start })
+  Reservation.findOne({ service_id: serviceId, start })
     .then((dbReservation) => {
       if (dbReservation && dbReservation.status === appConstants.reservationStatuses[2]) {
         dbReservation.status = appConstants.reservationStatuses[1];
@@ -183,7 +188,7 @@ export const resignByEmail = async (req: any, res: Response, next: NextFunction)
   const serviceId = Base64.decode(req.params.service_id);
   const start = Base64.decode(req.params.start);
   const email = Base64.decode(req.params.email);
-  Reservation.findOne({ email: email, service_id: serviceId, start: start })
+  Reservation.findOne({ email, service_id: serviceId, start })
     .then((dbReservation) => {
       if (dbReservation) {
         Service.findOne({ service_id: serviceId })
@@ -202,7 +207,7 @@ export const resignByEmail = async (req: any, res: Response, next: NextFunction)
                   serviceName: dbService.name,
                   startTime: dbReservation.start,
                 },
-              }
+              };
               sendMail(appConstants.mailTypes.reservationResigned, emailDetails);
               return res.redirect(homeUrl + '/successfully-activated');
             } else {
@@ -222,7 +227,7 @@ export const resignByEmail = async (req: any, res: Response, next: NextFunction)
 export const postAcceptReservation = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.body.service_id);
   const email = Base64.decode(req.body.user_email);
-  AdminUser.findOne({ email: email })
+  AdminUser.findOne({ email })
     .then((dbUser) => {
       if (dbUser) {
         Reservation.findOne({ service_id: serviceId, start: req.body.start })
@@ -249,24 +254,24 @@ export const postAcceptReservation = async (req: any, res: Response, next: NextF
                         resignUrl: `${apiUrl}/api/resign-by-email/${req.body.service_id}/${Base64.encode(dbReservation.start)}` +
                           `/${Base64.encode(dbReservation.email)}`,
                       },
-                    }
+                    };
                     sendMail(appConstants.mailTypes.reservationAccepted, emailDetails);
                     return res.sendStatus(constants.HTTP_STATUS_OK);
                   } else {
                     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-                      error: 'Service does not exist'
+                      error: 'Service does not exist',
                     });
                   }
                 });
             } else {
               return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-                error: 'Reservation does not exist'
+                error: 'Reservation does not exist',
               });
             }
-          })
+          });
       } else {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          error: 'User does not exist'
+          error: 'User does not exist',
         });
       }
     });
@@ -279,7 +284,7 @@ export const postAcceptReservation = async (req: any, res: Response, next: NextF
 export const postResignReservation = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.body.service_id);
   const email = Base64.decode(req.body.user_email);
-  Reservation.findOne({ email: email, service_id: serviceId, start: req.body.start })
+  Reservation.findOne({ email, service_id: serviceId, start: req.body.start })
     .then((dbReservation) => {
       if (dbReservation) {
         Service.findOne({ service_id: serviceId })
@@ -300,22 +305,22 @@ export const postResignReservation = async (req: any, res: Response, next: NextF
                   serviceName: dbService.name,
                   startTime: dbReservation.start,
                 },
-              }
+              };
               sendMail(appConstants.mailTypes.reservationResigned, emailDetails);
               return res.sendStatus(constants.HTTP_STATUS_OK);
             } else {
               return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-                error: 'Service does not exist'
+                error: 'Service does not exist',
               });
             }
           });
       } else {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          error: 'Reservation does not exist'
+          error: 'Reservation does not exist',
         });
       }
     });
-}
+};
 
 /**
  * POST /reservations/delete
@@ -324,7 +329,7 @@ export const postResignReservation = async (req: any, res: Response, next: NextF
 export const postDeleteReservation = async (req: any, res: Response, next: NextFunction) => {
   const serviceId = Base64.decode(req.body.service_id);
   const email = Base64.decode(req.body.user_email);
-  AdminUser.findOne({ email: email })
+  AdminUser.findOne({ email })
     .then((dbUser) => {
       if (dbUser) {
         Reservation.findOne({ service_id: serviceId, start: req.body.start })
@@ -340,9 +345,9 @@ export const postDeleteReservation = async (req: any, res: Response, next: NextF
                         });
                       }
                     });
-                    let refuse_message = '';
+                    let refuseMessage = '';
                     if (req.body.refuse_message) {
-                      refuse_message = `Elutasítás oka: ${req.body.refuse_message}`;
+                      refuseMessage = `Elutasítás oka: ${req.body.refuse_message}`;
                     }
                     const emailDetails = {
                       to: dbReservation.email,
@@ -351,26 +356,26 @@ export const postDeleteReservation = async (req: any, res: Response, next: NextF
                         invocation: `${dbReservation.lastName} ${dbReservation.firstName}`,
                         serviceName: dbService.name,
                         startTime: dbReservation.start,
-                        refuseMessage: refuse_message,
+                        refuseMessage,
                       },
-                    }
+                    };
                     sendMail(appConstants.mailTypes.reservationDeleted, emailDetails);
                     return res.sendStatus(constants.HTTP_STATUS_OK);
                   } else {
                     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-                      error: 'Service does not exist'
+                      error: 'Service does not exist',
                     });
                   }
                 });
             } else {
               return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-                error: 'Reservation does not exist'
+                error: 'Reservation does not exist',
               });
             }
           });
       } else {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          error: 'User does not exist'
+          error: 'User does not exist',
         });
       }
     });
@@ -378,7 +383,7 @@ export const postDeleteReservation = async (req: any, res: Response, next: NextF
 
 /**
  * If starting time, ending time, or duration changed during updating a book-time
- *   moves forward the reservations that are affected by the update to a valid book-time. 
+ *   moves forward the reservations that are affected by the update to a valid book-time.
  * @param bookTime The book-time that is in update progress
  * @param originalBookTime The book-time that was originally saved
  */
@@ -391,11 +396,12 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
         return;
       }
       const oldStartTime = dateUtil.minuteFromHour(originalBookTime.startTime);
-      let oldEndTime = dateUtil.minuteFromHour(originalBookTime.endTime);
+      const oldEndTime = dateUtil.minuteFromHour(originalBookTime.endTime);
       const newStartTime = dateUtil.minuteFromHour(bookTime.startTime);
-      let newEndTime = dateUtil.minuteFromHour(bookTime.endTime);
+      const newEndTime = dateUtil.minuteFromHour(bookTime.endTime);
       dbReservation = _.filter(dbReservation, (reservation) => dateUtil.isAfterEquals(reservation.start, today));
       _.forEach(dbReservation, (reservation) => {
+        // tslint:disable-next-line:prefer-const
         let [reservationDate, reservationTime] = _.split(reservation.start, ' ');
 
         // check if reservation was shifted by break. If so, put the reservation on the next point based on duration
@@ -403,7 +409,7 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
 
         // check if duration changed. If so, put the reservation on the next point based on new duration
         if (originalBookTime.bookDuration !== bookTime.bookDuration) {
-          reservationTime = shiftReservation(reservationTime, bookTime.bookDuration, newStartTime)
+          reservationTime = shiftReservation(reservationTime, bookTime.bookDuration, newStartTime);
         }
 
         // check if starting time changed. If so, set the reservation time to startTime
@@ -417,7 +423,7 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
             ? newStartTime : newEndTime - bookTime.bookDuration);
         }
 
-        let resultDate = dateUtil.addDaysToDate(reservationDate,
+        const resultDate = dateUtil.addDaysToDate(reservationDate,
           Math.floor(dateUtil.minuteFromHour(reservationTime) / 1440));
 
         reservation.start = `${resultDate} ${reservationTime}`;
@@ -425,7 +431,8 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
 
       // shift times by if on the same position
       const countByTime = _.countBy(dbReservation, 'start');
-      let occupiedTimes = _.keysIn(countByTime);
+      const occupiedTimes = _.keysIn(countByTime);
+      // tslint:disable-next-line:prefer-const
       let occupiedDates: string[] = [];
 
       await Leave.findOne({ service_id: bookTime.service_id })
@@ -434,12 +441,13 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
           _.forEach(dbLeave.leaves, (leave) => {
             const daysOnLeave = dateUtil.getStringArrayBetweenTwoDates(
               leave.leaveInterval[0], leave.leaveInterval[1]);
-            occupiedDates = occupiedDates.concat(daysOnLeave)
+            occupiedDates = occupiedDates.concat(daysOnLeave);
           });
         });
       _.forEach(countByTime, (count, date) => {
         const filteredReservations = _.filter(dbReservation, (res) => res.start === date);
         _.forEach(filteredReservations, (reservation) => {
+          // tslint:disable-next-line:prefer-const
           let [reservationDate, reservationTime] = _.split(reservation.start, ' ');
           // if actual day is not a selected weekday increase the date by 1 day
           if (!dateUtil.isDateInSelectedWeekday(reservation.start, bookTime.selectedWeekdays)) {
@@ -454,7 +462,7 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
             return;
           }
           let reservationTimeInMinutes = dateUtil.minuteFromHour(reservationTime);
-          // if there is more than one reservations on a date moves reservation to a free date-time 
+          // if there is more than one reservations on a date moves reservation to a free date-time
           while (count > 1) {
             if (reservationTimeInMinutes >= newEndTime) {
               reservationTimeInMinutes = newStartTime;
@@ -498,10 +506,10 @@ export const updateReservationsIfNeeded = async (bookTime: any, originalBookTime
                   invocation: `${reservation.lastName} ${reservation.firstName}`,
                   serviceName: dbService.name,
                   startTime: reservation.start,
-                  resignUrl: `${apiUrl}/api/resign-by-email/${bookTime.service_id}/${Base64.encode(reservation.start)}` +
-                          `/${Base64.encode(reservation.email)}`,
+                  resignUrl: `${apiUrl}/api/resign-by-email/${bookTime.service_id}/${Base64.encode(reservation.start)}`
+                   + `/${Base64.encode(reservation.email)}`,
                 },
-              }
+              };
               sendMail(appConstants.mailTypes.reservationModified, emailDetails);
               reservation.save();
             });
@@ -527,4 +535,4 @@ const filterDatesBeforeToday = (reservations: ReservationDocument[]): Reservatio
   return _.filter(reservations, (reservation) => {
     return dateUtil.isAfterEquals(reservation.start, new Date(today));
   });
-}
+};

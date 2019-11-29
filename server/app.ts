@@ -27,6 +27,7 @@ const port = process.env.PORT || 8081;
 
 mongoose.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 const db = mongoose.connection;
+// tslint:disable-next-line:no-console
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
 
@@ -39,7 +40,7 @@ db.once('open', () => {
   require('./routes/booksRoute')(router);
 
   if (app.listen(port)) {
-    // tslint:disable-next-line
+    // tslint:disable-next-line:no-console
     console.log(`Listening on port ${port}`);
   }
 });

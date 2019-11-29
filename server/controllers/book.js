@@ -94,7 +94,7 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
             .then(function (dbUser) {
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                    error: 'User does not exist'
+                    error: 'User does not exist',
                 });
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)
@@ -120,7 +120,6 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
                             delete bookTimeAsObject._id;
                             BookTimes_1.BookTime.findOneAndUpdate({ service_id: bookTime.service_id }, bookTimeAsObject, { upsert: true }, function (updateError, originalBookTime) {
                                 if (updateError) {
-                                    console.log(updateError);
                                     return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                                         error: 'Error occured during updating bookTime.',
                                     });
@@ -129,13 +128,13 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
                                     if (originalBookTime.startTime !== bookTime.startTime
                                         || originalBookTime.bookDuration !== bookTime.bookDuration
                                         || originalBookTime.endTime !== bookTime.endTime
-                                        || !_.isEqual(_.sortBy(originalBookTime.selectedWeekdays), _.sortBy(bookTime.selectedWeekdays))) {
+                                        || !areArreysEquals(originalBookTime.selectedWeekdays, bookTime.selectedWeekdays)) {
                                         try {
                                             reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
                                         }
                                         catch (err) {
                                             return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                                                error: err
+                                                error: err,
                                             });
                                         }
                                     }
@@ -197,7 +196,7 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
             .then(function (dbUser) {
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                    error: 'User does not exist'
+                    error: 'User does not exist',
                 });
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)
@@ -217,7 +216,6 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
                             });
                             var breakAsObject = breaks.toObject();
                             delete breakAsObject._id;
-                            console.log(JSON.stringify(breakAsObject.breaks));
                             _.forEach(breakAsObject.breaks, function (currBreak) {
                                 var totalTime = dateUtil_1.default.minuteFromHour(currBreak.startTime) + currBreak.duration;
                                 if (totalTime > 1440) {
@@ -230,9 +228,8 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
                                     });
                                 }
                             });
-                            Breaks_1.Break.findOneAndUpdate({ service_id: breaks.service_id }, breakAsObject, { upsert: true }, function (updateError, no) {
+                            Breaks_1.Break.findOneAndUpdate({ service_id: breaks.service_id }, breakAsObject, { upsert: true }, function (updateError) {
                                 if (updateError) {
-                                    console.log(updateError);
                                     return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                                         error: 'Error occured during updating breaks.',
                                     });
@@ -287,7 +284,7 @@ exports.postSaveLeaves = function (req, res, next) { return __awaiter(void 0, vo
             .then(function (dbUser) {
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
-                    error: 'User does not exist'
+                    error: 'User does not exist',
                 });
             }
             bcrypt_1.default.compare(req.body.password, dbUser.password)
@@ -307,9 +304,8 @@ exports.postSaveLeaves = function (req, res, next) { return __awaiter(void 0, vo
                             });
                             var leavesAsObject = leaves.toObject();
                             delete leavesAsObject._id;
-                            Leaves_1.Leave.findOneAndUpdate({ service_id: leaves.service_id }, leavesAsObject, { upsert: true }, function (updateError, no) {
+                            Leaves_1.Leave.findOneAndUpdate({ service_id: leaves.service_id }, leavesAsObject, { upsert: true }, function (updateError) {
                                 if (updateError) {
-                                    console.log(updateError);
                                     return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                                         error: 'Error occured during updating leaves.',
                                     });
@@ -330,3 +326,6 @@ exports.postSaveLeaves = function (req, res, next) { return __awaiter(void 0, vo
         return [2 /*return*/];
     });
 }); };
+var areArreysEquals = function (firstArray, secondArray) {
+    return _.isEqual(_.sortBy(firstArray), _.sortBy(secondArray));
+};

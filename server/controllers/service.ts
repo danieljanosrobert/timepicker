@@ -88,10 +88,10 @@ export const getServiceSettings = async (req: Request, res: Response, next: Next
  * Creates a service on AdminUser creation.
  * @param service_id string of generated UUID that joins AdminUser with Service
  */
-export const saveService = async (req: any, res: Response, next: NextFunction, service_id: string) => {
+export const saveService = async (req: any, res: Response, next: NextFunction, serviceId: string) => {
   const service = new Service({
     user_email: req.body.email,
-    service_id: service_id,
+    service_id: serviceId,
     name: req.body.serviceName,
     description: '',
     hidden: true,
@@ -115,7 +115,7 @@ export const postUpdateService = async (req: any, res: Response, next: NextFunct
     .then((dbUser) => {
       if (!dbUser) {
         return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          error: 'User does not exist'
+          error: 'User does not exist',
         });
       }
       bcrypt.compare(req.body.password, dbUser.password)
@@ -155,7 +155,6 @@ export const postUpdateService = async (req: any, res: Response, next: NextFunct
                   if (imageId) {
                     destroyImage(imageId);
                   }
-                  console.log(updateError);
                   return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
                     error: 'Error occured during updating service.',
                   });
