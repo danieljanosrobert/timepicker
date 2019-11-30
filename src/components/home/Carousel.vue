@@ -17,11 +17,11 @@
       details: [
           {
             text: 'Gyors dinamikus keresés szolgáltatás neve alapján',
-            src: "https://res.cloudinary.com/timepicker/image/upload/v1575125906/dashboard/search_o3sroc.gif",
+            src: 'https://res.cloudinary.com/timepicker/image/upload/v1575125906/dashboard/search_o3sroc.gif',
           },
           {
             text: 'Saját szolgáltatói oldal, melyet bárki böngészhet',
-            src: "https://res.cloudinary.com/timepicker/image/upload/v1575130395/dashboard/book_s8eqev.gif",
+            src: 'https://res.cloudinary.com/timepicker/image/upload/v1575130395/dashboard/book_s8eqev.gif',
           },
       ],
     }),
