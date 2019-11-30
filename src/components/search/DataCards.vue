@@ -62,7 +62,68 @@
     data: () => ({
       search: '',
       isThereSearchingResult: false,
-      services: [],
+      services: [{
+        "name":"Fogarászat",
+        "image":"https://picsum.photos/400/200?random=1"
+        }, {
+        "name":"Almato",
+        "image":"https://picsum.photos/400/200?random=2"
+        }, {
+        "name":"Brunta",
+        "image":"https://picsum.photos/400/200?random=3"
+        }, {
+        "name":"Csóka & Citom",
+        "image":"https://picsum.photos/400/200?random=4"
+        }, {
+        "name":"Fereday",
+        "image":"https://picsum.photos/400/200?random=5"
+        }, {
+        "name":"Hatás-határ",
+        "image":"https://picsum.photos/400/200?random=6"
+        }, {
+        "name":"Zedds",
+        "image":"https://picsum.photos/400/200?random=7"
+        }, {
+        "name":"Cindera",
+        "image":"https://picsum.photos/400/200?random=8"
+        }, {
+        "name":"Loader",
+        "image":"https://picsum.photos/400/200?random=9"
+        }, {
+        "name":"Tamás és családja",
+        "image":"https://picsum.photos/400/200?random=10"
+        }, {
+        "name":"Sundays",
+        "image":"https://picsum.photos/400/200?random=11"
+        }, {
+        "name":"White - changes",
+        "image":"https://picsum.photos/400/200?random=12"
+        }, {
+        "name":"Rabbiathome",
+        "image":"https://picsum.photos/400/200?random=13"
+        }, {
+        "name":"Tel-emphaty",
+        "image":"https://picsum.photos/400/200?random=14"
+        }, {
+        "name":"Undergo",
+        "image":"https://picsum.photos/400/200?random=15"
+        }, {
+        "name":"Animal planned",
+        "image":"https://picsum.photos/400/200?random=16"
+        }, {
+        "name":"Tuzo",
+        "image":"https://picsum.photos/400/200?random=17"
+        }, {
+        "name":"Ritka",
+        "image":"https://picsum.photos/400/200?random=18"
+        }, {
+        "name":"Patyolat",
+        "image":"https://picsum.photos/400/200?random=19"
+        }, {
+        "name":"Mancs",
+        "image":"https://picsum.photos/400/200?random=20"
+        },
+      ],
       flagsDisabled: false,
     }),
     async mounted() {
@@ -89,7 +150,7 @@
         try {
           await serviceService.getAvailableServices()
             .then((services) => {
-              this.services = services.data;
+              this.services = this.services.concat(services.data);
               this.services.forEach((service) => this.$set(service, 'show', false));
             });
         } catch {
@@ -157,7 +218,7 @@
       },
       searching() {
         if (!this.search) {
-          return this.services;
+          return _.sortBy(this.services, 'name');
         }
         const search = this.search.toLowerCase();
 

@@ -22,8 +22,6 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
     lastName: req.body.lastName,
     firstName: req.body.firstName,
     city: req.body.city,
-    age: req.body.age,
-    selectedServiceTags: req.body.selectedServiceTags,
   });
   User.findOne({ email: user.email }, (err, existingUser) => {
     if (err) {
@@ -117,8 +115,6 @@ export const postGetUserData = async (req: Request, res: Response) => {
         lastName: dbUser.lastName,
         firstName: dbUser.firstName,
         city: dbUser.city,
-        age: dbUser.age,
-        selectedServiceTags: dbUser.selectedServiceTags,
       };
       return res.status(constants.HTTP_STATUS_OK).send(result);
     });
@@ -140,8 +136,6 @@ export const updateUserData = async (req: Request, res: Response) => {
             dbUser.lastName = req.body.lastName,
               dbUser.firstName = req.body.firstName,
               dbUser.city = req.body.city,
-              dbUser.age = req.body.age,
-              dbUser.selectedServiceTags = req.body.selectedServiceTags,
               dbUser.save();
             return res.sendStatus(constants.HTTP_STATUS_OK);
           } else {

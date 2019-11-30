@@ -7,8 +7,6 @@ export type UserDocument = mongoose.Document & {
   lastName: string;
   firstName: string;
   city: string;
-  age: string;
-  selectedServiceTags: [string];
 };
 
 const userSchema = new mongoose.Schema({
@@ -17,8 +15,6 @@ const userSchema = new mongoose.Schema({
   lastName: String,
   firstName: String,
   city: String,
-  age: String,
-  selectedServiceTags: [String],
 }, { timestamps: true });
 
 userSchema.pre('save', function save(next) {

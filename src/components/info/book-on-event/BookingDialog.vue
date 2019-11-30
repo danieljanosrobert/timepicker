@@ -49,10 +49,7 @@
                                 :error-messages="emailErrors" @input="$v.email.$touch()" @blur="$v.email.$touch()">
                   </v-text-field>
                 </v-col>
-                <v-col cols="12" sm="6">
-                  <v-select v-model="age" :disabled="$store.state.loggedInAsUser" :items="ages" label="Kor"></v-select>
-                </v-col>
-                <v-col cols="12" sm="6">
+                <v-col cols="12">
                   <v-text-field v-model="city" :disabled="$store.state.loggedInAsUser" label="Város"></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -98,7 +95,6 @@ export default {
     firstName: '',
     city: '',
     email: '',
-    age: '',
     event: {},
     serviceName: '',
     comment: '',
@@ -145,9 +141,6 @@ export default {
       !this.$v.email.required && errors.push(constants.validationErrorMessages.required);
       return errors;
     },
-    ages() {
-      return constants.ages;
-    },
   },
   watch: {
     dialog(val) {
@@ -190,7 +183,6 @@ export default {
               this.lastName = user.data.lastName;
               this.firstName = user.data.firstName;
               this.city = user.data.city;
-              this.age = user.data.age;
             });
         } catch {
         } finally {
@@ -209,7 +201,6 @@ export default {
           lastName: this.lastName,
           firstName: this.firstName,
           city: this.city,
-          age: this.age,
           comment: this.comment,
           start: this.event.start,
           status: this.isOwnService() ? constants.reservationStatuses[0] : constants.reservationStatuses[2],
@@ -243,7 +234,6 @@ export default {
       this.firstName = '';
       this.city = '';
       this.email = '';
-      this.age = '';
       this.event = {};
       this.serviceName = '';
       this.comment = '';

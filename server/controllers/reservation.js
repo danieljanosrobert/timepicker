@@ -183,7 +183,6 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                 lastName: req.body.lastName,
                 firstName: req.body.firstName,
                 city: req.body.city,
-                age: req.body.age,
                 comment: req.body.comment,
                 start: req.body.start,
                 status: req.body.status,

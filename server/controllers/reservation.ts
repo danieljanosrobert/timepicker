@@ -123,7 +123,6 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
         lastName: req.body.lastName,
         firstName: req.body.firstName,
         city: req.body.city,
-        age: req.body.age,
         comment: req.body.comment,
         start: req.body.start,
         status: req.body.status,

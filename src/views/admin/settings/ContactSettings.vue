@@ -218,7 +218,7 @@
   import { nameRegex } from '@/utils/customValidators';
   import constants from '@/utils/constants';
 
-  const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/timepicker/image/upload/v1573509010/profiles/profile_tcgkwt.png';
+  const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/timepicker/image/upload/v1573509010/contacts/profile_drcfrs.png';
 
   export default {
     name: 'ContactSettings',

@@ -10,7 +10,6 @@ var reservationSchema = new mongoose_1.default.Schema({
     lastName: String,
     firstName: String,
     city: String,
-    age: String,
     comment: String,
     start: String,
     status: String,

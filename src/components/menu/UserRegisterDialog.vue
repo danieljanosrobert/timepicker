@@ -45,20 +45,6 @@
                                 @input="$v.confirmPassword.$touch()" @blur="$v.confirmPassword.$touch()" required>
                   </v-text-field>
                 </v-col>
-                <v-col cols="12" sm="6">
-                  <v-select v-model="age"
-                          :items="ages"
-                          label="Kor"
-                  ></v-select>
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-autocomplete
-                          v-model="selectedServiceTags"
-                          :items="serviceTags"
-                          label="Előnyben részesített szolgáltatások"
-                          multiple
-                  ></v-autocomplete>
-                </v-col>
               </v-row>
             </v-form>
           </v-container>
@@ -93,8 +79,6 @@ export default {
     email: '',
     password: '',
     confirmPassword: '',
-    age: '',
-    selectedServiceTags: [],
     registerButtonDisabled: false,
   }),
   validations: {
@@ -172,12 +156,6 @@ export default {
       !this.$v.confirmPassword.required && errors.push(constants.validationErrorMessages.required);
       return errors;
     },
-    serviceTags() {
-      return constants.serviceTags;
-    },
-    ages() {
-      return constants.ages;
-    },
   },
   mounted() {
     this.$root.$on('openRegisterDialog', () => {
@@ -200,8 +178,6 @@ export default {
           lastName: this.lastName,
           firstName: this.firstName,
           city: this.city,
-          age: this.age,
-          selectedServiceTags: this.selectedServiceTags,
         });
         this.$store.dispatch('openSnackbar', {
           message: 'Sikeres regisztráció. Lépjen be az oldal használatához.',
@@ -229,8 +205,6 @@ export default {
       this.email = '' ;
       this.password = '' ;
       this.confirmPassword = '' ;
-      this.age = '' ;
-      this.selectedServiceTags = [] ;
     },
   },
 };

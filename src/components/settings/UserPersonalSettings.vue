@@ -20,17 +20,6 @@
         <v-col class="pa-6 pb-0 pr-3" cols="12" sm="6" md="4">
           <v-text-field v-model="city" label="Város"></v-text-field>
         </v-col>
-        <v-col class="pa-6 pb-0 pl-3" cols="12" sm="6">
-          <v-select v-model="age" :items="ages" label="Kor"></v-select>
-        </v-col>
-        <v-col class="pa-6 pb-0 pr-3" cols="12" sm="6">
-          <v-autocomplete
-            v-model="selectedServiceTags"
-            :items="serviceTags"
-            label="Előnyben részesített szolgáltatások"
-            multiple
-          ></v-autocomplete>
-        </v-col>
       </v-row>
     </v-form>
     <v-form class="pa-6" @submit.prevent="save">
@@ -63,8 +52,6 @@ export default {
     lastName: '',
     firstName: '',
     city: '',
-    age: '',
-    selectedServiceTags: [],
     password: '',
     buttonDisabled: false,
   }),
@@ -110,12 +97,6 @@ export default {
       !this.$v.password.required && errors.push(constants.validationErrorMessages.required);
       return errors;
     },
-    serviceTags() {
-      return constants.serviceTags;
-    },
-    ages() {
-      return constants.ages;
-    },
   },
   async mounted() {
     await this.fetchUserData();
@@ -130,8 +111,6 @@ export default {
             this.lastName = user.data.lastName;
             this.firstName = user.data.firstName;
             this.city = user.data.city;
-            this.age = user.data.age;
-            this.selectedServiceTags = user.data.selectedServiceTags;
           });
       } catch {
       } finally {
@@ -152,8 +131,6 @@ export default {
           lastName: this.lastName,
           firstName: this.firstName,
           city: this.city,
-          age: this.age,
-          selectedServiceTags: this.selectedServiceTags,
         });
         this.$store.dispatch('openSnackbar', {
           message: 'Személyes beállítások mentésre kerültek',

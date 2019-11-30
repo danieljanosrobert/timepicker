@@ -61,8 +61,6 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
             lastName: req.body.lastName,
             firstName: req.body.firstName,
             city: req.body.city,
-            age: req.body.age,
-            selectedServiceTags: req.body.selectedServiceTags,
         });
         Users_1.User.findOne({ email: user.email }, function (err, existingUser) {
             if (err) {
@@ -162,8 +160,6 @@ exports.postGetUserData = function (req, res) { return __awaiter(void 0, void 0,
                 lastName: dbUser.lastName,
                 firstName: dbUser.firstName,
                 city: dbUser.city,
-                age: dbUser.age,
-                selectedServiceTags: dbUser.selectedServiceTags,
             };
             return res.status(http2_1.constants.HTTP_STATUS_OK).send(result);
         });
@@ -187,8 +183,6 @@ exports.updateUserData = function (req, res) { return __awaiter(void 0, void 0, 
                     dbUser.lastName = req.body.lastName,
                         dbUser.firstName = req.body.firstName,
                         dbUser.city = req.body.city,
-                        dbUser.age = req.body.age,
-                        dbUser.selectedServiceTags = req.body.selectedServiceTags,
                         dbUser.save();
                     return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
                 }

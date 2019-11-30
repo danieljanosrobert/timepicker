@@ -18,10 +18,11 @@
                    :key="idx">
               {{data}}
             </v-col>
-            <v-col cols="8" offset="2" class="pt-6">
-              Ez csak egy prototípus, amely szakdolgozatként funkcionál. Kérem vegye figyelembe, hogy néhány funkció nem
-              az előírtak alapján működik. Ilyen funkciók például a footerben található gombok is, mivel nem szerettem
-              volna megosztani a szociális médiabeli elérhetőségeimet.
+            <v-col cols="8" offset="2" class="pt-6 text-justify">
+              <p class="text-center">Ez az alkalmazás egy prototípus. Kérem vegye figyelembe, hogy az oldalon szereplő adatok kitaláltak, bárminemű egyezésük a valósággal csupán a véletlen műve.</p> 
+              
+              <p>Amennyiben Ön személyes adatokat ad meg, azok mentésre kerülnek az alkalmazás adatbázisában. Személyes adatok törlésére az alkalmazásban egyelőre nincs lehetőség, ezt e-mail-ben kérvényezheti a h650011@stud.u-szeged.hu címen.<br/>
+              Személyes adatok törléséhez szükséges a regisztrációkor megadott Név szerepeltetése az e-mailben, illetve ha az e-mail nem a törlendő felhasználó rágisztrációjához használt címről érkezik, akkor a regisztrációkor használt e-mail címre egy megerősítő kódot kérvényezhet, mely megerősítésével törlöm a személyes adatokat. Megértését köszönöm!</p>
             </v-col>
           </v-row>
         </v-card-text>

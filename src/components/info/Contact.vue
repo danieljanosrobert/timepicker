@@ -73,7 +73,7 @@
 </template>
 
 <script>
-  const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/timepicker/image/upload/v1573509010/profiles/profile_tcgkwt.png';
+  const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/timepicker/image/upload/v1573509010/contacts/profile_drcfrs.png';
   import contactService from '@/service/contactService';
 
   export default {

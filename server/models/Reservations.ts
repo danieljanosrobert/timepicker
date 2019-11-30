@@ -6,7 +6,6 @@ export type ReservationDocument = mongoose.Document & {
   lastName: string;
   firstName: string;
   city: string;
-  age: string;
   comment: string;
   start: string;
   status: string;
@@ -18,7 +17,6 @@ const reservationSchema = new mongoose.Schema({
   lastName: String,
   firstName: String,
   city: String,
-  age: String,
   comment: String,
   start: String,
   status: String,

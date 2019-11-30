@@ -11,8 +11,6 @@ var userSchema = new mongoose_1.default.Schema({
     lastName: String,
     firstName: String,
     city: String,
-    age: String,
-    selectedServiceTags: [String],
 }, { timestamps: true });
 userSchema.pre('save', function save(next) {
     var user = this;

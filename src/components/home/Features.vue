@@ -6,22 +6,24 @@
              xs="12" offset-xs="0"
       >
         <v-row dense class="text-center">
-          <v-col lg="4" md="6" cols="12"
-                 class="py-6"
-                 v-for="(feature, idx) in features"
-                 :key="idx">
-            <v-row no-gutters>
-              <v-col cols="12" class="pb-6">
-                <v-icon x-large>{{feature.icon}}</v-icon>
-              </v-col>
-              <v-col cols="12">
-                <p style="font-size: 24px">{{feature.title}}</p>
-              </v-col>
-              <v-col cols="10" offset="1" class="font-alegreya">
-                <p>{{feature.description}}</p>
-              </v-col>
-            </v-row>
-          </v-col>
+          <template v-for="(feature, idx) in features">
+            <v-col lg="4" md="6" cols="12" 
+                  :offset-lg="idx === features.length - 1 ? 4 : 0"
+                  class="py-6"
+                  :key="idx">
+              <v-row no-gutters>
+                <v-col cols="12" class="pb-6">
+                  <v-icon x-large>{{feature.icon}}</v-icon>
+                </v-col>
+                <v-col cols="12">
+                  <p style="font-size: 24px">{{feature.title}}</p>
+                </v-col>
+                <v-col cols="10" offset="1" class="font-alegreya">
+                  <p>{{feature.description}}</p>
+                </v-col>
+              </v-row>
+            </v-col>
+          </template>
         </v-row>
       </v-col>
     </v-row>
@@ -35,26 +37,24 @@
         {
           title: 'E-mail küldés',
           icon: 'mdi-email-multiple',
-          description: 'Amint egy felhasználó lefoglal egy időpontot, arról az adminisztrátor e-mail-ben kap ' +
-              'értesítést, így nem kell megnyitva legyen az alkalmazás, elég ha csak interneteléréssel rendelkezik.',
+          description: 'Az alkalmazás e-mail értesítőt küld abban az esetben, ha egy időpont el ' +
+              'lett fogadva, vagy vissza lett mondva, benne a foglaláshoz szükséges információkkal. ',
         },
         {
-          title: 'Admin felület',
+          title: 'Szolgáltatói felület',
           icon: 'mdi-account-card-details',
-          description: 'Felület biztosítása, melyben az adminisztrátori feladatokat véghez lehet vinni, mint ' +
-              'például ráérések és szünetek megadása.',
+          description: 'Felület biztosítása szolgáltatók számára, melyen egyszerűen lehet időpontokat, ' +
+              'szüneteket és szabadságokat megadni többek közt.',
         },
         {
           title: 'Valós időben',
           icon: 'mdi-timer',
-          description: 'Minden valós időben történik. Amint egy időpont foglalásra kerül egy e-mail kerül ' +
-              'kiküldésre annak a személynek, akinél időpont lett foglalva.',
+          description: 'Amint egy időpont foglalásra kerül, az újratöltés nélkül megjelenik más felhasználóknak is.',
         },
         {
           title: 'Személyreszabott oldal',
           icon: 'mdi-brush',
-          description: 'Minden szöveget egyszerűen, felhasználóbarát módon lehet módosítani, törölni, illetve ' +
-              'hozzáadni.',
+          description: 'Biztosítjuk az üzenőfal szabad szerkesztésének lehetőségét.',
         },
         {
           title: 'Napi és heti naptárak',
@@ -68,21 +68,10 @@
               'kezelhetik oldalaikat telefonról, vagy tabletről.',
         },
         {
-          title: 'Múltbeli események megtekintése',
+          title: 'Saját események megtekintése',
           icon: 'mdi-backburger',
-          description: 'Lehetőség van múltban történt foglalások, visszamondások visszanézésére.',
-        },
-        {
-          title: 'Helymeghatározás',
-          icon: 'mdi-crosshairs-gps',
-          description: 'Amennyiben gps hozzáférés engedélyezve van, lehetőség van arra, hogy a felhasználóhoz ' +
-              'legközelebb található helyre történjen időpontfoglalás.',
-        },
-        {
-          title: 'Tájékozódás segítése',
-          icon: 'mdi-map',
-          description: 'Lehetőség van arra, hogy térképen megjelöljük a szolgáltatásnyújtás helyét, így könnyítve ' +
-              'a felhasználók navigációját.',
+          description: 'Lehetőség van saját foglalásaink böngészésére, lemondására, ' +
+              'szolgáltatókén a foglalt időpontok listázására, elfogadására, elutasítására',
         },
         {
           title: 'Időpontfoglalás otthonról',
@@ -93,7 +82,7 @@
         {
           title: 'Egyszerű keresés',
           icon: 'mdi-table-search',
-          description: 'Szolgáltatás keresése egyszerűen hely, szolgáltató, vagy típus szerint',
+          description: 'Szolgáltatás keresése név szerint, gyorsan.',
         },
         {
           title: 'Könnyű kezelés',

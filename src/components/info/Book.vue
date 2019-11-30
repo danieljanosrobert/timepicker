@@ -498,15 +498,15 @@ export default {
         return;
       }
       const overallDuration = shiftEndingMinute - shiftStartingMinute;
-      this.intervalMinutes = this.bookDuration; // < 60 ? this.bookDuration : 60;
+      this.intervalMinutes = this.bookDuration < 60 ? this.bookDuration : 60;
       const slotsNeeded = Math.ceil(overallDuration / this.intervalMinutes);
       if (slotsNeeded <= 12 && this.bookDuration % 10 === 0) {
         this.intervalCount = 24;
         this.intervalMinutes /= 2;
-        this.firstInterval = 2 * (shiftStartingMinute / this.bookDuration);
+        this.firstInterval = shiftStartingMinute / this.intervalMinutes;
       } else {
         this.intervalCount = slotsNeeded;
-        this.firstInterval = shiftStartingMinute / this.bookDuration;
+        this.firstInterval = shiftStartingMinute / this.intervalMinutes;
       }
     },
     setUpEventsInCalendar() {
