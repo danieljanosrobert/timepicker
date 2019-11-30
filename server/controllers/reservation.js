@@ -57,8 +57,15 @@ var dateUtil_1 = __importDefault(require("../utils/dateUtil"));
 var Leaves_1 = require("../models/Leaves");
 var AdminUsers_1 = require("../models/AdminUsers");
 var path_1 = __importDefault(require("path"));
+var pusher_1 = __importDefault(require("pusher"));
 var apiUrl = process.env.API_URL || 'http://localhost:8081';
 var homeUrl = process.env.HOME_URL || 'http://localhost:8080';
+var pusher = new pusher_1.default({
+    appId: process.env.PUSHER_APP_ID || '',
+    key: process.env.PUSHER_APP_KEY || '',
+    secret: process.env.PUSHER_APP_SECRET || '',
+    cluster: process.env.PUSHER_APP_CLUSTER || '',
+});
 /**
  * GET /my-reservations/:user_email
  * Return User's reservations
@@ -162,7 +169,7 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                     error: 'Start must exist',
                 })];
         }
-        serviceId = js_base64_1.Base64.decode(req.body.serviceId);
+        serviceId = js_base64_1.Base64.decode(req.body.service_id);
         Services_1.Service.findOne({ service_id: serviceId })
             .then(function (dbService) {
             if (!dbService) {
@@ -203,8 +210,8 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                             invocation: reservation.lastName + " " + reservation.firstName,
                             serviceName: dbService.name,
                             startTime: reservation.start,
-                            activateUrl: apiUrl + "/api/activate/" + req.body.serviceId + "/" + js_base64_1.Base64.encode(reservation.start),
-                            resignUrl: apiUrl + "/api/resign-by-email/" + req.body.serviceId + "/" + js_base64_1.Base64.encode(reservation.start) +
+                            activateUrl: apiUrl + "/api/activate/" + req.body.service_id + "/" + js_base64_1.Base64.encode(reservation.start),
+                            resignUrl: apiUrl + "/api/resign-by-email/" + req.body.service_id + "/" + js_base64_1.Base64.encode(reservation.start) +
                                 ("/" + js_base64_1.Base64.encode(reservation.email)),
                         },
                     };
@@ -222,12 +229,15 @@ exports.postReserve = function (req, res, next) { return __awaiter(void 0, void 
                             invocation: reservation.lastName + " " + reservation.firstName,
                             serviceName: dbService.name,
                             startTime: reservation.start,
-                            resignUrl: apiUrl + "/api/resign-by-email/" + req.body.serviceId + "/" + js_base64_1.Base64.encode(reservation.start) +
+                            resignUrl: apiUrl + "/api/resign-by-email/" + req.body.service_id + "/" + js_base64_1.Base64.encode(reservation.start) +
                                 ("/" + js_base64_1.Base64.encode(reservation.email)),
                         },
                     };
                     emailService_1.sendMail(constants_1.default.mailTypes.reservationAccepted, emailDetails);
                 }
+                pusher.trigger(req.body.service_id, 'fetch_needed', {
+                    details: "reservation added with status '" + reservation.status + "'",
+                });
                 res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
             });
         });
@@ -251,6 +261,9 @@ exports.activateReservation = function (req, res, next) { return __awaiter(void 
                     if (err) {
                         return res.sendFile(path_1.default.join(__dirname + '/views/linkError.html'));
                     }
+                    pusher.trigger(req.params.service_id, 'fetch_needed', {
+                        details: 'reservation activated via email',
+                    });
                     return res.redirect(homeUrl + '/successfully-activated');
                 });
             }
@@ -292,6 +305,9 @@ exports.resignByEmail = function (req, res, next) { return __awaiter(void 0, voi
                             },
                         };
                         emailService_1.sendMail(constants_1.default.mailTypes.reservationResigned, emailDetails);
+                        pusher.trigger(req.params.service_id, 'fetch_needed', {
+                            details: 'reservation resigned via email',
+                        });
                         return res.redirect(homeUrl + '/successfully-activated');
                     }
                     else {
@@ -344,6 +360,9 @@ exports.postAcceptReservation = function (req, res, next) { return __awaiter(voi
                                     },
                                 };
                                 emailService_1.sendMail(constants_1.default.mailTypes.reservationAccepted, emailDetails);
+                                pusher.trigger(req.body.service_id, 'fetch_needed', {
+                                    details: 'reservation accepted',
+                                });
                                 return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
                             }
                             else {
@@ -401,6 +420,9 @@ exports.postResignReservation = function (req, res, next) { return __awaiter(voi
                             },
                         };
                         emailService_1.sendMail(constants_1.default.mailTypes.reservationResigned, emailDetails);
+                        pusher.trigger(req.body.service_id, 'fetch_needed', {
+                            details: 'reservation resigned',
+                        });
                         return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
                     }
                     else {
@@ -459,6 +481,9 @@ exports.postDeleteReservation = function (req, res, next) { return __awaiter(voi
                                     },
                                 };
                                 emailService_1.sendMail(constants_1.default.mailTypes.reservationDeleted, emailDetails);
+                                pusher.trigger(req.body.service_id, 'fetch_needed', {
+                                    details: 'reservation deleted',
+                                });
                                 return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
                             }
                             else {

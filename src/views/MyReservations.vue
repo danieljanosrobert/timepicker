@@ -6,7 +6,7 @@
         <v-card-text>A művelet nem visszavonható</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="resignDialogVisible = false">Mégsem</v-btn>
           <v-btn dark color="error darken-4" :disabled="buttonsDisabled" @click="confirmResign">Lemondás</v-btn>
         </v-card-actions>
       </v-card>

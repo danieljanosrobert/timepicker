@@ -204,7 +204,7 @@ export default {
       this.$root.$emit('startLoading');
       try {
         await reservationService.reserve({
-          serviceId: this.$route.params.service_id,
+          service_id: this.$route.params.service_id,
           email: this.email,
           lastName: this.lastName,
           firstName: this.firstName,

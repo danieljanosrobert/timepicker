@@ -22,10 +22,10 @@ exports.sendMail = function (type, emailDetails) {
         return;
     }
     var transporter = nodemailer_1.default.createTransport({
-        service: 'Gmail',
+        service: process.env.SMTP_SERVICE || 'Gmail',
         auth: {
-            user: 'pickatimeidopontfoglalas@gmail.com',
-            pass: 'WKX^Xar6w^2w6sY%*V?puXThw_a_r?*j=ZXG86S3r86P=4g77zuEr6ma@JPwFCdKr_xDfMyJP',
+            user: process.env.SMTP_AUTH || 'pickatimeidopontfoglalas@gmail.com',
+            pass: process.env.SMTP_PASSWORD || 'password',
         },
     });
     readHTMLFile(__dirname + '/templates/' + type, function (err, html) {

@@ -117,8 +117,8 @@ export const getBreaks = async (req: any, res: Response, next: NextFunction) => 
   Break.findOne({ service_id: serviceId })
     .then((dbBreak) => {
       if (!dbBreak) {
-        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
-          error: 'Breaks not found',
+        return res.status(constants.HTTP_STATUS_OK).send({
+          details: 'Breaks not found',
         });
       }
       const result = {
@@ -197,8 +197,8 @@ export const getLeaves = async (req: any, res: Response, next: NextFunction) => 
   Leave.findOne({ service_id: serviceId })
     .then((dbLeave) => {
       if (!dbLeave) {
-        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
-          error: 'Leaves not found',
+        return res.status(constants.HTTP_STATUS_OK).send({
+          details: 'Leaves not found',
         });
       }
       const result = {

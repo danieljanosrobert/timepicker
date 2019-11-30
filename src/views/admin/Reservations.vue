@@ -6,7 +6,7 @@
         <v-card-text>A művelet nem visszavonható</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="acceptDialogVisible = false">Mégsem</v-btn>
           <v-btn dark color="success" :disabled="buttonsDisabled" @click="confirmAccept">Elfogadás</v-btn>
         </v-card-actions>
       </v-card>
@@ -19,7 +19,7 @@
         <v-textarea class="mx-6" v-model="refuseMessage" label="Elutasítás oka (opcionális)"> </v-textarea>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="refuseDialogVisible = false">Mégsem</v-btn>
           <v-btn dark color="error darken-4" :disabled="buttonsDisabled" @click="confirmRefuse">Elutasítás</v-btn>
         </v-card-actions>
       </v-card>
@@ -31,7 +31,7 @@
         <v-card-text>A művelet nem visszavonható</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn dark color="brown darken-1 pa-2" @click="endOperation">Mégsem</v-btn>
+          <v-btn dark color="brown darken-1 pa-2" @click="deleteDialogVisible = false">Mégsem</v-btn>
           <v-btn dark color="error darken-4" :disabled="buttonsDisabled" @click="confirmDelete">Törlés</v-btn>
         </v-card-actions>
       </v-card>
@@ -160,6 +160,10 @@ import dateUtil from '@/utils/dateUtil';
 import constants from '@/utils/constants';
 import reservationService from '@/service/reservationService';
 import { Base64 } from 'js-base64';
+import Pusher from 'pusher-js';
+
+const PUSHER_APP_KEY = '4097d7ebfd8b93a9de44';
+const PUSHER_CLUSTER = 'eu';
 
 export default {
   name: 'Reservations',
@@ -232,6 +236,9 @@ export default {
       ],
     };
   },
+  created() {
+    this.subscribeToOwnChannel();
+  },
   async mounted() {
     await this.fetchReservations();
   },
@@ -264,6 +271,13 @@ export default {
     },
   },
   methods: {
+    subscribeToOwnChannel() {
+      const pusher = new Pusher(PUSHER_APP_KEY, { cluster: PUSHER_CLUSTER });
+      pusher.subscribe(this.$store.state.ownServiceId);
+      pusher.bind('fetch_needed', () => {
+        this.fetchReservations();
+      });
+    },
     async fetchReservations() {
       this.$root.$emit('startLoading');
       try {

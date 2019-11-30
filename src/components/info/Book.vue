@@ -159,6 +159,10 @@ import reservationService from '@/service/reservationService';
 import dateUtil from '@/utils/dateUtil';
 import { Base64 } from 'js-base64';
 import constants from '@/utils/constants';
+import Pusher from 'pusher-js';
+
+const PUSHER_APP_KEY = '4097d7ebfd8b93a9de44';
+const PUSHER_CLUSTER = 'eu';
 
 const FREE_EVENT = 'info';
 const OCCUPIED_EVENT = 'error';
@@ -222,6 +226,9 @@ export default {
     events: [],
     renderedEventDates: [],
   }),
+  created() {
+    this.subscribeToOwnChannel();
+  },
   computed: {
     title() {
       const { start, end } = this;
@@ -268,6 +275,13 @@ export default {
     });
   },
   methods: {
+    subscribeToOwnChannel() {
+      const pusher = new Pusher(PUSHER_APP_KEY, { cluster: PUSHER_CLUSTER });
+      pusher.subscribe(this.$route.params.service_id);
+      pusher.bind('fetch_needed', () => {
+        this.refreshEvents();
+      });
+    },
     async refreshEvents() {
       this.renderedEventDates = [];
       this.events = [];
@@ -484,7 +498,7 @@ export default {
         return;
       }
       const overallDuration = shiftEndingMinute - shiftStartingMinute;
-      this.intervalMinutes = this.bookDuration < 60 ? this.bookDuration : 60;
+      this.intervalMinutes = this.bookDuration; // < 60 ? this.bookDuration : 60;
       const slotsNeeded = Math.ceil(overallDuration / this.intervalMinutes);
       if (slotsNeeded <= 12 && this.bookDuration % 10 === 0) {
         this.intervalCount = 24;

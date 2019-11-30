@@ -10,10 +10,17 @@ import dateUtil from '../utils/dateUtil';
 import { Leave } from '../models/Leaves';
 import { AdminUser } from '../models/AdminUsers';
 import path from 'path';
+import Pusher from 'pusher';
 
 const apiUrl = process.env.API_URL || 'http://localhost:8081';
 const homeUrl = process.env.HOME_URL || 'http://localhost:8080';
 
+const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID || '',
+  key: process.env.PUSHER_APP_KEY || '',
+  secret: process.env.PUSHER_APP_SECRET || '',
+  cluster: process.env.PUSHER_APP_CLUSTER || '',
+});
 
 /**
  * GET /my-reservations/:user_email
@@ -102,7 +109,7 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
       error: 'Start must exist',
     });
   }
-  const serviceId = Base64.decode(req.body.serviceId);
+  const serviceId = Base64.decode(req.body.service_id);
   Service.findOne({ service_id: serviceId })
     .then((dbService) => {
       if (!dbService) {
@@ -143,8 +150,8 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
                 invocation: `${reservation.lastName} ${reservation.firstName}`,
                 serviceName: dbService.name,
                 startTime: reservation.start,
-                activateUrl: `${apiUrl}/api/activate/${req.body.serviceId}/${Base64.encode(reservation.start)}`,
-                resignUrl: `${apiUrl}/api/resign-by-email/${req.body.serviceId}/${Base64.encode(reservation.start)}` +
+                activateUrl: `${apiUrl}/api/activate/${req.body.service_id}/${Base64.encode(reservation.start)}`,
+                resignUrl: `${apiUrl}/api/resign-by-email/${req.body.service_id}/${Base64.encode(reservation.start)}` +
                   `/${Base64.encode(reservation.email)}`,
               },
             };
@@ -161,12 +168,15 @@ export const postReserve = async (req: any, res: Response, next: NextFunction) =
                 invocation: `${reservation.lastName} ${reservation.firstName}`,
                 serviceName: dbService.name,
                 startTime: reservation.start,
-                resignUrl: `${apiUrl}/api/resign-by-email/${req.body.serviceId}/${Base64.encode(reservation.start)}` +
+                resignUrl: `${apiUrl}/api/resign-by-email/${req.body.service_id}/${Base64.encode(reservation.start)}` +
                   `/${Base64.encode(reservation.email)}`,
               },
             };
             sendMail(appConstants.mailTypes.reservationAccepted, emailDetails);
           }
+          pusher.trigger(req.body.service_id, 'fetch_needed', {
+            details: `reservation added with status '${reservation.status}'`,
+          });
           res.sendStatus(constants.HTTP_STATUS_OK);
         });
     });
@@ -187,6 +197,9 @@ export const activateReservation = async (req: any, res: Response, next: NextFun
           if (err) {
             return res.sendFile(path.join(__dirname + '/views/linkError.html'));
           }
+          pusher.trigger(req.params.service_id, 'fetch_needed', {
+            details: 'reservation activated via email',
+          });
           return res.redirect(homeUrl + '/successfully-activated');
         });
       } else {
@@ -224,6 +237,9 @@ export const resignByEmail = async (req: any, res: Response, next: NextFunction)
                 },
               };
               sendMail(appConstants.mailTypes.reservationResigned, emailDetails);
+              pusher.trigger(req.params.service_id, 'fetch_needed', {
+                details: 'reservation resigned via email',
+              });
               return res.redirect(homeUrl + '/successfully-activated');
             } else {
               return res.sendFile(path.join(__dirname + '/views/linkError.html'));
@@ -271,6 +287,9 @@ export const postAcceptReservation = async (req: any, res: Response, next: NextF
                       },
                     };
                     sendMail(appConstants.mailTypes.reservationAccepted, emailDetails);
+                    pusher.trigger(req.body.service_id, 'fetch_needed', {
+                      details: 'reservation accepted',
+                    });
                     return res.sendStatus(constants.HTTP_STATUS_OK);
                   } else {
                     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
@@ -322,6 +341,9 @@ export const postResignReservation = async (req: any, res: Response, next: NextF
                 },
               };
               sendMail(appConstants.mailTypes.reservationResigned, emailDetails);
+              pusher.trigger(req.body.service_id, 'fetch_needed', {
+                details: 'reservation resigned',
+              });
               return res.sendStatus(constants.HTTP_STATUS_OK);
             } else {
               return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
@@ -375,6 +397,9 @@ export const postDeleteReservation = async (req: any, res: Response, next: NextF
                       },
                     };
                     sendMail(appConstants.mailTypes.reservationDeleted, emailDetails);
+                    pusher.trigger(req.body.service_id, 'fetch_needed', {
+                      details: 'reservation deleted',
+                    });
                     return res.sendStatus(constants.HTTP_STATUS_OK);
                   } else {
                     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({

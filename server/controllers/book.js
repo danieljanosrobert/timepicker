@@ -174,8 +174,8 @@ exports.getBreaks = function (req, res, next) { return __awaiter(void 0, void 0,
         Breaks_1.Break.findOne({ service_id: serviceId })
             .then(function (dbBreak) {
             if (!dbBreak) {
-                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
-                    error: 'Breaks not found',
+                return res.status(http2_1.constants.HTTP_STATUS_OK).send({
+                    details: 'Breaks not found',
                 });
             }
             var result = {
@@ -262,8 +262,8 @@ exports.getLeaves = function (req, res, next) { return __awaiter(void 0, void 0,
         Leaves_1.Leave.findOne({ service_id: serviceId })
             .then(function (dbLeave) {
             if (!dbLeave) {
-                return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
-                    error: 'Leaves not found',
+                return res.status(http2_1.constants.HTTP_STATUS_OK).send({
+                    details: 'Leaves not found',
                 });
             }
             var result = {
