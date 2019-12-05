@@ -131,9 +131,8 @@ async function tryUploadImage(req: any, res: any, next: any) {
   try {
     return await uploadImage('contacts', req, res, next);
   } catch (err) {
-    res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-      error: 'An error occured during the upload.',
+    return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+      error: 'An error occured during upload.',
     });
   }
-  return null;
 }

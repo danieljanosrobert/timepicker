@@ -78,7 +78,7 @@ export const postSaveBookTime = async (req: any, res: Response, next: NextFuncti
                       if (originalBookTime.startTime !== bookTime.startTime
                         || originalBookTime.bookDuration !== bookTime.bookDuration
                         || originalBookTime.endTime !== bookTime.endTime
-                        || !areArreysEquals(originalBookTime.selectedWeekdays, bookTime.selectedWeekdays)) {
+                        || !areArraysEqual(originalBookTime.selectedWeekdays, bookTime.selectedWeekdays)) {
                         try {
                           reservationController.updateReservationsIfNeeded(bookTime, originalBookTime);
                         } catch (err) {
@@ -117,8 +117,8 @@ export const getBreaks = async (req: any, res: Response, next: NextFunction) => 
   Break.findOne({ service_id: serviceId })
     .then((dbBreak) => {
       if (!dbBreak) {
-        return res.status(constants.HTTP_STATUS_OK).send({
-          details: 'Breaks not found',
+        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
+          error: 'Breaks not found',
         });
       }
       const result = {
@@ -197,8 +197,8 @@ export const getLeaves = async (req: any, res: Response, next: NextFunction) => 
   Leave.findOne({ service_id: serviceId })
     .then((dbLeave) => {
       if (!dbLeave) {
-        return res.status(constants.HTTP_STATUS_OK).send({
-          details: 'Leaves not found',
+        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({
+          error: 'Leaves not found',
         });
       }
       const result = {
@@ -255,6 +255,6 @@ export const postSaveLeaves = async (req: any, res: Response, next: NextFunction
     });
 };
 
-const areArreysEquals = (firstArray: any[], secondArray: any[]) => {
+const areArraysEqual = (firstArray: any[], secondArray: any[]) => {
   return _.isEqual(_.sortBy(firstArray), _.sortBy(secondArray));
 };

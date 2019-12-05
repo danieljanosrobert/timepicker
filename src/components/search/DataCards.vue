@@ -89,7 +89,7 @@
         try {
           await serviceService.getAvailableServices()
             .then((services) => {
-              this.services = services.data;
+              this.services = _.sortBy(services.data, (service) => _.lowerCase(service.name));
               this.services.forEach((service) => this.$set(service, 'show', false));
             });
         } catch {

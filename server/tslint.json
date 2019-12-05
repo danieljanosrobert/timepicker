@@ -18,5 +18,13 @@
     "quotemark": [true, "single"],
     "no-empty": [true, "allow-empty-catch"],
     "no-unused-expression": [true, "allow-fast-null-checks"]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*.test.ts"],
+      "rules": {
+          "no-unused-expressions": "off"
+      }
+    }
+  ]
 }

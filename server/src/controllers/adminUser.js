@@ -56,7 +56,7 @@ var serviceController = __importStar(require("./service"));
 var contactController = __importStar(require("./contact"));
 var messageController = __importStar(require("./messages"));
 /**
- * POST /register
+ * POST /admin/register
  * Sign up usign email and password.
  */
 exports.postRegister = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
@@ -66,11 +66,12 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
         if (!validationErrorResult.isEmpty()) {
             return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Validation error' })];
         }
+        if (!req.body.name || !req.body.serviceName) {
+            return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Invalid fields' })];
+        }
         user = new AdminUsers_1.AdminUser({
             email: req.body.email,
             password: req.body.password,
-            name: req.body.name,
-            serviceName: req.body.serviceName,
         });
         AdminUsers_1.AdminUser.findOne({ email: user.email }, function (err, existingUser) {
             if (err) {
@@ -95,13 +96,17 @@ exports.postRegister = function (req, res, next) { return __awaiter(void 0, void
         return [2 /*return*/];
     });
 }); };
+/**
+ * POST /admin/auth
+ * Returns OK is middleware says it's authenticated
+ */
 exports.auth = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         return [2 /*return*/, res.sendStatus(http2_1.constants.HTTP_STATUS_OK)];
     });
 }); };
 /**
- * POST /login
+ * POST /admin/login
  * Sign in using email and password.
  */
 exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {

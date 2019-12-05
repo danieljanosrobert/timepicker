@@ -110,7 +110,7 @@
                   <v-switch
                     class="no-hover"
                     v-model="filters.onlyAfterEqualToday"
-                    label="Ne jelenjenek meg múltbeli keresések"
+                    label="Ne jelenjenek meg múltbeli foglalások"
                   ></v-switch>
                 </v-col>
               </v-row>

@@ -11,6 +11,7 @@
             <span style="font-size: 20px" class="font-weight-light">a</span>
             <span style="font-size: 26px" class="font-alegreya font-italic">Time</span>
           </router-link>
+          <span style="font-size: 12px" v-if="userEmail">: {{userEmail}}</span>
         </v-toolbar-title>
       </v-col>
     </v-row>
@@ -18,6 +19,7 @@
 </template>
 
 <script>
+  import { mapState } from 'vuex';
 
   const HOME = 'home';
   export default {
@@ -25,6 +27,7 @@
     data: () => ({
       invertedScrollProp: false,
       drawer: false,
+      userEmail: '',
     }),
     mounted() {
       this.isScrollInverted();
@@ -33,6 +36,14 @@
       $route(to, from) {
         this.isScrollInverted();
       },
+      email(newValue, oldValue) {
+        this.userEmail = _.split(newValue, '@')[0];
+      },
+    },
+    computed: {
+      ...mapState({
+        email: 'loggedInUserEmail',
+      }),
     },
     methods: {
       isScrollInverted() {

@@ -9,7 +9,7 @@
   </v-app>
 </template>
 
-<script lang="ts">
+<script>
   import DrawerComponent from './components/Drawer.vue';
   import FooterComponent from './components/Footer.vue';
   import MenuBarComponent from './components/MenuBar.vue';
@@ -54,7 +54,7 @@
       },
     },
     methods: {
-      showActivationSuccessfull(to: any, from: any) {
+      showActivationSuccessfull(to, from) {
         if (to.name === HOME && from.name === SUCCESSFULLY_ACTIVATED) {
           this.$store.dispatch('openSnackbar', {
             message: 'Sikeres művelet',
@@ -68,7 +68,7 @@
       routerViewIsLandingPage() {
         this.isLandingPage = _.includes(LANDING_PAGES, this.$route.name);
       },
-      refreshAboutPageIfServiceChange(to: any, from: any) {
+      refreshAboutPageIfServiceChange(to, from) {
         if (to.name === ABOUT && from.name === ABOUT && from.params && to.params && from.params !== to.params) {
           this.$root.$emit('reFetchContent');
         }

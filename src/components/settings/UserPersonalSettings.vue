@@ -7,17 +7,17 @@
     </v-col>
     <v-form class="pa-0" id="register-form" @submit.prevent="register">
       <v-row class="pb-4 ma-0">
-        <v-col class="pa-6 pb-0 pr-3" cols="12" sm="6" md="4">
+        <v-col class="pa-6 pb-0 px-3" cols="12" sm="6" md="4">
           <v-text-field v-model="lastName" label="Vezetéknév" required :error-messages="lastNameErrors"
                         @input="$v.lastName.$touch()" @blur="$v.lastName.$touch()">
           </v-text-field>
         </v-col>
-        <v-col class="pa-6 pb-0 pl-3" cols="12" sm="6" md="4">
+        <v-col class="pa-6 pb-0 px-3" cols="12" sm="6" md="4">
           <v-text-field v-model="firstName" label="Keresztnév" required :error-messages="firstNameErrors"
                         @input="$v.firstName.$touch()" @blur="$v.firstName.$touch()">
           </v-text-field>
         </v-col>
-        <v-col class="pa-6 pb-0 pr-3" cols="12" sm="6" md="4">
+        <v-col class="pa-6 pb-0 px-3" cols="12" sm="6" md="4">
           <v-text-field v-model="city" label="Város"></v-text-field>
         </v-col>
       </v-row>

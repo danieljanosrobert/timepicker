@@ -9,7 +9,7 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script>
   import Vue from 'vue';
   import Parallax from '@/components/home/Parallax.vue';
   import Carousel from '@/components/home/Carousel.vue';
@@ -25,7 +25,7 @@
       this.isPageAtTop();
     },
     methods: {
-      isPageAtTop(): void {
+      isPageAtTop() {
         if (this.isAtTop) {
           this.isAtTop = false;
         }

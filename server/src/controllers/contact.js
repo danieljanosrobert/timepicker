@@ -195,11 +195,10 @@ function tryUploadImage(req, res, next) {
                 case 1: return [2 /*return*/, _a.sent()];
                 case 2:
                     err_1 = _a.sent();
-                    res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-                        error: 'An error occured during the upload.',
-                    });
-                    return [3 /*break*/, 3];
-                case 3: return [2 /*return*/, null];
+                    return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+                            error: 'An error occured during upload.',
+                        })];
+                case 3: return [2 /*return*/];
             }
         });
     });

@@ -170,7 +170,7 @@
               {title: 'Foglalás', icon: 'mdi-clock-start', url: '/settings/book'},
               {title: 'Üzenőfal', icon: 'mdi-email', url: '/settings/message-board'},
               {title: 'Elérhetőségek', icon: 'mdi-account-supervisor-circle', url: '/settings/contact'},
-              {title: 'Jelszó megváltoztatása', icon: 'mdi-lock', url: '/settings/change-password'},
+              {title: 'Jelszóváltoztatás', icon: 'mdi-lock', url: '/settings/change-password'},
             ],
           },
         ],
@@ -208,7 +208,7 @@
         }
         this.$store.dispatch('openSnackbar', {
           message: 'Sikeres kijelentkezés',
-          type: 'warning',
+          type: 'success',
         });
       },
       openRegisterDialog() {

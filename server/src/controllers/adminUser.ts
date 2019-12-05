@@ -10,7 +10,7 @@ import * as contactController from './contact';
 import * as messageController from './messages';
 
 /**
- * POST /register
+ * POST /admin/register
  * Sign up usign email and password.
  */
 export const postRegister = async (req: Request, res: Response, next: NextFunction) => {
@@ -20,11 +20,14 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
   if (!validationErrorResult.isEmpty()) {
     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Validation error' });
   }
+
+  if (!req.body.name || !req.body.serviceName) {
+    return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Invalid fields' });
+  }
+
   const user = new AdminUser({
     email: req.body.email,
     password: req.body.password,
-    name: req.body.name,
-    serviceName: req.body.serviceName,
   });
   AdminUser.findOne({ email: user.email }, (err, existingUser) => {
     if (err) {
@@ -43,17 +46,23 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
       serviceController.saveService(req, res, next, serviceId);
       contactController.saveContact(req, res, next, serviceId);
       messageController.createMessage(req, res, next, serviceId);
+
       jwtSignUser(res, { email: user.email }, undefined, ADMIN);
     });
   });
 };
+
+/**
+ * POST /admin/auth
+ * Returns OK is middleware says it's authenticated
+ */
 
 export const auth = async (req: Request, res: Response) => {
   return res.sendStatus(constants.HTTP_STATUS_OK);
 };
 
 /**
- * POST /login
+ * POST /admin/login
  * Sign in using email and password.
  */
 export const postLogin = async (req: Request, res: Response) => {

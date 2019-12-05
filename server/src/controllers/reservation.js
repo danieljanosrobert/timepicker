@@ -509,7 +509,7 @@ exports.postDeleteReservation = function (req, res, next) { return __awaiter(voi
     });
 }); };
 /**
- * If starting time, ending time, or duration changed during updating a book-time
+ * If starting time, ending time, weekdays, or duration changed during updating a book-time
  *   moves forward the reservations that are affected by the update to a valid book-time.
  * @param bookTime The book-time that is in update progress
  * @param originalBookTime The book-time that was originally saved
