@@ -92,7 +92,9 @@
             message: 'Sikeres bejelentkezés',
             type: 'success',
           });
-          this.$router.push('/');
+          if (this.$router.currentRoute.path !== '/') {
+            this.$router.push('/');
+          }
         } catch (err) {
           this.$store.dispatch('openSnackbar', {
             message: err.response && _.get(constants.apiValidationMessages, err.response.data.error)
