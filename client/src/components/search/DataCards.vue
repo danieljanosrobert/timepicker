@@ -11,8 +11,8 @@
         </v-col>
         <v-col v-for="(item, i) in searching" :key="i" cols="12" md="4">
           <v-card>
-            <v-img :src="getImageForService(item.image)" class="white--text align-end" gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-                    height="200px">
+            <v-img :src="getImageForService(item.image)" class="white--text align-end cursor-pointer" gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                    height="200px" @click.stop="openAboutPage(item.service_id)">
                     <v-col v-if="$store.state.loggedInAsUser" cols="12">
                       <v-btn :disabled="flagsDisabled" absolute top right icon @click.stop="toggleFlagged(item)">
                         <v-icon dark :color="item.flagged? 'warning lighten-4' : ''">mdi-flag</v-icon>

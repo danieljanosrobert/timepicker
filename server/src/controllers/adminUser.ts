@@ -53,15 +53,6 @@ export const postRegister = async (req: Request, res: Response, next: NextFuncti
 };
 
 /**
- * POST /admin/auth
- * Returns OK is middleware says it's authenticated
- */
-
-export const auth = async (req: Request, res: Response) => {
-  return res.sendStatus(constants.HTTP_STATUS_OK);
-};
-
-/**
  * POST /admin/login
  * Sign in using email and password.
  */
@@ -76,20 +67,22 @@ export const postLogin = async (req: Request, res: Response) => {
     email: req.body.email,
     password: req.body.password,
   });
-  AdminUser.findOne({ email: user.email })
-    .then((dbUser) => {
-      if (!dbUser) {
-        return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
-      }
-      bcrypt.compare(user.password, dbUser.password)
-        .then((isMatch) => {
-          if (isMatch) {
-            jwtSignUser(res, { email: user.email }, undefined, ADMIN);
-          } else {
-            return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
-          }
-        });
-    });
+  AdminUser.findOne({ email: user.email }, (err, dbUser) => {
+    if (err) {
+      return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+    }
+    if (!dbUser) {
+      return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
+    }
+    bcrypt.compare(user.password, dbUser.password)
+      .then((isMatch) => {
+        if (isMatch) {
+          jwtSignUser(res, { email: user.email }, undefined, ADMIN);
+        } else {
+          return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
+        }
+      });
+  });
 };
 
 /**
@@ -103,20 +96,26 @@ export const postChangePassword = async (req: Request, res: Response) => {
   if (!validationErrorResult.isEmpty()) {
     return res.status(constants.HTTP_STATUS_BAD_REQUEST).send('Validation error');
   }
-  AdminUser.findOne({ email: req.body.user_email })
-    .then((dbUser) => {
-      if (!dbUser) {
-        return res.status(constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
-      }
-      bcrypt.compare(req.body.oldPassword, dbUser.password)
-        .then((isMatch) => {
-          if (isMatch) {
-            dbUser.password = req.body.password;
-            dbUser.save();
-            return res.sendStatus(constants.HTTP_STATUS_OK);
-          } else {
-            return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
-          }
-        });
-    });
+  AdminUser.findOne({ email: req.body.user_email }, (err, dbUser) => {
+    if (err) {
+      return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+    }
+    if (!dbUser) {
+      return res.status(constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
+    }
+    bcrypt.compare(req.body.oldPassword, dbUser.password)
+      .then((isMatch) => {
+        if (isMatch) {
+          dbUser.password = req.body.password;
+          dbUser.save((saveError) => {
+            if (saveError) {
+              return res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Error during save' });
+            }
+          });
+          return res.sendStatus(constants.HTTP_STATUS_OK);
+        } else {
+          return res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect password' });
+        }
+      });
+  });
 };

@@ -51,12 +51,14 @@ var Services_1 = require("../models/Services");
  * GET /settings/contact/:service_id
  * Returns the contact info of Service with given service_id
  */
-exports.getContact = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getContact = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = js_base64_1.Base64.decode(req.params.service_id);
-        Contacts_1.Contact.findOne({ service_id: serviceId })
-            .then(function (dbContact) {
+        Contacts_1.Contact.findOne({ service_id: serviceId }, function (err, dbContact) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbContact) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                     error: 'Contact not found',
@@ -101,10 +103,12 @@ exports.saveContact = function (req, res, next, serviceId) { return __awaiter(vo
  * POST /settings/contact
  * Updates Service's contact info.
  */
-exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.postSaveContact = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
-            .then(function (dbUser) {
+        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email }, function (adminUserError, dbUser) {
+            if (adminUserError) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
                     error: 'User does not exist',
@@ -113,12 +117,14 @@ exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, v
             bcrypt_1.default.compare(req.body.password, dbUser.password)
                 .then(function (isMatch) {
                 if (isMatch) {
-                    Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
-                        .then(function (dbService) { return __awaiter(void 0, void 0, void 0, function () {
+                    Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id', function (serviceError, dbService) { return __awaiter(void 0, void 0, void 0, function () {
                         var image, imageId, deleteImage, contact, contactAsObject;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
+                                    if (serviceError) {
+                                        return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' })];
+                                    }
                                     if (!dbService) {
                                         return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                                                 error: 'Service not found',
@@ -127,7 +133,7 @@ exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, v
                                     image = null;
                                     deleteImage = req.body.deleteImage === 'true';
                                     if (!req.file) return [3 /*break*/, 2];
-                                    return [4 /*yield*/, tryUploadImage(req, res, next)];
+                                    return [4 /*yield*/, tryUploadImage(req, res)];
                                 case 1:
                                     image = _a.sent();
                                     _a.label = 2;
@@ -148,8 +154,10 @@ exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, v
                                         delete contactAsObject.image_id;
                                     }
                                     else {
-                                        Contacts_1.Contact.findOne({ service_id: contact.service_id })
-                                            .then(function (dbContact) {
+                                        Contacts_1.Contact.findOne({ service_id: contact.service_id }, function (contactError, dbContact) {
+                                            if (contactError) {
+                                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+                                            }
                                             if (dbContact) {
                                                 imageId = dbContact.image_id;
                                             }
@@ -184,14 +192,14 @@ exports.postSaveContact = function (req, res, next) { return __awaiter(void 0, v
         return [2 /*return*/];
     });
 }); };
-function tryUploadImage(req, res, next) {
+function tryUploadImage(req, res) {
     return __awaiter(this, void 0, void 0, function () {
         var err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, image_1.uploadImage('contacts', req, res, next)];
+                    return [4 /*yield*/, image_1.uploadImage('contacts', req, res)];
                 case 1: return [2 /*return*/, _a.sent()];
                 case 2:
                     err_1 = _a.sent();

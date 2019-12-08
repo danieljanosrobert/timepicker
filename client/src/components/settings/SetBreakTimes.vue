@@ -114,20 +114,14 @@
     data: () => ({
       password: '',
       breaks: [],
-      breakMinuteFlag: [],
       buttonDisabled: false,
     }),
     async mounted() {
       this.$root.$on('breaksDeleted', async () => {
         this.password = '';
         this.breaks = [];
-        this.breakMinuteFlag = [];
       });
       await this.fetchBreakSettings();
-
-      this.breaks.forEach((actualBreak, index) => {
-        this.breakMinuteFlag.push('breakNr' + index);
-      });
     },
     validations: {
       password: {
@@ -178,6 +172,9 @@
         this.buttonDisabled = true;
         this.$root.$emit('startLoading');
         try {
+          _.remove(this.breaks, (actualBreak) => {
+            return !actualBreak.date || !actualBreak.startTime || !actualBreak.duration;
+          });
           await bookService.saveBreaks({
             user_email: this.$store.state.loggedInUserEmail,
             password: this.password,
@@ -202,11 +199,9 @@
       },
       addBreak() {
         this.breaks.push({date: '', startTime: '', duration: '', always: false});
-        this.breakMinuteFlag.push('breakNr' + (this.breaks.length - 1));
       },
       deleteBreak(index) {
         this.breaks.splice(index, 1);
-        this.breakMinuteFlag.splice(index, 1);
       },
       setDuration(index) {
         if (this.breaks[index].duration > 120) {

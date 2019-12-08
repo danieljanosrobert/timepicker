@@ -25,7 +25,13 @@ app.use(middleware.log);
 const dbUrl = process.env.DB_URL || 'localhost';
 const port = process.env.PORT || 8081;
 
-mongoose.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
+mongoose.connect(dbUrl, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+  keepAlive: true,
+  keepAliveInitialDelay: 300000,
+ });
 const db = mongoose.connection;
 // tslint:disable-next-line:no-console
 db.on('error', console.error.bind(console, 'connection error:'));

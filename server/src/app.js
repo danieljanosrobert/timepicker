@@ -25,7 +25,13 @@ app.use(body_parser_1.default.json());
 app.use(middleware_1.middleware.log);
 var dbUrl = process.env.DB_URL || 'localhost';
 var port = process.env.PORT || 8081;
-mongoose_1.default.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
+mongoose_1.default.connect(dbUrl, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    keepAlive: true,
+    keepAliveInitialDelay: 300000,
+});
 var db = mongoose_1.default.connection;
 // tslint:disable-next-line:no-console
 db.on('error', console.error.bind(console, 'connection error:'));

@@ -56,15 +56,19 @@ exports.getUsersFlags = function (req, res) { return __awaiter(void 0, void 0, v
     var userEmail;
     return __generator(this, function (_a) {
         userEmail = js_base64_1.Base64.decode(req.params.user_email);
-        Flags_1.Flag.find({ user_email: userEmail }, 'service_id', { sort: 'createdAt' })
-            .then(function (dbFlags) {
+        Flags_1.Flag.find({ user_email: userEmail }, 'service_id', { sort: 'createdAt' }, function (flagError, dbFlags) {
+            if (flagError) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (dbFlags) {
                 var serviceIds = _.map(dbFlags, 'service_id');
-                Services_1.Service.find({ service_id: { $in: serviceIds }, hidden: false }, '-_id')
-                    .then(function (dbService) {
-                    if (dbService) {
-                        _.map(dbService, function (service) { return service.service_id = js_base64_1.Base64.encode(service.service_id); });
-                        return res.status(http2_1.constants.HTTP_STATUS_OK).send(dbService);
+                Services_1.Service.find({ service_id: { $in: serviceIds }, hidden: false }, '-_id', function (serviceError, dbServices) {
+                    if (serviceError) {
+                        return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+                    }
+                    if (dbServices) {
+                        _.map(dbServices, function (service) { return service.service_id = js_base64_1.Base64.encode(service.service_id); });
+                        return res.status(http2_1.constants.HTTP_STATUS_OK).send(dbServices);
                     }
                 });
             }
@@ -79,12 +83,14 @@ exports.getUsersFlags = function (req, res) { return __awaiter(void 0, void 0, v
  * POST /flag
  * Saves or deletes a Flag to given Service for User
  */
-exports.postToggleFlagService = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.postToggleFlagService = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = js_base64_1.Base64.decode(req.body.service_id);
-        Services_1.Service.findOne({ service_id: serviceId })
-            .then(function (dbService) {
+        Services_1.Service.findOne({ service_id: serviceId }, function (serviceError, dbService) {
+            if (serviceError) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbService) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                     error: 'Service not found',
@@ -94,8 +100,10 @@ exports.postToggleFlagService = function (req, res, next) { return __awaiter(voi
                 user_email: req.body.user_email,
                 service_id: serviceId,
             });
-            Flags_1.Flag.findOne({ user_email: flag.user_email, service_id: serviceId })
-                .then(function (dbFlag) {
+            Flags_1.Flag.findOne({ user_email: flag.user_email, service_id: serviceId }, function (flagError, dbFlag) {
+                if (flagError) {
+                    return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+                }
                 if (dbFlag) {
                     dbFlag.remove(function (err) {
                         if (err) {
@@ -113,7 +121,7 @@ exports.postToggleFlagService = function (req, res, next) { return __awaiter(voi
                         });
                     }
                 });
-                res.sendStatus(http2_1.constants.HTTP_STATUS_CREATED);
+                return res.sendStatus(http2_1.constants.HTTP_STATUS_CREATED);
             });
         });
         return [2 /*return*/];

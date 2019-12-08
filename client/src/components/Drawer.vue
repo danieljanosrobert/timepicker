@@ -68,7 +68,7 @@
             </v-list-item-icon>
 
             <v-list-item-content>
-              <v-list-item-title> belépés </v-list-item-title>
+              <v-list-item-title> Belépés </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </template>
@@ -128,7 +128,7 @@
 
     <template v-if="isLoggedIn" v-slot:append>
       <div class="pa-2">
-        <v-btn dark block @click.stop="logout">Logout</v-btn>
+        <v-btn dark block @click.stop="logout">Kijelentkezés</v-btn>
       </div>
     </template>
   </v-navigation-drawer>

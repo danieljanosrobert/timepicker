@@ -8,7 +8,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET || '4LoBdTZ8Ot8nYO51SMZhHtHZXzU',
 });
 
-export async function uploadImage(folder: string, req: any, res: any, next: any) {
+export async function uploadImage(folder: string, req: any, res: any) {
   const dUri = new Datauri();
   dUri.format(path.extname(req.file.originalname).toString(), req.file.buffer);
   const result = await cloudinary.v2.uploader.upload(dUri.content, { folder });

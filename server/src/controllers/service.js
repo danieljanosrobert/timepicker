@@ -49,10 +49,12 @@ var js_base64_1 = require("js-base64");
  * POST /service/obtain-id
  * Returns the AdminUser's Service's service_id
  */
-exports.postObtainServiceId = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.postObtainServiceId = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        Services_1.Service.findOne({ user_email: req.body.user_email })
-            .then(function (dbService) {
+        Services_1.Service.findOne({ user_email: req.body.user_email }, function (err, dbService) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbService) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                     error: 'Service not found',
@@ -70,12 +72,14 @@ exports.postObtainServiceId = function (req, res, next) { return __awaiter(void 
  * GET /serviceName/:service_id
  * Returns name of Service with given service_id
  */
-exports.getServiceName = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getServiceName = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = js_base64_1.Base64.decode(req.params.service_id);
-        Services_1.Service.findOne({ service_id: serviceId })
-            .then(function (dbService) {
+        Services_1.Service.findOne({ service_id: serviceId }, function (err, dbService) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbService) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                     error: 'Service not found',
@@ -90,10 +94,12 @@ exports.getServiceName = function (req, res, next) { return __awaiter(void 0, vo
  * GET /available-services
  * Returns array of Services where hidden is false
  */
-exports.getAvailableServices = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getAvailableServices = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        Services_1.Service.find({ hidden: false }, 'service_id name image description')
-            .then(function (dbServices) {
+        Services_1.Service.find({ hidden: false }, 'service_id name image description', function (err, dbServices) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbServices) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                     error: 'Services not found',
@@ -111,12 +117,14 @@ exports.getAvailableServices = function (req, res, next) { return __awaiter(void
  * GET /settings/service/:service_id
  * Returns the search setting details of Service with given service_id
  */
-exports.getServiceSettings = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getServiceSettings = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = js_base64_1.Base64.decode(req.params.service_id);
-        Services_1.Service.findOne({ service_id: serviceId })
-            .then(function (dbService) {
+        Services_1.Service.findOne({ service_id: serviceId }, function (err, dbService) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbService) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                     error: 'Service not found',
@@ -160,10 +168,12 @@ exports.saveService = function (req, res, next, serviceId) { return __awaiter(vo
  * POST /settings/service
  * Updates Service
  */
-exports.postUpdateService = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.postUpdateService = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
-            .then(function (dbUser) {
+        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email }, function (adminUserError, dbUser) {
+            if (adminUserError) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
                     error: 'User does not exist',
@@ -179,7 +189,7 @@ exports.postUpdateService = function (req, res, next) { return __awaiter(void 0,
                             image = null;
                             deleteImage = req.body.deleteImage === 'true';
                             if (!req.file) return [3 /*break*/, 2];
-                            return [4 /*yield*/, tryUploadImage(req, res, next)];
+                            return [4 /*yield*/, tryUploadImage(req, res)];
                         case 1:
                             image = _a.sent();
                             _a.label = 2;
@@ -199,8 +209,10 @@ exports.postUpdateService = function (req, res, next) { return __awaiter(void 0,
                                 delete serviceAsObject.image_id;
                             }
                             else {
-                                Services_1.Service.findOne({ user_email: service.user_email })
-                                    .then(function (dbService) {
+                                Services_1.Service.findOne({ user_email: service.user_email }, function (serviceError, dbService) {
+                                    if (serviceError) {
+                                        return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+                                    }
                                     if (dbService) {
                                         imageId_1 = dbService.image_id;
                                     }
@@ -232,14 +244,14 @@ exports.postUpdateService = function (req, res, next) { return __awaiter(void 0,
         return [2 /*return*/];
     });
 }); };
-function tryUploadImage(req, res, next) {
+function tryUploadImage(req, res) {
     return __awaiter(this, void 0, void 0, function () {
         var err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, image_1.uploadImage('services', req, res, next)];
+                    return [4 /*yield*/, image_1.uploadImage('services', req, res)];
                 case 1: return [2 /*return*/, _a.sent()];
                 case 2:
                     err_1 = _a.sent();

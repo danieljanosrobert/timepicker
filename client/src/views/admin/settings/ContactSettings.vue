@@ -325,6 +325,15 @@
         this.buttonDisabled = true;
         this.$root.$emit('startLoading');
         const formData = new FormData();
+        _.remove(this.phoneNumbers, (phoneNumber) => {
+          return !phoneNumber.number;
+        });
+        _.remove(this.emails, (email) => {
+          return !email.email;
+        });
+        _.remove(this.addresses, (address) => {
+          return !address.stateNumber || !address.city || !address.streetAndNumber;
+        });
 
         formData.append('user_email', this.$store.state.loggedInUserEmail);
         formData.append('name', this.name);

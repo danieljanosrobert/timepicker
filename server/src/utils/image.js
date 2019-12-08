@@ -54,7 +54,7 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_KEY || '478471557476925',
     api_secret: process.env.CLOUDINARY_SECRET || '4LoBdTZ8Ot8nYO51SMZhHtHZXzU',
 });
-function uploadImage(folder, req, res, next) {
+function uploadImage(folder, req, res) {
     return __awaiter(this, void 0, void 0, function () {
         var dUri, result;
         return __generator(this, function (_a) {

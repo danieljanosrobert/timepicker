@@ -129,6 +129,9 @@
         this.buttonDisabled = true;
         this.$root.$emit('startLoading');
         try {
+          this.leaves = _.remove(this.leaves, (leave) => {
+            return leave.leaveInterval[0] && leave.leaveInterval[1];
+          });
           await bookService.saveLeaves({
             user_email: this.$store.state.loggedInUserEmail,
             password: this.password,

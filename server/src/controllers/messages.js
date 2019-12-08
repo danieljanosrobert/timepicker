@@ -50,8 +50,10 @@ exports.getMessages = function (req, res, next) { return __awaiter(void 0, void 
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = js_base64_1.Base64.decode(req.params.service_id);
-        Messages_1.Messages.findOne({ service_id: serviceId })
-            .then(function (dbMessages) {
+        Messages_1.Messages.findOne({ service_id: serviceId }, function (err, dbMessages) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbMessages) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                     error: 'Messages not found',
@@ -91,15 +93,19 @@ exports.createMessage = function (req, res, next, serviceId) { return __awaiter(
  */
 exports.postSaveMessages = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
-            .then(function (dbUser) {
+        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email }, function (adminUserError, dbUser) {
+            if (adminUserError) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
                     error: 'User does not exist',
                 });
             }
-            Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
-                .then(function (dbService) {
+            Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id', function (serviceError, dbService) {
+                if (serviceError) {
+                    return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+                }
                 if (!dbService) {
                     return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                         error: 'Service not found',

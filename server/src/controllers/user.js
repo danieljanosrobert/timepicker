@@ -96,8 +96,10 @@ exports.postLogin = function (req, res) { return __awaiter(void 0, void 0, void 
             email: req.body.email,
             password: req.body.password,
         });
-        Users_1.User.findOne({ email: user.email })
-            .then(function (dbUser) {
+        Users_1.User.findOne({ email: user.email }, function (err, dbUser) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({ error: 'Incorrect email or password' });
             }
@@ -125,8 +127,10 @@ exports.postChangePassword = function (req, res) { return __awaiter(void 0, void
         if (!validationErrorResult.isEmpty()) {
             return [2 /*return*/, res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send('Validation error')];
         }
-        Users_1.User.findOne({ email: req.body.user_email })
-            .then(function (dbUser) {
+        Users_1.User.findOne({ email: req.body.user_email }, function (err, dbUser) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
             }
@@ -134,7 +138,11 @@ exports.postChangePassword = function (req, res) { return __awaiter(void 0, void
                 .then(function (isMatch) {
                 if (isMatch) {
                     dbUser.password = req.body.password;
-                    dbUser.save();
+                    dbUser.save(function (saveError) {
+                        if (saveError) {
+                            return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Error during save' });
+                        }
+                    });
                     return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
                 }
                 else {
@@ -151,8 +159,10 @@ exports.postChangePassword = function (req, res) { return __awaiter(void 0, void
  */
 exports.postGetUserData = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        Users_1.User.findOne({ email: req.body.user_email })
-            .then(function (dbUser) {
+        Users_1.User.findOne({ email: req.body.user_email }, function (err, dbUser) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
             }
@@ -172,8 +182,10 @@ exports.postGetUserData = function (req, res) { return __awaiter(void 0, void 0,
  */
 exports.updateUserData = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        Users_1.User.findOne({ email: req.body.user_email })
-            .then(function (dbUser) {
+        Users_1.User.findOne({ email: req.body.user_email }, function (err, dbUser) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({ error: 'User not found' });
             }
@@ -183,7 +195,11 @@ exports.updateUserData = function (req, res) { return __awaiter(void 0, void 0, 
                     dbUser.lastName = req.body.lastName,
                         dbUser.firstName = req.body.firstName,
                         dbUser.city = req.body.city,
-                        dbUser.save();
+                        dbUser.save(function (saveError) {
+                            if (saveError) {
+                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Error during save' });
+                            }
+                        });
                     return res.sendStatus(http2_1.constants.HTTP_STATUS_OK);
                 }
                 else {

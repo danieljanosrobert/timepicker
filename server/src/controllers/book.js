@@ -61,12 +61,14 @@ var _ = __importStar(require("lodash"));
  * GET /settings/book/:service_id
  * Returns the book-times of Service with given service_id
  */
-exports.getBookTime = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getBookTime = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = Base64.decode(req.params.service_id);
-        BookTimes_1.BookTime.findOne({ service_id: serviceId })
-            .then(function (dbBookTime) {
+        BookTimes_1.BookTime.findOne({ service_id: serviceId }, function (err, dbBookTime) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbBookTime) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                     error: 'Book not found',
@@ -88,10 +90,12 @@ exports.getBookTime = function (req, res, next) { return __awaiter(void 0, void 
  * POST /settings/book
  * Updates book-time. If book-time does not exist create one
  */
-exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.postSaveBookTime = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
-            .then(function (dbUser) {
+        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email }, function (adminUserError, dbUser) {
+            if (adminUserError) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
                     error: 'User does not exist',
@@ -101,8 +105,10 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
                 .then(function (isMatch) { return __awaiter(void 0, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     if (isMatch) {
-                        Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
-                            .then(function (dbService) {
+                        Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id', function (serviceError, dbService) {
+                            if (serviceError) {
+                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+                            }
                             if (!dbService) {
                                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                                     error: 'Service not found',
@@ -167,12 +173,14 @@ exports.postSaveBookTime = function (req, res, next) { return __awaiter(void 0, 
  * GET /settings/breaks/:service_id
  * Returns the breaks of Service with given service_id
  */
-exports.getBreaks = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getBreaks = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = Base64.decode(req.params.service_id);
-        Breaks_1.Break.findOne({ service_id: serviceId })
-            .then(function (dbBreak) {
+        Breaks_1.Break.findOne({ service_id: serviceId }, function (err, dbBreak) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbBreak) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                     error: 'Breaks not found',
@@ -190,10 +198,12 @@ exports.getBreaks = function (req, res, next) { return __awaiter(void 0, void 0,
  * POST /settings/breaks
  * Updates breaks. If breaks does not exist create one
  */
-exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.postSaveBreaks = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
-            .then(function (dbUser) {
+        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email }, function (adminUserError, dbUser) {
+            if (adminUserError) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
                     error: 'User does not exist',
@@ -203,8 +213,10 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
                 .then(function (isMatch) { return __awaiter(void 0, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     if (isMatch) {
-                        Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
-                            .then(function (dbService) {
+                        Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id', function (serviceError, dbService) {
+                            if (serviceError) {
+                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+                            }
                             if (!dbService) {
                                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                                     error: 'Service not found',
@@ -255,12 +267,14 @@ exports.postSaveBreaks = function (req, res, next) { return __awaiter(void 0, vo
  * GET /settings/leaves/:service_id
  * Returns the leaves of Service with given service_id
  */
-exports.getLeaves = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getLeaves = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var serviceId;
     return __generator(this, function (_a) {
         serviceId = Base64.decode(req.params.service_id);
-        Leaves_1.Leave.findOne({ service_id: serviceId })
-            .then(function (dbLeave) {
+        Leaves_1.Leave.findOne({ service_id: serviceId }, function (err, dbLeave) {
+            if (err) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbLeave) {
                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                     error: 'Leaves not found',
@@ -278,10 +292,12 @@ exports.getLeaves = function (req, res, next) { return __awaiter(void 0, void 0,
  * POST /settings/leaves
  * Updates leaves. If leaves does not exist create one
  */
-exports.postSaveLeaves = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+exports.postSaveLeaves = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email })
-            .then(function (dbUser) {
+        AdminUsers_1.AdminUser.findOne({ email: req.body.user_email }, function (adminUserError, dbUser) {
+            if (adminUserError) {
+                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+            }
             if (!dbUser) {
                 return res.status(http2_1.constants.HTTP_STATUS_BAD_REQUEST).send({
                     error: 'User does not exist',
@@ -291,8 +307,10 @@ exports.postSaveLeaves = function (req, res, next) { return __awaiter(void 0, vo
                 .then(function (isMatch) { return __awaiter(void 0, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     if (isMatch) {
-                        Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id')
-                            .then(function (dbService) {
+                        Services_1.Service.findOne({ user_email: req.body.user_email }, 'service_id', function (serviceError, dbService) {
+                            if (serviceError) {
+                                return res.status(http2_1.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ error: 'Some error occured' });
+                            }
                             if (!dbService) {
                                 return res.status(http2_1.constants.HTTP_STATUS_NOT_FOUND).send({
                                     error: 'Service not found',
