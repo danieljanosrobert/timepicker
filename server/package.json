@@ -62,6 +62,6 @@
   "devDependencies": {
     "@types/cors": "^2.8.6",
     "@types/mocha": "^5.2.7",
-    "mocha": "^6.2.2"
+    "mocha": "^10.2.0"
   }
 }
